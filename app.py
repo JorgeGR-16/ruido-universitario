@@ -100,8 +100,9 @@ elif seccion == "Resultados":
     # --- SIDEBAR DE PARÁMETROS ---
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = st.file_uploader("Sube archivo CSV", type="csv")
-
+        uploaded_file = "datos.csv"
+        df = pd.read_csv(uploaded_file, skiprows=3)
+    
     if uploaded_file:
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
