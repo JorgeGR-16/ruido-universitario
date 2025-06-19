@@ -176,3 +176,4 @@ elif seccion == "Resultados":
 
     except Exception as e:
         st.error(f" Error al procesar el archivo: {e}")
+
