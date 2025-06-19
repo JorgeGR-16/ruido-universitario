@@ -168,10 +168,7 @@ elif seccion == "Resultados":
                     datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                     st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
-                # --- DESCARGA DEL GRÁFICO ---
-                buf = io.BytesIO()
-                fig.savefig(buf, format="png", dpi=300)
-                st.download_button("📥 Descargar gráfico como imagen", buf.getvalue(), "grafico_sonido.png", mime="image/png")
+                
 
     except Exception as e:
         st.error(f" Error al procesar el archivo: {e}")
