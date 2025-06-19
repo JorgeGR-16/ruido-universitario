@@ -16,10 +16,10 @@ st.markdown("""
             color: black;
         }
         h1, h2, h3, h4, h5, h6, p {
-            color: black !important;
+            color: black;
         }
         .subheader {
-            color: #333 !important;
+            color: #333;
         }
     </style>
 """, unsafe_allow_html=True)
