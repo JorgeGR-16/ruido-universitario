@@ -12,19 +12,18 @@ st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wid
 st.markdown("""
     <style>
         .stApp {
-            background-color: #f9f9f9;
+            background-color: white;
+            color: black;
         }
-        h1 {
-            color: #1a1a1a;
-            font-size: 2.5em;
+        h1, h2, h3, h4, h5, h6, p {
+            color: black !important;
         }
         .subheader {
-            font-size: 1.2em;
-            color: #555;
-            margin-top: -15px;
+            color: #333 !important;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 # --- LOGO Y TÍTULO ---
 col1, col2, col3 = st.columns([1, 2, 1])
