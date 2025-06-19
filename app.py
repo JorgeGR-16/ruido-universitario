@@ -100,7 +100,7 @@ elif seccion == "Resultados":
     # --- SIDEBAR DE PARÁMETROS ---
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "datos.csv"
+        uploaded_file = "mediciones 1 .csv"
         df = pd.read_csv(uploaded_file, skiprows=3)
     
     if uploaded_file:
