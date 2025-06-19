@@ -30,7 +30,7 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.image("logo_universidad.png", use_container_width=True)
 
-st.title(" **Investigación del comportamiento del ruido en un ambiente universitario**")
+st.title(" **Investigación del comportamiento del ruido en un ambiente universitario para los ruidosos**")
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
