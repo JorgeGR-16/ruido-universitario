@@ -14,36 +14,51 @@ st.markdown("""
             background-color: #F4F4F4;
             color: #000000;
         }
+
         .block-container {
             background-color: #FFFFFF;
             border-radius: 15px;
             padding: 6rem;
+            max-width: 1100px;
+            margin: auto;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
         }
+
         [data-testid="stSidebar"] {
             background-color: #002F6C;
         }
+
         [data-testid="stSidebar"] * {
             color: #FFFFFF !important;
         }
+
         h1, h2, h3, h4, h5 {
             color: #002F6C;
         }
+
         .subheader {
             color: #0097CE;
             font-weight: 600;
         }
-        .stButton>button {
-            background-color: #0097CE;
-            color: white;
+
+        /* Botón normal */
+        .stButton > button {
+            background-color: #F0F0F0 !important;
+            color: #000000 !important;
+            font-weight: bold;
             border-radius: 8px;
+            border: 1px solid #CCCCCC;
+            padding: 0.5rem 1.5rem;
         }
+
+        /* Hover del botón */
         .stButton > button:hover {
-          background-color: #E0E0E0 !important;
-          color: #000000 !important;
+            background-color: #E0E0E0 !important;
+            color: #000000 !important;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 # --- LOGO Y TÍTULO ---
 st.image("logo_universidad.png", use_container_width=True)
