@@ -54,7 +54,9 @@ with col3:
         seccion_activa = "Resultados"
 
 st.markdown("---")
-st.image("UAMAZC.jpg", use_container_width=500)
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image("UAMAZC.png", width=300)
 st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
