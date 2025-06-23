@@ -177,7 +177,7 @@ elif seccion == "Resultados":
                 st.markdown("A continuación se muestra un mapa de calor que representa los niveles de ruido captados por cada nodo a lo largo del tiempo.")
                 st.pyplot(fig)
 
-                st.markdown("#### 📈 Evolución temporal por nodo")
+                st.markdown("#### Evolución temporal por nodo")
                 for nodo in sorted(df_filtrado["nodo"].unique()):
                     st.subheader(f"Nodo {nodo}")
                     datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
