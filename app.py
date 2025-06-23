@@ -45,20 +45,22 @@ st.markdown("""
             font-weight: 600;
         }
 
-        /* ---- ESTILO GLOBAL PARA TODOS LOS BOTONES ---- */
-        button {
-            background-color: #F0F0F0 !important;
-            color: #000000 !important;
-            font-weight: bold !important;
-            border: 1px solid #BBBBBB !important;
-            border-radius: 6px !important;
-            padding: 0.5rem 1.2rem !important;
-        }
+        /* Forzar fondo claro y texto negro en radio buttons */
+[data-baseweb="radio"] label {
+    background-color: #EAEAEA !important;
+    color: #000000 !important;
+    border-radius: 8px;
+    padding: 0.3rem 0.8rem;
+    margin: 0.2rem;
+    font-weight: 600;
+}
 
-        button:hover {
-            background-color: #DDDDDD !important;
-            color: #000000 !important;
-        }
+/* Opción seleccionada */
+[data-baseweb="radio"] input:checked + div {
+    background-color: #CCCCCC !important;
+    color: #000000 !important;
+}
+
     </style>
 """, unsafe_allow_html=True)
 
