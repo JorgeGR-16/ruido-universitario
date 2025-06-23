@@ -8,59 +8,19 @@ import io
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
+# --- ESTILO CSS PARA DISEÑO LIMPIO ---
 st.markdown("""
     <style>
-        /* Asegura fondo claro en modo oscuro */
-        html, body, .stApp {
-            background-color: #F4F4F4 !important;
-            color: black !important;
+        .stApp {
+            background-color: white;
+            color: black;
         }
-
-        /* Contenedor principal */
-        .block-container {
-            background-color: #FFFFFF;
-            border-radius: 15px;
-            padding: 6rem;
-            max-width: 1100px;
-            margin: auto;
+        h1, h2, h3, h4, h5, h6, p {
+            color: black;
         }
-
-        /* Sidebar */
-        [data-testid="stSidebar"] {
-            background-color: #002F6C !important;
-        }
-
-        [data-testid="stSidebar"] * {
-            color: white !important;
-        }
-
-        /* Títulos */
-        h1, h2, h3, h4, h5 {
-            color: #002F6C;
-        }
-
-        /* Subtítulo */
         .subheader {
-            color: #0097CE;
-            font-weight: 600;
+            color: #333;
         }
-
-        /* Forzar fondo claro y texto negro en radio buttons */
-[data-baseweb="radio"] label {
-    background-color: #EAEAEA !important;
-    color: #000000 !important;
-    border-radius: 8px;
-    padding: 0.3rem 0.8rem;
-    margin: 0.2rem;
-    font-weight: 600;
-}
-
-/* Opción seleccionada */
-[data-baseweb="radio"] input:checked + div {
-    background-color: #CCCCCC !important;
-    color: #000000 !important;
-}
-
     </style>
 """, unsafe_allow_html=True)
 
