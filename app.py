@@ -8,21 +8,16 @@ import io
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-
 st.markdown("""
     <style>
         .stApp {
             background-color: #F4F4F4;
             color: #000000;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
         }
         .block-container {
             background-color: #FFFFFF;
-            max-width: 1100px;
-            margin: auto;
             border-radius: 15px;
-            padding: 1rem;
+            padding: 2rem;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
         }
         [data-testid="stSidebar"] {
@@ -39,19 +34,15 @@ st.markdown("""
             font-weight: 600;
         }
         .stButton>button {
-            background-color: #E0E0E0 !important;
-            color: #000000 !important;;
-            font-weight: 600;
+            background-color: #0097CE;
+            color: white;
             border-radius: 8px;
-            border: none;
-            padding: 0.5rem 1.5rem;
         }
         .stButton>button:hover {
             background-color: #007CAD;
         }
     </style>
 """, unsafe_allow_html=True)
-
 
 # --- LOGO Y TÍTULO ---
 st.image("logo_universidad.png", use_container_width=True)
