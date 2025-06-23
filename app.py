@@ -8,7 +8,7 @@ import io
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
- st.markdown("""
+st.markdown("""
     <style>
         /* Fondo general de toda la app */
         .stApp {
@@ -58,7 +58,7 @@ st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wid
     </style>
 """, unsafe_allow_html=True)
 
-    st.image("logo_universidad.png", use_container_width=True)
+st.image("logo_universidad.png", use_container_width=True)
 
 st.title(" **Investigación del comportamiento del ruido en un ambiente universitario**")
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
