@@ -8,26 +8,56 @@ import io
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-# --- ESTILO CSS PARA DISEÑO LIMPIO ---
-st.markdown("""
+ st.markdown("""
     <style>
+        /* Fondo general de toda la app */
         .stApp {
-            background-color: white;
-            color: black;
+            background-color: #F4F4F4;  /* gris claro */
+            color: #000000;
         }
-        h1, h2, h3, h4, h5, h6, p {
-            color: black;
+
+        /* Contenedor principal (cuerpo de la app) */
+        .block-container {
+            background-color: #FFFFFF;  /* blanco */
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
         }
+
+        /* Sidebar (menú lateral izquierdo) */
+        [data-testid="stSidebar"] {
+            background-color: #002F6C;  /* azul Tec */
+        }
+
+        /* Texto del sidebar */
+        [data-testid="stSidebar"] * {
+            color: #FFFFFF !important;
+        }
+
+        /* Títulos */
+        h1, h2, h3, h4, h5 {
+            color: #002F6C;
+        }
+
+        /* Subtítulo personalizado */
         .subheader {
-            color: #333;
+            color: #0097CE;
+            font-weight: 600;
+        }
+
+        /* Opcional: estilo para botones o inputs */
+        .stButton>button {
+            background-color: #0097CE;
+            color: white;
+            border-radius: 8px;
+        }
+
+        .stButton>button:hover {
+            background-color: #007CAD;
         }
     </style>
 """, unsafe_allow_html=True)
 
-
-# --- LOGO Y TÍTULO ---
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
     st.image("logo_universidad.png", use_container_width=True)
 
 st.title(" **Investigación del comportamiento del ruido en un ambiente universitario**")
