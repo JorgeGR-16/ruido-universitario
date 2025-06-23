@@ -48,7 +48,7 @@ st.markdown("""
 # --- LOGO Y TÍTULO ---
 st.image("logo_universidad.png", use_container_width=True)
 
-st.title(" **Investigación del comportamiento del ruido en un ambiento universitario**")
+st.title(" **Investigación del comportamiento del ruido en un ambiente universitario**")
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
