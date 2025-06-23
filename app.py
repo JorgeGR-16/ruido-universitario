@@ -38,8 +38,9 @@ st.markdown("""
             color: white;
             border-radius: 8px;
         }
-        .stButton>button:hover {
-            background-color: #007CAD;
+        .stButton > button:hover {
+          background-color: #E0E0E0 !important;
+          color: #000000 !important;
         }
     </style>
 """, unsafe_allow_html=True)
