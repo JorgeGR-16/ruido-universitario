@@ -36,10 +36,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- LOGO Y TÍTULO ---
-st.image("UAMAZC.jpg", use_container_width=500)
-st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
-
 # --- MENÚ DE NAVEGACIÓN PERSONALIZADO ---
 seccion_activa = st.query_params.get("seccion", "Introducción")
 
@@ -58,6 +54,11 @@ with col3:
         seccion_activa = "Resultados"
 
 st.markdown("---")
+st.image("UAMAZC.jpg", use_container_width=500)
+st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
+st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
+
+
 
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
