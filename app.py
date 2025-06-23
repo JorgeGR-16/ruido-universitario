@@ -17,7 +17,7 @@ st.markdown("""
         .block-container {
             background-color: #FFFFFF;
             border-radius: 15px;
-            padding: 2rem;
+            padding: 1.5rem;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
         }
         [data-testid="stSidebar"] {
