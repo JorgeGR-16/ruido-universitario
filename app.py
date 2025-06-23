@@ -128,14 +128,14 @@ if seccion_activa == "Introducción":
         with col2:
             st.image("Diagrama.png", use_container_width=True)
 
-if seccion_activa == "Objetivo":
+elif seccion_activa == "Objetivo":
     with st.container():
         st.markdown("### Objetivo")
         st.markdown("""
         * Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos, para comprender con mayor claridad en qué zonas afectan más las alteraciones sonoras.
         """)
 
-if seccion_activa == "Resultado":
+elif seccion_activa == "Resultado":
     st.markdown("###  Resultados")
 
     with st.sidebar:
