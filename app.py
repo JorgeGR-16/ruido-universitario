@@ -83,7 +83,7 @@ with col3:
 st.markdown("""---""")
 
 # --- SECCIONES ---
-if seccion == "Introducción":
+if seccion_activa == "Introducción":
     with st.container():
         st.markdown("### Introducción")
 
