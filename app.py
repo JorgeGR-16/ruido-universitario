@@ -41,21 +41,22 @@ st.markdown("""
             font-weight: 600;
         }
 
-        /* Botón normal */
-        .stButton > button {
-            background-color: #F0F0F0 !important;
-            color: #000000 !important;
-            font-weight: bold;
-            border-radius: 8px;
-            border: 1px solid #CCCCCC;
-            padding: 0.5rem 1.5rem;
-        }
+     /* Estilos globales para todos los botones visibles */
+button {
+    background-color: #F0F0F0 !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+    border-radius: 8px !important;
+    border: 1px solid #CCCCCC !important;
+    padding: 0.5rem 1.5rem !important;
+}
 
-        /* Hover del botón */
-        .stButton > button:hover {
-            background-color: #E0E0E0 !important;
-            color: #000000 !important;
-        }
+/* Hover global */
+button:hover {
+    background-color: #E0E0E0 !important;
+    color: #000000 !important;
+}
+
     </style>
 """, unsafe_allow_html=True)
 
