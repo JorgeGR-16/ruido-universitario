@@ -32,12 +32,53 @@ st.image("logo_universidad.png", use_container_width=True)
 st.title(" **Investigación del comportamiento del ruido en un ambiente universitario**")
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# --- MENÚ DE NAVEGACIÓN ---
-seccion = st.radio(
-    "Selecciona una sección",
-    ["Introducción", "Objetivo", "Resultados"],
-    horizontal=True
-)
+# --- NUEVO MENÚ PERSONALIZADO TIPO BOTONES ---
+from urllib.parse import unquote
+
+# Leer sección activa desde parámetros de URL (inicia en "Introducción")
+seccion_activa = st.experimental_get_query_params().get("seccion", ["Introducción"])[0]
+
+st.markdown("""
+    <style>
+        .menu-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .menu-button {
+            background-color: #004080;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .menu-button:hover {
+            background-color: #0059b3;
+        }
+        .menu-button-active {
+            background-color: #0070c0 !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    if st.button("Introducción", use_container_width=True):
+        st.experimental_set_query_params(seccion="Introducción")
+        seccion_activa = "Introducción"
+with col2:
+    if st.button("Objetivo", use_container_width=True):
+        st.experimental_set_query_params(seccion="Objetivo")
+        seccion_activa = "Objetivo"
+with col3:
+    if st.button("Resultados", use_container_width=True):
+        st.experimental_set_query_params(seccion="Resultados")
+        seccion_activa = "Resultados"
+
 
 st.markdown("""---""")
 
