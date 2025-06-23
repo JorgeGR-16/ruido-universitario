@@ -36,7 +36,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- LOGO Y TÍTULO ---
-st.image("UAMAZC.png", use_container_width=True)
+st.image("UAMAZC.jpg", use_container_width=True)
 st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
