@@ -8,56 +8,44 @@ import io
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
+# --- ESTILO PERSONALIZADO TIPO TEC ---
 st.markdown("""
     <style>
-        /* Fondo general de toda la app */
         .stApp {
-            background-color: #F4F4F4;  /* gris claro */
+            background-color: #F4F4F4;
             color: #000000;
         }
-
-        /* Contenedor principal (cuerpo de la app) */
         .block-container {
-            background-color: #FFFFFF;  /* blanco */
+            background-color: #FFFFFF;
             border-radius: 15px;
             padding: 2rem;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
         }
-
-        /* Sidebar (menú lateral izquierdo) */
         [data-testid="stSidebar"] {
-            background-color: #002F6C;  /* azul Tec */
+            background-color: #002F6C;
         }
-
-        /* Texto del sidebar */
         [data-testid="stSidebar"] * {
             color: #FFFFFF !important;
         }
-
-        /* Títulos */
         h1, h2, h3, h4, h5 {
             color: #002F6C;
         }
-
-        /* Subtítulo personalizado */
         .subheader {
             color: #0097CE;
             font-weight: 600;
         }
-
-        /* Opcional: estilo para botones o inputs */
         .stButton>button {
             background-color: #0097CE;
             color: white;
             border-radius: 8px;
         }
-
         .stButton>button:hover {
             background-color: #007CAD;
         }
     </style>
 """, unsafe_allow_html=True)
 
+# --- LOGO Y TÍTULO ---
 st.image("logo_universidad.png", use_container_width=True)
 
 st.title(" **Investigación del comportamiento del ruido en un ambiente universitario**")
@@ -76,19 +64,16 @@ st.markdown("""---""")
 if seccion == "Introducción":
     with st.container():
         st.markdown("### Introducción")
-       with st.container():
-    st.markdown("### Introducción")
 
-    st.markdown("""
-    <div style='text-align: justify;'>
-    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-    El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario. Por ello, es fundamental identificar y cuantificar las fuentes y niveles de ruido presentes para poder plantear estrategias de mitigación efectivas.
-    A través de esta investigación, se pretende obtener datos precisos que permitan evaluar el impacto acústico en el entorno universitario y promover un ambiente más adecuado para el estudio y desarrollo académico.
-    La red está conformada por varios sonómetros basados en el microcontrolador LoRa32, un micrófono digital INMP441 y una batería recargable, todo alojado en una carcasa impresa en 3D.
-    La red utiliza una topología de estrella en la que los sonómetros se comunican directamente con un gateway central, también basado en un LoRa32. Este gateway actúa como puente entre los sensores y una computadora central, permitiendo la transferencia de datos de ruido en tiempo real, mediante enlace USB o el protocolo MQTT.
-    </div>
-    """, unsafe_allow_html=True)
-
+        st.markdown("""
+        <div style='text-align: justify;'>
+        El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+        El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario. Por ello, es fundamental identificar y cuantificar las fuentes y niveles de ruido presentes para poder plantear estrategias de mitigación efectivas.
+        A través de esta investigación, se pretende obtener datos precisos que permitan evaluar el impacto acústico en el entorno universitario y promover un ambiente más adecuado para el estudio y desarrollo académico.
+        La red está conformada por varios sonómetros basados en el microcontrolador LoRa32, un micrófono digital INMP441 y una batería recargable, todo alojado en una carcasa impresa en 3D.
+        La red utiliza una topología de estrella en la que los sonómetros se comunican directamente con un gateway central, también basado en un LoRa32. Este gateway actúa como puente entre los sensores y una computadora central, permitiendo la transferencia de datos de ruido en tiempo real, mediante enlace USB o el protocolo MQTT.
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown("### 1.1 Principio de funcionamiento")
 
@@ -115,12 +100,11 @@ if seccion == "Introducción":
         - \( P \): presión sonora medida  
         - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
         """)
+
         st.markdown("### 1.2 Diagrama del dispositivo.")
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-         st.image("Diagrama.png", use_container_width=True)
-        
-
+            st.image("Diagrama.png", use_container_width=True)
 
 elif seccion == "Objetivo":
     with st.container():
@@ -132,10 +116,9 @@ elif seccion == "Objetivo":
 elif seccion == "Resultados":
     st.markdown("###  Resultados")
 
-    # --- SIDEBAR DE PARÁMETROS ---
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"  # ← nuevo nombre sin espacios
+        uploaded_file = "mediciones_1.csv"
 
     try:
         df = pd.read_csv(uploaded_file, skiprows=3)
@@ -152,7 +135,6 @@ elif seccion == "Resultados":
             tiempo_min = df['_time'].min()
             tiempo_max = df['_time'].max()
 
-            # --- FILTRO DE TIEMPO ---
             with st.expander(" Filtro temporal", expanded=True):
                 fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
                 hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
@@ -168,7 +150,6 @@ elif seccion == "Resultados":
             else:
                 st.success(f"Se encontraron {len(df_filtrado)} registros.")
 
-                # --- PREPARACIÓN PARA GRÁFICO ---
                 X = df_filtrado['nodo'].astype(float).values
                 fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                 tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
@@ -179,7 +160,6 @@ elif seccion == "Resultados":
                 X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                 Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
 
-                # --- GRÁFICO PROFESIONAL ---
                 fig, ax = plt.subplots(figsize=(10, 6))
                 cmap = plt.get_cmap('jet')
                 c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap=cmap)
@@ -197,14 +177,11 @@ elif seccion == "Resultados":
                 st.markdown("A continuación se muestra un mapa de calor que representa los niveles de ruido captados por cada nodo a lo largo del tiempo.")
                 st.pyplot(fig)
 
-                # --- GRÁFICO DE LÍNEAS POR NODO ---
                 st.markdown("#### 📈 Evolución temporal por nodo")
                 for nodo in sorted(df_filtrado["nodo"].unique()):
                     st.subheader(f"Nodo {nodo}")
                     datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                     st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
-
-                
 
     except Exception as e:
         st.error(f" Error al procesar el archivo: {e}")
