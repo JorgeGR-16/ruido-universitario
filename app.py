@@ -10,55 +10,58 @@ st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wid
 
 st.markdown("""
     <style>
-        .stApp {
-            background-color: #F4F4F4;
-            color: #000000;
+        /* Asegura fondo claro en modo oscuro */
+        html, body, .stApp {
+            background-color: #F4F4F4 !important;
+            color: black !important;
         }
 
+        /* Contenedor principal */
         .block-container {
             background-color: #FFFFFF;
             border-radius: 15px;
             padding: 6rem;
             max-width: 1100px;
             margin: auto;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
         }
 
+        /* Sidebar */
         [data-testid="stSidebar"] {
-            background-color: #002F6C;
+            background-color: #002F6C !important;
         }
 
         [data-testid="stSidebar"] * {
-            color: #FFFFFF !important;
+            color: white !important;
         }
 
+        /* Títulos */
         h1, h2, h3, h4, h5 {
             color: #002F6C;
         }
 
+        /* Subtítulo */
         .subheader {
             color: #0097CE;
             font-weight: 600;
         }
 
-     /* Estilos globales para todos los botones visibles */
-button {
-    background-color: #F0F0F0 !important;
-    color: #000000 !important;
-    font-weight: bold !important;
-    border-radius: 8px !important;
-    border: 1px solid #CCCCCC !important;
-    padding: 0.5rem 1.5rem !important;
-}
+        /* ---- ESTILO GLOBAL PARA TODOS LOS BOTONES ---- */
+        button {
+            background-color: #F0F0F0 !important;
+            color: #000000 !important;
+            font-weight: bold !important;
+            border: 1px solid #BBBBBB !important;
+            border-radius: 6px !important;
+            padding: 0.5rem 1.2rem !important;
+        }
 
-/* Hover global */
-button:hover {
-    background-color: #E0E0E0 !important;
-    color: #000000 !important;
-}
-
+        button:hover {
+            background-color: #DDDDDD !important;
+            color: #000000 !important;
+        }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # --- LOGO Y TÍTULO ---
