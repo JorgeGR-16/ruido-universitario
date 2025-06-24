@@ -148,6 +148,18 @@ elif seccion_activa == "Resultados":
 
             df_filtrado = df[(df['_time'] >= fecha_inicio) & (df['_time'] <= fecha_fin)]
 
+            # --- NUEVO: Selector de nodos ---
+            nodos_disponibles = sorted(df_filtrado['nodo'].unique())
+            nodos_seleccionados = st.multiselect(
+                "Selecciona los nodos a visualizar:",
+                options=nodos_disponibles,
+                default=nodos_disponibles  # todos seleccionados por defecto
+            )
+            
+            # Filtrar por nodos seleccionados
+            df_filtrado = df_filtrado[df_filtrado['nodo'].isin(nodos_seleccionados)]
+
+            
             if df_filtrado.empty:
                 st.warning("No hay datos en el rango seleccionado.")
             else:
