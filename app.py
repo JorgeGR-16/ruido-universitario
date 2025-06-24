@@ -160,22 +160,24 @@ elif seccion_activa == "Resultados":
                   with tab1:
                     st.markdown("Mapa de calor de niveles de sonido:")
                 
-                    # Nodos como enteros
-                    X = df_filtrado['nodo'].astype(int).values
+                 with tab1:
+                    st.markdown("Mapa de calor de niveles de sonido:")
+
+                    # Asegurar nodos como enteros
+                    df_filtrado['nodo'] = df_filtrado['nodo'].astype(int)
                     fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-                    tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-                    Z = df_filtrado['_value'].astype(float).values
                 
-                    x_unique = np.unique(X)
-                    y_unique = np.unique(tiempos_segundos)
-                
-                    # Crear una malla para interpolar (opcional, o podrías agrupar para que cuadre)
-                    # Para simplificar, agrupamos los valores por nodo y tiempo (si tienes valores repetidos)
-                    # Aquí hacemos pivot para matriz 2D (tiempo x nodo)
+                    # Pivot table: index=tiempo, columns=nodo
                     df_pivot = df_filtrado.pivot_table(index='_time', columns='nodo', values='_value', aggfunc='mean').sort_index()
+                
+                    # Crear columnas completas de nodos 1 a 20 (puedes cambiar rango si quieres)
+                    nodos_completos = list(range(1, 21))
+                    df_pivot = df_pivot.reindex(columns=nodos_completos)
+                
+                    # Obtener matriz 2D para imshow
                     Z_grid = df_pivot.values
                     y_unique = (df_pivot.index - fecha_base).total_seconds().values
-                    x_unique = df_pivot.columns.values.astype(int)
+                    x_unique = np.array(nodos_completos)
                 
                     fig, ax = plt.subplots(figsize=(6, 4))
                     extent = [x_unique.min() - 0.5, x_unique.max() + 0.5, y_unique.min(), y_unique.max()]
@@ -183,11 +185,11 @@ elif seccion_activa == "Resultados":
                     im = ax.imshow(Z_grid, aspect='auto', origin='lower', cmap='jet', extent=extent)
                     plt.colorbar(im, ax=ax, label='Nivel de sonido (dB)')
                 
-                    # Ajustar ticks X (nodos)
+                    # Ticks X (nodos completos 1 a 20)
                     ax.set_xticks(x_unique)
                     ax.set_xticklabels([str(x) for x in x_unique])
                 
-                    # Ajustar ticks Y (hora)
+                    # Ticks Y (hora formateada)
                     yticks = ax.get_yticks()
                     ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
                     ax.set_yticks(yticks)
@@ -200,6 +202,7 @@ elif seccion_activa == "Resultados":
                     col1, col2, col3 = st.columns([2, 1, 2])
                     with col2:
                         st.pyplot(fig, use_container_width=False)
+
 
 
                 with tab2:
