@@ -195,11 +195,39 @@ elif seccion_activa == "Resultados":
                         st.pyplot(fig, use_container_width=False)
 
                 with tab2:
-                    st.markdown("#### Evolución temporal por nodo")
-                    for nodo in sorted(df_filtrado["nodo"].unique()):
-                        st.subheader(f"Nodo {nodo}")
-                        datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
-                        st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+                   
+                    st.markdown("#### Gráficos combinados por nodo")
+                
+                    nodos = sorted(df_filtrado["nodo"].unique())
+                    cols = st.columns(4)  # 4 nodos por fila
+                
+                    for i, nodo in enumerate(nodos):
+                        datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo].sort_values('_time')
+                
+                        if len(datos_nodo) < 2:
+                            continue
+                
+                        # Crear columna correspondiente (cicla entre 4 columnas)
+                        with cols[i % 4]:
+                            st.markdown(f"**Nodo {nodo}**")
+                
+                            # --- 1. GRÁFICO DE LÍNEA ---
+                            st.line_chart(datos_nodo.set_index('_time')['_value'], height=150, use_container_width=True)
+                
+                            # --- 2. MAPA DE CALOR HORIZONTAL ---
+                            valores = datos_nodo['_value'].values
+                            Z_matrix = np.expand_dims(valores, axis=0)
+                            tiempos_relativos = (datos_nodo['_time'] - datos_nodo['_time'].min()).dt.total_seconds().values
+                            extent = [tiempos_relativos.min(), tiempos_relativos.max(), 0, 1]
+                
+                            fig, ax = plt.subplots(figsize=(3, 1.2))
+                            im = ax.imshow(Z_matrix, aspect='auto', origin='lower', cmap='jet', extent=extent)
+                            ax.set_yticks([])
+                            ax.set_xticks([])
+                            plt.colorbar(im, ax=ax, orientation='vertical', fraction=0.05, pad=0.04)
+                
+                            st.pyplot(fig)
+
 
     except Exception as e:
         st.error(f"Error al procesar el archivo: {e}")
