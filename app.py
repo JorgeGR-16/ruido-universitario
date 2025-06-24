@@ -40,8 +40,8 @@ st.markdown("""
 st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 
 #IMAGEN PRINCIPAL
-col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
-with col2, col3:
+col1, col2, col3, col4 = st.columns([1, 3, 1])
+with col2:
     st.image("UAMAZC.jpg", width=600)
 
 ##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
