@@ -4,11 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
-# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-#ESTILO PERSONALIZADO
+# --- ESTILO PERSONALIZADO ---
 st.markdown("""
     <style>
         .stApp {
@@ -36,20 +34,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-#TITULO GENERAL
+# --- TÍTULO E IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-#IMAGEN PRINCIPAL
+
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    st.image("UAMAZC.jpg", use_container_width=600)
+    st.image("UAMAZC.jpg", use_container_width=True)
 
-##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-
-#MENÚ DE NAVEGACIÓN PERSONALIZADO 
+# --- MENÚ DE NAVEGACIÓN ---
 seccion_activa = st.query_params.get("seccion", "Introducción")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -70,12 +64,8 @@ with col4:
         st.query_params["seccion"] = "Resultados"
         seccion_activa = "Resultados"
 
-##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-
-##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     with st.container():
@@ -83,23 +73,15 @@ if seccion_activa == "Introducción":
         st.markdown("""
         <div style='text-align: justify;'>
         El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-        [...] <!-- Puedes dejar aquí tu texto completo de introducción -->
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("### 1.1 Principio de funcionamiento")
-        st.markdown("""
-        **1. Captación del sonido:**  
-        [...]  
-        """)
+        st.markdown("**1. Captación del sonido:** [...]")
         st.latex(r'''
         \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
         ''')
-        st.markdown("""
-        Donde:  
-        - \( P \): presión sonora medida  
-        - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
-        """)
+        st.markdown("- \( P \): presión sonora medida  \n- \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia")
 
         st.markdown("### 1.2 Diagrama del dispositivo.")
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -108,19 +90,16 @@ if seccion_activa == "Introducción":
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
-    st.markdown("""
-    * Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos, para comprender con mayor claridad en qué zonas afectan más las alteraciones sonoras.
-    """)
-    
+    st.markdown("* Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos.")
+
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
-    st.markdown("""
-    *En esta parte veremos el desarrollo del prototipo y su construccion.
-    """)
-    
+    st.markdown("* En esta parte veremos el desarrollo del prototipo y su construcción.")
+
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
+    # --- SIDEBAR ---
     with st.sidebar:
         st.header("Parámetros de entrada")
         uploaded_file = "mediciones_1.csv"
@@ -131,14 +110,13 @@ elif seccion_activa == "Resultados":
         if not all(col in df.columns for col in columnas_requeridas):
             st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
         else:
-            df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
-            if df['_time'].isna().any():
-                st.warning("Algunas fechas no se pudieron convertir correctamente.")
+            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+            df.dropna(subset=['_time'], inplace=True)
 
             tiempo_min = df['_time'].min()
             tiempo_max = df['_time'].max()
 
-            with st.expander("Filtro temporal", expanded=True):
+            with st.sidebar:
                 fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
                 hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
                 hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
@@ -148,8 +126,18 @@ elif seccion_activa == "Resultados":
 
             df_filtrado = df[(df['_time'] >= fecha_inicio) & (df['_time'] <= fecha_fin)]
 
+            # --- Selección de nodos ---
+            nodos_disponibles = sorted(df_filtrado["nodo"].unique())
+            with st.sidebar:
+                nodos_seleccionados = st.multiselect(
+                    "Selecciona los nodos a visualizar",
+                    options=nodos_disponibles,
+                    default=nodos_disponibles
+                )
+            df_filtrado = df_filtrado[df_filtrado["nodo"].isin(nodos_seleccionados)]
+
             if df_filtrado.empty:
-                st.warning("No hay datos en el rango seleccionado.")
+                st.warning("No hay datos para los parámetros seleccionados.")
             else:
                 st.success(f"Se encontraron {len(df_filtrado)} registros.")
                 tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
@@ -189,3 +177,4 @@ elif seccion_activa == "Resultados":
 
     except Exception as e:
         st.error(f"Error al procesar el archivo: {e}")
+
