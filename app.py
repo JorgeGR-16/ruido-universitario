@@ -122,82 +122,83 @@ elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     with st.sidebar:
-        st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"
+    st.header("Parámetros de entrada")
+    uploaded_file = "mediciones_1.csv"  # o usa st.file_uploader si quieres permitir carga manual
 
-    try:
-        df = pd.read_csv(uploaded_file, skiprows=3)
-        columnas_requeridas = ['_time', 'nodo', '_value']
-        if not all(col in df.columns for col in columnas_requeridas):
-            st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
-        else:
-            df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
-            if df['_time'].isna().any():
-                st.warning("Algunas fechas no se pudieron convertir correctamente.")
+try:
+    df = pd.read_csv(uploaded_file, skiprows=3)
+    columnas_requeridas = ['_time', 'nodo', '_value']
+    if not all(col in df.columns for col in columnas_requeridas):
+        st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
+    else:
+        df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
+        if df['_time'].isna().any():
+            st.warning("Algunas fechas no se pudieron convertir correctamente.")
 
-            tiempo_min = df['_time'].min()
-            tiempo_max = df['_time'].max()
+        tiempo_min = df['_time'].min()
+        tiempo_max = df['_time'].max()
 
-            with st.expander("Filtro temporal", expanded=True):
-                fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+        with st.sidebar:
+            st.subheader("Filtros")
+            fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
+            hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+            hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
-            fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-            fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-
-            df_filtrado = df[(df['_time'] >= fecha_inicio) & (df['_time'] <= fecha_fin)]
-
-         # Obtener lista única de nodos y permitir selección
-            nodos_disponibles = sorted(df_filtrado["nodo"].unique())
+            nodos_disponibles = sorted(df["nodo"].unique())
             nodos_seleccionados = st.multiselect(
-                "Selecciona los nodos que deseas visualizar:",
+                "Selecciona los nodos a visualizar:",
                 options=nodos_disponibles,
-                default=nodos_disponibles  # Todos seleccionados por defecto
+                default=nodos_disponibles
             )
-            
-            # Filtrar el DataFrame según los nodos seleccionados
-            df_filtrado = df_filtrado[df_filtrado["nodo"].isin(nodos_seleccionados)]
 
-            
-            if df_filtrado.empty:
-                st.warning("No hay datos en el rango seleccionado.")
-            else:
-                st.success(f"Se encontraron {len(df_filtrado)} registros.")
-                tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
+        fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+        fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
 
-                with tab1:
-                    st.markdown("Mapa de calor de niveles de sonido:")
-                    X = df_filtrado['nodo'].astype(float).values
-                    fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-                    tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-                    Z = df_filtrado['_value'].astype(float).values
+        df_filtrado = df[
+            (df['_time'] >= fecha_inicio) &
+            (df['_time'] <= fecha_fin) &
+            (df['nodo'].isin(nodos_seleccionados))
+        ]
 
-                    x_unique = np.unique(X)
-                    y_unique = np.unique(tiempos_segundos)
-                    X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-                    Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+        if df_filtrado.empty:
+            st.warning("No hay datos en el rango y nodos seleccionados.")
+        else:
+            st.success(f"Se encontraron {len(df_filtrado)} registros.")
+            tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
 
-                    fig, ax = plt.subplots(figsize=(10, 6))
-                    c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
-                    plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
+            with tab1:
+                st.markdown("Mapa de calor de niveles de sonido:")
+                X = df_filtrado['nodo'].astype(float).values
+                fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+                tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+                Z = df_filtrado['_value'].astype(float).values
 
-                    yticks = ax.get_yticks()
-                    ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
-                    ax.set_yticks(yticks)
-                    ax.set_yticklabels(ylabels)
+                x_unique = np.unique(X)
+                y_unique = np.unique(tiempos_segundos)
+                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
 
-                    ax.set_xlabel("Nodos")
-                    ax.set_ylabel("Hora (HH:MM)")
-                    ax.set_title("Mapa de niveles de sonido", fontsize=14)
-                    st.pyplot(fig)
+                fig, ax = plt.subplots(figsize=(10, 6))
+                c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
+                plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
 
-                with tab2:
-                    st.markdown("#### Evolución temporal por nodo")
-                    for nodo in sorted(df_filtrado["nodo"].unique()):
-                        st.subheader(f"Nodo {nodo}")
-                        datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
-                        st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+                yticks = ax.get_yticks()
+                ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
+                ax.set_yticks(yticks)
+                ax.set_yticklabels(ylabels)
 
-    except Exception as e:
-        st.error(f"Error al procesar el archivo: {e}")
+                ax.set_xlabel("Nodos")
+                ax.set_ylabel("Hora (HH:MM)")
+                ax.set_title("Mapa de niveles de sonido", fontsize=14)
+                st.pyplot(fig)
+
+            with tab2:
+                st.markdown("#### Evolución temporal por nodo")
+                for nodo in sorted(df_filtrado["nodo"].unique()):
+                    st.subheader(f"Nodo {nodo}")
+                    datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
+                    st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+
+except Exception as e:
+    st.error(f"Error al procesar el archivo: {e}")
+
