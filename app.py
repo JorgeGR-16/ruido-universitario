@@ -38,10 +38,12 @@ st.markdown("""
 
 #TITULO GENERAL
 st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
+
 #IMAGEN PRINCIPAL
 col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
+with col1:
     st.image("UAMAZC.jpg", width=600)
+    
 #MENÚ DE NAVEGACIÓN PERSONALIZADO 
 seccion_activa = st.query_params.get("seccion", "Introducción")
 
