@@ -156,7 +156,7 @@ elif seccion_activa == "Resultados":
 
                 with tab1:
                     st.markdown("Mapa de calor de niveles de sonido:")
-                    X = df_filtrado['nodo'].astype(float).values
+                    X = df_filtrado['nodo'].astype(int).values
                     fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                     tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
                     Z = df_filtrado['_value'].astype(float).values
