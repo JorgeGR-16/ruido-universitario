@@ -124,7 +124,7 @@ elif seccion_activa == "Resultados":
                 nodos_seleccionados = st.multiselect(
                     "Selecciona los nodos que deseas visualizar:",
                     options=nodos_disponibles,
-                    default=nodos_disponibles
+                    default=[]
                 )
 
                 fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
@@ -178,4 +178,3 @@ elif seccion_activa == "Resultados":
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
-
