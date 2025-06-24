@@ -155,36 +155,36 @@ elif seccion_activa == "Resultados":
                 tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
 
                 with tab1:
-                    
                     st.markdown("Mapa de calor de niveles de sonido:")
                     X = df_filtrado['nodo'].astype(float).values
                     fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                     tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
                     Z = df_filtrado['_value'].astype(float).values
-
+                
                     x_unique = np.unique(X)
                     y_unique = np.unique(tiempos_segundos)
                     X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                     Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-
-    # Reducir tamaño del gráfico
-                    fig, ax = plt.subplots(figsize=(4, 2))  # <-- MÁS PEQUEÑO
+                
+                    # Gráfico más pequeño
+                    fig, ax = plt.subplots(figsize=(4, 3))  # más pequeño aún
                     c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
                     plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
-
+                
                     yticks = ax.get_yticks()
                     ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
                     ax.set_yticks(yticks)
                     ax.set_yticklabels(ylabels)
-
+                
                     ax.set_xlabel("Nodos")
                     ax.set_ylabel("Hora (HH:MM)")
-                    ax.set_title("Mapa de niveles de sonido", fontsize=14)
-
-    # Centrar el gráfico visualmente
-                    col1, col2, col3 = st.columns([1, 2, 1])
+                    ax.set_title("Mapa de niveles de sonido", fontsize=12)
+                
+                    # Centrado
+                    col1, col2, col3 = st.columns([2, 1, 2])
                     with col2:
-                    st.pyplot(fig, use_container_width=False)
+                        st.pyplot(fig, use_container_width=False)
+
 
 
                 with tab2:
