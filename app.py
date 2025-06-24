@@ -7,7 +7,7 @@ from scipy.interpolate import griddata
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-# --- ESTILO PERSONALIZADO ADAPTATIVO ---
+# --- ESTILO PERSONALIZADO CON CONTRASTE CORREGIDO ---
 st.markdown("""
     <style>
         .stApp {
@@ -23,18 +23,23 @@ st.markdown("""
             color: #333;
         }
 
-        /* Botones de navegación personalizados */
+        /* Botones personalizados */
         .nav-button {
             display: inline-block;
             margin: 0.5em;
             padding: 0.5em 1.5em;
             background-color: #004080;
-            color: white;
+            color: white !important;
             text-align: center;
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
             font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background-color: #0059b3;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -45,16 +50,16 @@ st.markdown("""
 
             .nav-button {
                 background-color: #66aaff;
-                color: black;
+                color: black !important;
+            }
+
+            .nav-button:hover {
+                background-color: #3399ff;
             }
 
             .subheader {
                 color: #ccc;
             }
-        }
-
-        .nav-button:hover {
-            opacity: 0.85;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -67,7 +72,7 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.image("UAMAZC.jpg", width=600)
 
-# --- MENÚ DE NAVEGACIÓN CON HTML ---
+# --- MENÚ DE NAVEGACIÓN HTML ---
 st.markdown("""
     <div style='text-align: center'>
         <a class="nav-button" href="?seccion=Introducción">Introducción</a>
