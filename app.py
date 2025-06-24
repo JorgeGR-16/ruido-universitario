@@ -7,8 +7,7 @@ from scipy.interpolate import griddata
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-#ESTILO PERSONALIZADO
+# --- ESTILO PERSONALIZADO ---
 st.markdown("""
     <style>
         .stApp {
@@ -36,46 +35,39 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-#TITULO GENERAL
+# --- TÍTULO GENERAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-#IMAGEN PRINCIPAL
+
+# --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    st.image("UAMAZC.jpg", use_container_width=600)
+    st.image("UAMAZC.jpg", use_container_width=True)
 
-##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
-
-#MENÚ DE NAVEGACIÓN PERSONALIZADO 
-seccion_activa = st.query_params.get("seccion", "Introducción")
+# --- MENÚ DE NAVEGACIÓN ---
+if "seccion" not in st.session_state:
+    st.session_state.seccion = "Introducción"
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     if st.button("Introducción", use_container_width=True):
-        st.query_params["seccion"] = "Introducción"
-        seccion_activa = "Introducción"
+        st.session_state.seccion = "Introducción"
 with col2:
     if st.button("Objetivo", use_container_width=True):
-        st.query_params["seccion"] = "Objetivo"
-        seccion_activa = "Objetivo"
+        st.session_state.seccion = "Objetivo"
 with col3:
     if st.button("Desarrollo", use_container_width=True):
-        st.query_params["seccion"] = "Desarrollo"
-        seccion_activa = "Desarrollo"
+        st.session_state.seccion = "Desarrollo"
 with col4:
     if st.button("Resultados", use_container_width=True):
-        st.query_params["seccion"] = "Resultados"
-        seccion_activa = "Resultados"
+        st.session_state.seccion = "Resultados"
 
-##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
+seccion_activa = st.session_state.seccion
 
+# --- SUBTÍTULO ---
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-
-##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     with st.container():
@@ -111,94 +103,86 @@ elif seccion_activa == "Objetivo":
     st.markdown("""
     * Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos, para comprender con mayor claridad en qué zonas afectan más las alteraciones sonoras.
     """)
-    
+
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
     st.markdown("""
-    *En esta parte veremos el desarrollo del prototipo y su construccion.
+    *En esta parte veremos el desarrollo del prototipo y su construcción.*
     """)
-    
+
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     with st.sidebar:
-    st.header("Parámetros de entrada")
-    uploaded_file = "mediciones_1.csv"  # o usa st.file_uploader si quieres permitir carga manual
+        st.header("Parámetros de entrada")
+        uploaded_file = "mediciones_1.csv"  # puedes cambiar por st.file_uploader si deseas
 
-try:
-    df = pd.read_csv(uploaded_file, skiprows=3)
-    columnas_requeridas = ['_time', 'nodo', '_value']
-    if not all(col in df.columns for col in columnas_requeridas):
-        st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
+        try:
+            df = pd.read_csv(uploaded_file, skiprows=3)
+            columnas_requeridas = ['_time', 'nodo', '_value']
+            if not all(col in df.columns for col in columnas_requeridas):
+                st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
+            else:
+                df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
+                tiempo_min = df['_time'].min()
+                tiempo_max = df['_time'].max()
+
+                fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+
+                nodos_disponibles = sorted(df["nodo"].unique())
+                nodos_seleccionados = st.multiselect("Selecciona los nodos que deseas visualizar:", nodos_disponibles, default=nodos_disponibles)
+
+                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+                df_filtrado = df[
+                    (df['_time'] >= fecha_inicio) &
+                    (df['_time'] <= fecha_fin) &
+                    (df['nodo'].isin(nodos_seleccionados))
+                ]
+
+        except Exception as e:
+            st.error(f"Error al procesar el archivo: {e}")
+            df_filtrado = pd.DataFrame()
+
+    if 'df_filtrado' in locals() and not df_filtrado.empty:
+        st.success(f"Se encontraron {len(df_filtrado)} registros.")
+        tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
+
+        with tab1:
+            st.markdown("Mapa de calor de niveles de sonido:")
+            X = df_filtrado['nodo'].astype(float).values
+            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+            Z = df_filtrado['_value'].astype(float).values
+
+            x_unique = np.unique(X)
+            y_unique = np.unique(tiempos_segundos)
+            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
+            plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
+
+            yticks = ax.get_yticks()
+            ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(ylabels)
+
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Hora (HH:MM)")
+            ax.set_title("Mapa de niveles de sonido", fontsize=14)
+            st.pyplot(fig)
+
+        with tab2:
+            st.markdown("#### Evolución temporal por nodo")
+            for nodo in sorted(df_filtrado["nodo"].unique()):
+                st.subheader(f"Nodo {nodo}")
+                datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
+                st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
     else:
-        df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
-        if df['_time'].isna().any():
-            st.warning("Algunas fechas no se pudieron convertir correctamente.")
-
-        tiempo_min = df['_time'].min()
-        tiempo_max = df['_time'].max()
-
-        with st.sidebar:
-            st.subheader("Filtros")
-            fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
-            hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-            hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-
-            nodos_disponibles = sorted(df["nodo"].unique())
-            nodos_seleccionados = st.multiselect(
-                "Selecciona los nodos a visualizar:",
-                options=nodos_disponibles,
-                default=nodos_disponibles
-            )
-
-        fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-        fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-
-        df_filtrado = df[
-            (df['_time'] >= fecha_inicio) &
-            (df['_time'] <= fecha_fin) &
-            (df['nodo'].isin(nodos_seleccionados))
-        ]
-
-        if df_filtrado.empty:
-            st.warning("No hay datos en el rango y nodos seleccionados.")
-        else:
-            st.success(f"Se encontraron {len(df_filtrado)} registros.")
-            tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
-
-            with tab1:
-                st.markdown("Mapa de calor de niveles de sonido:")
-                X = df_filtrado['nodo'].astype(float).values
-                fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-                tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-                Z = df_filtrado['_value'].astype(float).values
-
-                x_unique = np.unique(X)
-                y_unique = np.unique(tiempos_segundos)
-                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-
-                fig, ax = plt.subplots(figsize=(10, 6))
-                c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
-                plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
-
-                yticks = ax.get_yticks()
-                ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
-                ax.set_yticks(yticks)
-                ax.set_yticklabels(ylabels)
-
-                ax.set_xlabel("Nodos")
-                ax.set_ylabel("Hora (HH:MM)")
-                ax.set_title("Mapa de niveles de sonido", fontsize=14)
-                st.pyplot(fig)
-
-            with tab2:
-                st.markdown("#### Evolución temporal por nodo")
-                for nodo in sorted(df_filtrado["nodo"].unique()):
-                    st.subheader(f"Nodo {nodo}")
-                    datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
-                    st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
-
-except Exception as e:
-    st.error(f"Error al procesar el archivo: {e}")
+        st.warning("No hay datos disponibles para los parámetros seleccionados.")
 
