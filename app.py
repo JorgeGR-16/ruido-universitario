@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="centered")
+st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
 # --- ESTILO PERSONALIZADO ---
 st.markdown("""
