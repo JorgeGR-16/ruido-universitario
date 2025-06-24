@@ -7,30 +7,52 @@ from scipy.interpolate import griddata
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-# --- ESTILO PERSONALIZADO ---
+# --- ESTILO PERSONALIZADO ADAPTATIVO ---
 st.markdown("""
     <style>
+        /* Estilo base de la app */
         .stApp {
             background-color: white;
             color: black;
         }
+
+        /* Texto base */
         h1, h2, h3, h4, h5, h6, p {
-            color: black;
+            color: inherit;
         }
+
         .subheader {
             color: #333;
         }
-        .menu-button {
-            background-color: #004080;
-            color: white;
-            padding: 10px 25px;
+
+        /* Estilo de botones que se adapta al tema */
+        button[kind="primary"] {
+            padding: 0.5em 1.5em;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: bold;
             border: none;
+            transition: background-color 0.3s;
         }
-        .menu-button:hover {
-            background-color: #0059b3;
+
+        @media (prefers-color-scheme: light) {
+            button[kind="primary"] {
+                background-color: #004080;
+                color: white;
+            }
+            button[kind="primary"]:hover {
+                background-color: #0059b3;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            button[kind="primary"] {
+                background-color: #66aaff;
+                color: black;
+            }
+            button[kind="primary"]:hover {
+                background-color: #3385ff;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
