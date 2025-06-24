@@ -155,29 +155,38 @@ elif seccion_activa == "Resultados":
                 tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
 
                 with tab1:
-                        X = df_filtrado['nodo'].astype(int).values  # <- nodos como enteros
-                        fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-                        tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-                        Z = df_filtrado['_value'].astype(float).values
-                        
-                        x_unique = np.unique(X)
-                        y_unique = np.unique(tiempos_segundos)
-                        X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-                        Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-                        
-                        fig, ax = plt.subplots(figsize=(4, 3))
-                        c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
-                        plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
-                        
-                        yticks = ax.get_yticks()
-                        ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
-                        ax.set_yticks(yticks)
-                        ax.set_yticklabels(ylabels)
-                        
-                        ax.set_xlabel("Nodos")
-                        ax.set_xticks(np.arange(1, 21, 1))  # <- Ticks enteros de 1 a 20
-                        ax.set_ylabel("Hora (HH:MM)")
-                        ax.set_title("Mapa de niveles de sonido", fontsize=12)
+                    st.markdown("Mapa de calor de niveles de sonido:")
+                    
+                    # Asegurar nodos como enteros
+                    X = df_filtrado['nodo'].astype(int).values
+                    fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+                    tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+                    Z = df_filtrado['_value'].astype(float).values
+
+                    x_unique = np.unique(X)
+                    y_unique = np.unique(tiempos_segundos)
+                    X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+                    Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+
+                    fig, ax = plt.subplots(figsize=(4, 3))
+                    c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
+                    plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
+
+                    yticks = ax.get_yticks()
+                    ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
+                    ax.set_yticks(yticks)
+                    ax.set_yticklabels(ylabels)
+
+                    ax.set_xlabel("Nodos")
+                    ax.set_xticks(np.unique(X))
+                    ax.set_xticklabels([str(int(x)) for x in np.unique(X)])
+
+                    ax.set_ylabel("Hora (HH:MM)")
+                    ax.set_title("Mapa de niveles de sonido", fontsize=12)
+
+                    col1, col2, col3 = st.columns([2, 1, 2])
+                    with col2:
+                        st.pyplot(fig, use_container_width=False)
 
                 with tab2:
                     st.markdown("#### Evolución temporal por nodo")
