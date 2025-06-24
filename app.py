@@ -43,7 +43,9 @@ st.title("**Investigación del comportamiento del ruido en un ambiente universit
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.image("UAMAZC.jpg", width=600)
-    
+
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
+
 #MENÚ DE NAVEGACIÓN PERSONALIZADO 
 seccion_activa = st.query_params.get("seccion", "Introducción")
 
@@ -57,14 +59,20 @@ with col2:
         st.query_params["seccion"] = "Objetivo"
         seccion_activa = "Objetivo"
 with col3:
+    if st.button("Desarrollo", use_container_width=True):
+        st.query_params["seccion"] = "Desarrollo"
+        seccion_activa = "Desarrollo"
+with col4:
     if st.button("Resultados", use_container_width=True):
         st.query_params["seccion"] = "Resultados"
         seccion_activa = "Resultados"
 
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
+
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
 
-
+##---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     with st.container():
@@ -100,7 +108,13 @@ elif seccion_activa == "Objetivo":
     st.markdown("""
     * Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos, para comprender con mayor claridad en qué zonas afectan más las alteraciones sonoras.
     """)
-
+    
+elif seccion_activa == "Desarrollo":
+    st.markdown("### Desarrollo del prototipo")
+    st.markdown("""
+    *En esta parte veremos el desarrollo del prototipo y su construccion.
+    """)
+    
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
