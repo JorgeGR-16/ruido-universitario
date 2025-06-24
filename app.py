@@ -155,6 +155,7 @@ elif seccion_activa == "Resultados":
                 tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
 
                 with tab1:
+                    
                     st.markdown("Mapa de calor de niveles de sonido:")
                     X = df_filtrado['nodo'].astype(float).values
                     fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
@@ -166,7 +167,8 @@ elif seccion_activa == "Resultados":
                     X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                     Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
 
-                    fig, ax = plt.subplots(figsize=(6, 4))
+    # Reducir tamaño del gráfico
+                    fig, ax = plt.subplots(figsize=(6, 4))  # <-- MÁS PEQUEÑO
                     c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
                     plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
 
@@ -178,7 +180,12 @@ elif seccion_activa == "Resultados":
                     ax.set_xlabel("Nodos")
                     ax.set_ylabel("Hora (HH:MM)")
                     ax.set_title("Mapa de niveles de sonido", fontsize=14)
-                    st.pyplot(fig)
+
+    # Centrar el gráfico visualmente
+                    col1, col2, col3 = st.columns([1, 2, 1])
+                    with col2:
+                    st.pyplot(fig, use_container_width=False)
+
 
                 with tab2:
                     st.markdown("#### Evolución temporal por nodo")
