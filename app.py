@@ -104,12 +104,12 @@ elif seccion_activa == "Resultados":
             df_filtrado = df[(df['_time'] >= fecha_inicio) & (df['_time'] <= fecha_fin)]
 
             nodos_disponibles = sorted(df_filtrado["nodo"].unique())
-            nodos_seleccionados = st.sidebar.multiselect(
-                "Selecciona los nodos que deseas visualizar:",
+            nodo_seleccionado = st.radio(
+                "Selecciona el nodo que deseas visualizar:",
                 options=nodos_disponibles,
-                default=nodos_disponibles
+                horizontal=True
             )
-
+            df_filtrado = df_filtrado[df_filtrado["nodo"] == nodo_seleccionado]
             df_filtrado = df_filtrado[df_filtrado["nodo"].isin(nodos_seleccionados)]
 
             if df_filtrado.empty:
