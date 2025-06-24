@@ -70,33 +70,28 @@ st.markdown('<p class="subheader">Aplicación de análisis acústico para invest
 
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
-    with st.container():
-        st.markdown("### Introducción")
-        st.markdown("""
-        <div style='text-align: justify;'>
-        El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-        [...] <!-- Puedes dejar aquí tu texto completo de introducción -->
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("### Introducción")
+    st.markdown("""
+    <div style='text-align: justify;'>
+    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+    </div>
+    """, unsafe_allow_html=True)
 
-        st.markdown("### 1.1 Principio de funcionamiento")
-        st.markdown("""
-        **1. Captación del sonido:**  
-        [...]  
-        """)
-        st.latex(r'''
-        \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
-        ''')
-        st.markdown("""
-        Donde:  
-        - \( P \): presión sonora medida  
-        - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
-        """)
+    st.markdown("### 1.1 Principio de funcionamiento")
+    st.markdown("**1. Captación del sonido:** [...]")
+    st.latex(r'''
+    \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
+    ''')
+    st.markdown("""
+    Donde:  
+    - \( P \): presión sonora medida  
+    - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
+    """)
 
-        st.markdown("### 1.2 Diagrama del dispositivo.")
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.image("Diagrama.png", use_container_width=True)
+    st.markdown("### 1.2 Diagrama del dispositivo.")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
@@ -106,22 +101,21 @@ elif seccion_activa == "Objetivo":
 
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
-    st.markdown("""
-    *En esta parte veremos el desarrollo del prototipo y su construcción.*
-    """)
+    st.markdown("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"  # puedes cambiar por st.file_uploader si deseas
+        uploaded_file = "mediciones_1.csv"
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
             columnas_requeridas = ['_time', 'nodo', '_value']
             if not all(col in df.columns for col in columnas_requeridas):
                 st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
+                df_filtrado = pd.DataFrame()
             else:
                 df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
                 tiempo_min = df['_time'].min()
@@ -132,7 +126,11 @@ elif seccion_activa == "Resultados":
                 hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
                 nodos_disponibles = sorted(df["nodo"].unique())
-                nodos_seleccionados = st.multiselect("Selecciona los nodos que deseas visualizar:", nodos_disponibles, default=nodos_disponibles)
+                nodos_seleccionados = st.multiselect(
+                    "Selecciona los nodos:",
+                    options=nodos_disponibles,
+                    default=nodos_disponibles
+                )
 
                 fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
                 fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
@@ -142,12 +140,11 @@ elif seccion_activa == "Resultados":
                     (df['_time'] <= fecha_fin) &
                     (df['nodo'].isin(nodos_seleccionados))
                 ]
-
         except Exception as e:
             st.error(f"Error al procesar el archivo: {e}")
             df_filtrado = pd.DataFrame()
 
-    if 'df_filtrado' in locals() and not df_filtrado.empty:
+    if not df_filtrado.empty:
         st.success(f"Se encontraron {len(df_filtrado)} registros.")
         tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
 
@@ -184,5 +181,4 @@ elif seccion_activa == "Resultados":
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
     else:
-        st.warning("No hay datos disponibles para los parámetros seleccionados.")
-
+        st.warning("No hay datos para los parámetros seleccionados.")
