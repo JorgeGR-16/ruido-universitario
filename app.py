@@ -104,13 +104,13 @@ elif seccion_activa == "Resultados":
             df_filtrado = df[(df['_time'] >= fecha_inicio) & (df['_time'] <= fecha_fin)]
 
             nodos_disponibles = sorted(df_filtrado["nodo"].unique())
-            nodo_seleccionado = st.radio(
+            nodo_seleccionado = st.sidebar.radio(
                 "Selecciona el nodo que deseas visualizar:",
                 options=nodos_disponibles,
                 horizontal=True
             )
+
             df_filtrado = df_filtrado[df_filtrado["nodo"] == nodo_seleccionado]
-            df_filtrado = df_filtrado[df_filtrado["nodo"].isin(nodos_seleccionados)]
 
             if df_filtrado.empty:
                 st.warning("No hay datos para los parámetros seleccionados.")
@@ -146,11 +146,9 @@ elif seccion_activa == "Resultados":
 
                 with tab2:
                     st.markdown("#### Evolución temporal por nodo")
-                    for nodo in sorted(df_filtrado["nodo"].unique()):
-                        st.subheader(f"Nodo {nodo}")
-                        datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
-                        st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+                    st.subheader(f"Nodo {nodo_seleccionado}")
+                    datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo_seleccionado]
+                    st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
     except Exception as e:
         st.error(f"Error al procesar el archivo: {e}")
-
