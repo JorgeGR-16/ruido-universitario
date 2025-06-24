@@ -7,7 +7,8 @@ from scipy.interpolate import griddata
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
-# --- ESTILO PERSONALIZADO ---
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------##
+#ESTILO PERSONALIZADO
 st.markdown("""
     <style>
         .stApp {
@@ -165,7 +166,7 @@ elif seccion_activa == "Resultados":
                     X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                     Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
 
-                    fig, ax = plt.subplots(figsize=(10, 6))
+                    fig, ax = plt.subplots(figsize=(6, 4))
                     c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
                     plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
 
