@@ -44,7 +44,7 @@ col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.image("UAMAZC.jpg", use_container_width=True)
 
-# --- NAVEGACIÓN ---
+# --- MENÚ DE NAVEGACIÓN ---
 if "seccion" not in st.session_state:
     st.session_state.seccion = "Introducción"
 
@@ -124,7 +124,7 @@ elif seccion_activa == "Resultados":
                 nodos_seleccionados = st.multiselect(
                     "Selecciona los nodos que deseas visualizar:",
                     options=nodos_disponibles,
-                    default=[]
+                    default=nodos_disponibles  # ✅ Todos seleccionados por defecto
                 )
 
                 fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
@@ -178,3 +178,4 @@ elif seccion_activa == "Resultados":
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
