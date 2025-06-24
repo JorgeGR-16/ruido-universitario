@@ -162,7 +162,7 @@ elif seccion_activa == "Resultados":
                     Z = df_filtrado['_value'].astype(float).values
 
                     x_unique = np.unique(X)
-                    ax.set_xticks(np.arange(1, 21, 1))  # <- ticks del 1 al 20
+                   
                     y_unique = np.unique(tiempos_segundos)
                     X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                     Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
@@ -177,6 +177,7 @@ elif seccion_activa == "Resultados":
                     ax.set_yticklabels(ylabels)
 
                     ax.set_xlabel("Nodos")
+                    ax.set_xticks(np.arange(1, 21, 1))  # <- ticks del 1 al 20
                     ax.set_ylabel("Hora (HH:MM)")
                     ax.set_title("Mapa de niveles de sonido", fontsize=14)
                     st.pyplot(fig)
