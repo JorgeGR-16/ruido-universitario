@@ -168,7 +168,7 @@ elif seccion_activa == "Resultados":
                     Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
 
     # Reducir tamaño del gráfico
-                    fig, ax = plt.subplots(figsize=(6, 4))  # <-- MÁS PEQUEÑO
+                    fig, ax = plt.subplots(figsize=(4, 2))  # <-- MÁS PEQUEÑO
                     c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
                     plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
 
