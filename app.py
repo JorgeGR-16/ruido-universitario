@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
+st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="centered")
 
 # --- ESTILO PERSONALIZADO ---
 st.markdown("""
@@ -36,14 +36,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-
+#TITULO GENERAL
 st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
+#IMAGEN PRINCIPAL
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.image("UAMAZC.jpg", width=600)
-    
-st.markdown("---")
-# --- MENÚ DE NAVEGACIÓN PERSONALIZADO ---
+#MENÚ DE NAVEGACIÓN PERSONALIZADO 
 seccion_activa = st.query_params.get("seccion", "Introducción")
 
 col1, col2, col3 = st.columns(3)
