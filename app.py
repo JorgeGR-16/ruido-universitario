@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 
-# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
 # --- ESTILO PERSONALIZADO ---
@@ -45,7 +44,7 @@ col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.image("UAMAZC.jpg", use_container_width=True)
 
-# --- MENÚ DE NAVEGACIÓN ---
+# --- NAVEGACIÓN ---
 if "seccion" not in st.session_state:
     st.session_state.seccion = "Introducción"
 
@@ -64,8 +63,6 @@ with col4:
         st.session_state.seccion = "Resultados"
 
 seccion_activa = st.session_state.seccion
-
-# --- SUBTÍTULO ---
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
 # --- SECCIONES ---
@@ -95,9 +92,7 @@ if seccion_activa == "Introducción":
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
-    st.markdown("""
-    * Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos, para comprender con mayor claridad en qué zonas afectan más las alteraciones sonoras.
-    """)
+    st.markdown("* Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos...")
 
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
@@ -114,7 +109,7 @@ elif seccion_activa == "Resultados":
             df = pd.read_csv(uploaded_file, skiprows=3)
             columnas_requeridas = ['_time', 'nodo', '_value']
             if not all(col in df.columns for col in columnas_requeridas):
-                st.error(f"El CSV debe contener las columnas: {columnas_requeridas}")
+                st.error("El archivo no contiene las columnas necesarias.")
                 df_filtrado = pd.DataFrame()
             else:
                 df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
@@ -127,7 +122,7 @@ elif seccion_activa == "Resultados":
 
                 nodos_disponibles = sorted(df["nodo"].unique())
                 nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos:",
+                    "Selecciona los nodos que deseas visualizar:",
                     options=nodos_disponibles,
                     default=nodos_disponibles
                 )
@@ -140,8 +135,9 @@ elif seccion_activa == "Resultados":
                     (df['_time'] <= fecha_fin) &
                     (df['nodo'].isin(nodos_seleccionados))
                 ]
+
         except Exception as e:
-            st.error(f"Error al procesar el archivo: {e}")
+            st.error(f"Error al cargar el archivo: {e}")
             df_filtrado = pd.DataFrame()
 
     if not df_filtrado.empty:
@@ -182,3 +178,4 @@ elif seccion_activa == "Resultados":
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
