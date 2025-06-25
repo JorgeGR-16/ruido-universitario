@@ -95,16 +95,16 @@ if seccion_activa == "Introducción":
     Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
     </div>
     """, unsafe_allow_html=True)
-    st.latex(r'''
+   st.latex(r'''
         \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
         ''')
 
-    st.markdown("""
+        st.markdown("""
         Donde:  
         - \( P \): presión sonora medida  
         - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
         """)
-    st.markdown("### 1.2 Diagrama del dispositivo.")
+        st.markdown("### 1.2 Diagrama del dispositivo.")
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
          st.image("Diagrama.png", use_container_width=True)
