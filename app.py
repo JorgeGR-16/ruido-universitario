@@ -145,7 +145,7 @@ elif seccion_activa == "Resultados":
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
 
             # Creamos la figura para seaborn
-            fig, ax = plt.subplots(figsize=(10, 6))
+            fig, ax = plt.subplots(figsize=(10, 4))
             heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=[str(pd.to_datetime(sec, unit='s').strftime('%H:%M')) for sec in y_unique], cmap='jet', ax=ax)
 
             # Personalización del gráfico
