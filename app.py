@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sb
 from scipy.interpolate import griddata
 
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
@@ -74,22 +75,6 @@ if seccion_activa == "Introducción":
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### 1.1 Principio de funcionamiento")
-    st.markdown("**1. Captación del sonido:** [...]")
-    st.latex(r'''
-    \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
-    ''')
-    st.markdown("""
-    Donde:  
-    - \( P \): presión sonora medida  
-    - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
-    """)
-
-    st.markdown("### 1.2 Diagrama del dispositivo.")
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image("Diagrama.png", use_container_width=True)
-
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
     st.markdown("* Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos...")
@@ -142,10 +127,10 @@ elif seccion_activa == "Resultados":
 
     if not df_filtrado.empty:
         st.success(f"Se encontraron {len(df_filtrado)} registros.")
-        tab1, tab2 = st.tabs(["📊 Mapa de calor", "📈 Gráficos por nodo"])
+        tab1, tab2 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo"])
 
         with tab1:
-            st.markdown("Mapa de calor de niveles de sonido:")
+            st.markdown("Mapa de niveles de sonido:")
             X = df_filtrado['nodo'].astype(float).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
@@ -156,18 +141,19 @@ elif seccion_activa == "Resultados":
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
 
+            # Rellenar NaN con el valor mínimo de la matriz para evitar problemas en seaborn
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+
+            # Creamos la figura para seaborn
             fig, ax = plt.subplots(figsize=(10, 6))
-            c = ax.pcolormesh(X_grid, Y_grid, Z_grid, shading='auto', cmap='jet')
-            plt.colorbar(c, ax=ax, label='Nivel de sonido (dB)')
+            heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet', ax=ax)
 
-            yticks = ax.get_yticks()
-            ylabels = [(fecha_base + pd.Timedelta(seconds=sec)).strftime('%H:%M') for sec in yticks]
-            ax.set_yticks(yticks)
-            ax.set_yticklabels(ylabels)
-
+            # Personalización del gráfico
             ax.set_xlabel("Nodos")
             ax.set_ylabel("Hora (HH:MM)")
             ax.set_title("Mapa de niveles de sonido", fontsize=14)
+
+            # Mostrar el gráfico en Streamlit
             st.pyplot(fig)
 
         with tab2:
