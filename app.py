@@ -71,15 +71,13 @@ if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
     <div style='text-align: justify;'>
-     ** El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+     El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
      El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario. Por ello, es fundamental identificar y cuantificar las fuentes y niveles de ruido presentes para poder plantear estrategias de mitigación efectivas.
      A través de esta investigación, se pretende obtener datos precisos que permitan evaluar el impacto acústico en el entorno universitario y promover un ambiente más adecuado para el estudio y desarrollo académico.
      La red está conformada por varios sonómetros basados en el microcontrolador LoRa32, un micrófono digital INMP441 y una batería recargable, todo alojado en una carcasa impresa en 3D.
      La red utiliza una topología de estrella en la que los sonómetros se comunican directamente con un gateway central, también basado en un LoRa32. Este gateway actúa como puente entre los sensores y una computadora central, permitiendo la transferencia de datos de ruido en tiempo real, mediante enlace USB o el protocolo MQTT.
     </div>
     """, unsafe_allow_html=True)
-    
-
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -97,6 +95,19 @@ if seccion_activa == "Introducción":
     Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
     </div>
     """, unsafe_allow_html=True)
+    st.latex(r'''
+        \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
+        ''')
+
+    st.markdown("""
+        Donde:  
+        - \( P \): presión sonora medida  
+        - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
+        """)
+    st.markdown("### 1.2 Diagrama del dispositivo.")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+         st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
