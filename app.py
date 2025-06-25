@@ -144,17 +144,34 @@ elif seccion_activa == "Resultados":
             # Rellenar NaN con el valor mínimo de la matriz para evitar problemas en seaborn
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
 
-            # Creamos la figura para seaborn
-            fig, ax = plt.subplots(figsize=(10, 4))
-            heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=[str(pd.to_datetime(sec, unit='s').strftime('%H:%M')) for sec in y_unique], cmap='jet', ax=ax)
-
-            # Personalización del gráfico
+            # Crear la figura
+            fig, ax = plt.subplots(figsize=(10, 8))  # Más alto para que no se encimen
+            
+            # Generar índices seleccionados para eje Y (menos etiquetas)
+            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+            
+            # Crear mapa de calor sin etiquetas automáticas
+            heat_map = sb.heatmap(
+                Z_grid,
+                xticklabels=x_unique,
+                yticklabels=False,
+                cmap='jet',
+                ax=ax
+            )
+            
+            # Agregar etiquetas personalizadas al eje Y
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(yticklabels, rotation=0)
+            
+            # Personalización
             ax.set_xlabel("Nodos")
             ax.set_ylabel("Hora (HH:MM)")
             ax.set_title("Mapa de niveles de sonido", fontsize=14)
-
-            # Mostrar el gráfico en Streamlit
+            
+            # Mostrar en Streamlit
             st.pyplot(fig)
+           
 
         with tab2:
             st.markdown("#### Evolución temporal por nodo")
