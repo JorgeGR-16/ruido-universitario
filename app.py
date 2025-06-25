@@ -145,7 +145,7 @@ elif seccion_activa == "Resultados":
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
 
             # Crear la figura
-            fig, ax = plt.subplots(figsize=(6, 4))  # Más alto para que no se encimen
+            fig, ax = plt.subplots(figsize=(10, 6))  # Más alto para que no se encimen
             
             # Generar índices seleccionados para eje Y (menos etiquetas)
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
