@@ -130,6 +130,7 @@ elif seccion_activa == "Resultados":
         tab1, tab2 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo"])
 
         with tab1:
+            st.markdown("Nota: En la pantalla se mostrara por defecto los valores en un tiempro establecido para todos los nodos, Si desea visualizar parametros diferentes de tiempo oh cantidad de nodos a visualizar")
             st.markdown("Mapa de niveles de sonido:")
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
