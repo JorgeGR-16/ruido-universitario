@@ -78,7 +78,7 @@ if seccion_activa == "Introducción":
      La red utiliza una topología de estrella en la que los sonómetros se comunican directamente con un gateway central, también basado en un LoRa32. Este gateway actúa como puente entre los sensores y una computadora central, permitiendo la transferencia de datos de ruido en tiempo real, mediante enlace USB o el protocolo MQTT.
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
@@ -95,19 +95,21 @@ if seccion_activa == "Introducción":
     Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
     </div>
     """, unsafe_allow_html=True)
-   st.latex(r'''
-        \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
-        ''')
 
-        st.markdown("""
+    st.latex(r'''
+        \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
+    ''')
+
+    st.markdown("""
         Donde:  
         - \( P \): presión sonora medida  
         - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
-        """)
-        st.markdown("### 1.2 Diagrama del dispositivo.")
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-         st.image("Diagrama.png", use_container_width=True)
+    """, unsafe_allow_html=True)
+
+    st.markdown("### 1.2 Diagrama del dispositivo.")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
@@ -143,7 +145,7 @@ elif seccion_activa == "Resultados":
                 nodos_seleccionados = st.multiselect(
                     "Selecciona los nodos que deseas visualizar:",
                     options=nodos_disponibles,
-                    default=nodos_disponibles  # ✅ Todos seleccionados por defecto
+                    default=nodos_disponibles
                 )
 
                 fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
@@ -161,10 +163,10 @@ elif seccion_activa == "Resultados":
 
     if not df_filtrado.empty:
         st.success(f"Se encontraron {len(df_filtrado)} registros.")
-    
+
         with st.expander("🔧 Parámetros de visualización (haz clic para mostrar/ocultar)", expanded=True):
             st.info("Puedes modificar la **fecha, hora y nodos** desde la **barra lateral izquierda** 📊.")
-    
+
         tab1, tab2, tab3 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general"])
 
         with tab1:
@@ -178,38 +180,19 @@ elif seccion_activa == "Resultados":
             y_unique = np.unique(tiempos_segundos)
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-
-            # Rellenar NaN con el valor mínimo de la matriz para evitar problemas en seaborn
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
 
-            # Crear la figura
-            fig, ax = plt.subplots(figsize=(10, 6))  # Más alto para que no se encimen
-            
-            # Generar índices seleccionados para eje Y (menos etiquetas)
+            fig, ax = plt.subplots(figsize=(10, 6))
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-            
-            # Crear mapa de calor sin etiquetas automáticas
-            heat_map = sb.heatmap(
-                Z_grid,
-                xticklabels=x_unique,
-                yticklabels=False,
-                cmap='jet',
-                ax=ax
-            )
-            
-            # Agregar etiquetas personalizadas al eje Y
+
+            sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet', ax=ax)
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticklabels, rotation=0)
-            
-            # Personalización
             ax.set_xlabel("Nodos")
             ax.set_ylabel("Hora (HH:MM)")
             ax.set_title("Mapa de niveles de sonido", fontsize=14)
-            
-            # Mostrar en Streamlit
             st.pyplot(fig)
-           
 
         with tab2:
             st.markdown("#### Evolución temporal por nodo")
@@ -217,14 +200,10 @@ elif seccion_activa == "Resultados":
                 st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+
         with tab3:
             st.markdown("### Comparación general de nodos en un solo gráfico")
-        
-            # Pivotear los datos: cada nodo es una columna
-            df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value')
-            df_pivot = df_pivot.sort_index()
-        
-            # Mostrar gráfico
+            df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
             st.line_chart(df_pivot, height=300, use_container_width=True)
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
