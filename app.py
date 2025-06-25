@@ -69,9 +69,22 @@ st.markdown('<p class="subheader">Aplicación de análisis acústico para invest
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
+    st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
-    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+
+        **1. Captación del sonido:**  
+        El sonido ambiente es captado por un micrófono de condensador, el cual detecta las variaciones de presión del aire generadas por las ondas sonoras.
+
+        **2. Conversión eléctrica:**  
+        Estas variaciones se transforman en una señal eléctrica proporcional a la presión acústica.
+
+        **3. Procesamiento de la señal:**  
+        La señal eléctrica es amplificada y procesada mediante un circuito electrónico o un microcontrolador. Durante este proceso, se aplica una ponderación frecuencial (normalmente del tipo A), que ajusta la medición de acuerdo con la sensibilidad del oído humano.
+
+        **4. Cálculo y visualización en decibelios (dB):**  
+        Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
+    
     </div>
     """, unsafe_allow_html=True)
 
