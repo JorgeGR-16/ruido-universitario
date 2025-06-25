@@ -69,22 +69,32 @@ st.markdown('<p class="subheader">Aplicación de análisis acústico para invest
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
+    st.markdown("""
+    <div style='text-align: justify;'>
+     ** El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario. Por ello, es fundamental identificar y cuantificar las fuentes y niveles de ruido presentes para poder plantear estrategias de mitigación efectivas.
+     A través de esta investigación, se pretende obtener datos precisos que permitan evaluar el impacto acústico en el entorno universitario y promover un ambiente más adecuado para el estudio y desarrollo académico.
+     La red está conformada por varios sonómetros basados en el microcontrolador LoRa32, un micrófono digital INMP441 y una batería recargable, todo alojado en una carcasa impresa en 3D.
+     La red utiliza una topología de estrella en la que los sonómetros se comunican directamente con un gateway central, también basado en un LoRa32. Este gateway actúa como puente entre los sensores y una computadora central, permitiendo la transferencia de datos de ruido en tiempo real, mediante enlace USB o el protocolo MQTT.
+    </div>
+    """, unsafe_allow_html=True)
+    
+
+    
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
+    **1. Captación del sonido:**  
+    El sonido ambiente es captado por un micrófono de condensador, el cual detecta las variaciones de presión del aire generadas por las ondas sonoras.
 
-        **1. Captación del sonido:**  
-        El sonido ambiente es captado por un micrófono de condensador, el cual detecta las variaciones de presión del aire generadas por las ondas sonoras.
+    **2. Conversión eléctrica:**  
+    Estas variaciones se transforman en una señal eléctrica proporcional a la presión acústica.
 
-        **2. Conversión eléctrica:**  
-        Estas variaciones se transforman en una señal eléctrica proporcional a la presión acústica.
+    **3. Procesamiento de la señal:**  
+    La señal eléctrica es amplificada y procesada mediante un circuito electrónico o un microcontrolador. Durante este proceso, se aplica una ponderación frecuencial (normalmente del tipo A), que ajusta la medición de acuerdo con la sensibilidad del oído humano.
 
-        **3. Procesamiento de la señal:**  
-        La señal eléctrica es amplificada y procesada mediante un circuito electrónico o un microcontrolador. Durante este proceso, se aplica una ponderación frecuencial (normalmente del tipo A), que ajusta la medición de acuerdo con la sensibilidad del oído humano.
-
-        **4. Cálculo y visualización en decibelios (dB):**  
-        Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
-    
+    **4. Cálculo y visualización en decibelios (dB):**  
+    Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
     </div>
     """, unsafe_allow_html=True)
 
