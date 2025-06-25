@@ -131,7 +131,7 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("Mapa de niveles de sonido:")
-            X = df_filtrado['nodo'].astype(float).values
+            X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
@@ -146,7 +146,7 @@ elif seccion_activa == "Resultados":
 
             # Creamos la figura para seaborn
             fig, ax = plt.subplots(figsize=(10, 6))
-            heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet', ax=ax)
+            heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=y_unique, cmap='jet', ax=ax)
 
             # Personalización del gráfico
             ax.set_xlabel("Nodos")
