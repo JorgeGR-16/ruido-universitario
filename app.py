@@ -146,7 +146,7 @@ elif seccion_activa == "Resultados":
 
             # Creamos la figura para seaborn
             fig, ax = plt.subplots(figsize=(10, 6))
-            heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet"', ax=ax)
+            heat_map = sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet', ax=ax)
 
             # Personalización del gráfico
             ax.set_xlabel("Nodos")
