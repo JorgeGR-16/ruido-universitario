@@ -187,6 +187,7 @@ elif seccion_activa == "Resultados":
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
 
             sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet', ax=ax)
+            ax.invert_yaxis()
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticklabels, rotation=0)
             ax.set_xlabel("Nodos")
