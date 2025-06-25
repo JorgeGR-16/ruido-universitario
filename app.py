@@ -131,10 +131,9 @@ elif seccion_activa == "Resultados":
         with st.expander("🔧 Parámetros de visualización (haz clic para mostrar/ocultar)", expanded=True):
             st.info("Puedes modificar la **fecha, hora y nodos** desde la **barra lateral izquierda** 📊.")
     
-        tab1, tab2 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo"])
+        tab1, tab2, tab3 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general"])
 
         with tab1:
-            st.markdown("Nota: En la pantalla se mostrara por defecto los valores en un tiempro establecido para todos los nodos, Si desea visualizar parametros diferentes de tiempo oh cantidad de nodos a visualizar")
             st.markdown("Mapa de niveles de sonido:")
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
@@ -184,5 +183,14 @@ elif seccion_activa == "Resultados":
                 st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+        with tab3:
+            st.markdown("### Comparación general de nodos en un solo gráfico")
+        
+            # Pivotear los datos: cada nodo es una columna
+            df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value')
+            df_pivot = df_pivot.sort_index()
+        
+            # Mostrar gráfico
+            st.line_chart(df_pivot, height=300, use_container_width=True)
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
