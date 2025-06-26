@@ -214,8 +214,8 @@ elif seccion_activa == "Resultados":
             st.markdown("### 📊 Análisis estadístico básico por nodo")
     
             resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
-                Mínimo="min",
-                Máximo="max",
+                Minimo="min",
+                Maximo="max",
                 Media="mean",
                 Mediana="median",
                 Desviación_Estd="std",
@@ -223,9 +223,7 @@ elif seccion_activa == "Resultados":
             ).round(2)
     
             st.dataframe(resumen_estadistico, use_container_width=True)
-    
-            # (Opcional) Gráfico de valores promedio por nodo
-            st.markdown("### 📈 Gráfico de valores promedio por nodo")
-            st.bar_chart(resumen_estadistico["Media"])
+            st.markdown("### 📈 Gráfico de valores maximos por nodo")
+            st.bar_chart(resumen_estadistico["Maximo"])
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
