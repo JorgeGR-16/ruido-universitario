@@ -168,24 +168,9 @@ elif seccion_activa == "Resultados":
             st.info("Puedes modificar la **fecha, hora y nodos** desde la **barra lateral izquierda** 📊.")
             
             # --- Análisis estadístico básico por nodo ---
-        st.markdown("### 📊 Análisis estadístico básico por nodo")
+        
 
-        resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
-            Mínimo="min",
-            Máximo="max",
-            Media="mean",
-            Mediana="median",
-            Desviación_Estd="std",
-            Conteo="count"
-        ).round(2)
-
-        st.dataframe(resumen_estadistico, use_container_width=True)
-
-        # (Opcional) Gráfico de valores promedio por nodo
-        st.markdown("### 📈 Gráfico de valores promedio por nodo")
-        st.bar_chart(resumen_estadistico["Media"])
-
-        tab1, tab2, tab3 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general", "📊 Análisis estadístico"])
 
         with tab1:
             st.markdown("Mapa de niveles de sonido:")
@@ -224,5 +209,23 @@ elif seccion_activa == "Resultados":
             st.markdown("### Comparación general de nodos en un solo gráfico")
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
             st.line_chart(df_pivot, height=300, use_container_width=True)
+
+        with tab4:
+            st.markdown("### 📊 Análisis estadístico básico por nodo")
+    
+            resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
+                Mínimo="min",
+                Máximo="max",
+                Media="mean",
+                Mediana="median",
+                Desviación_Estd="std",
+                Conteo="count"
+            ).round(2)
+    
+            st.dataframe(resumen_estadistico, use_container_width=True)
+    
+            # (Opcional) Gráfico de valores promedio por nodo
+            st.markdown("### 📈 Gráfico de valores promedio por nodo")
+            st.bar_chart(resumen_estadistico["Media"])
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
