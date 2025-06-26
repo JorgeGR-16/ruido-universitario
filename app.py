@@ -17,6 +17,9 @@ st.markdown("""
         h1, h2, h3, h4, h5, h6{
             color: black;
         }
+        h3 {
+            color: red !important;
+            }
         .subheader {
             color: #333;
         }
@@ -81,7 +84,7 @@ if seccion_activa == "Introducción":
     """, unsafe_allow_html=True)
 
     st.markdown("### 1.1 Principio de funcionamiento")
-    st.subheader("""
+    st.markdown("""
     <div style='text-align: justify;'>
     **1. Captación del sonido:**  
     El sonido ambiente es captado por un micrófono de condensador, el cual detecta las variaciones de presión del aire generadas por las ondas sonoras.
