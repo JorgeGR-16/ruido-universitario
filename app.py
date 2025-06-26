@@ -40,14 +40,12 @@ col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 
-# --- IMAGEN PRINCIPAL ---
-col1, col2, col3 = st.columns([1, 4, 1])
-with col2:
-    st.image("UAMAZC.jpg", use_container_width=True)
+# ----------------------------------------------------- IMAGEN PRINCIPAL----------------------------------------------------------------#
+##col1, col2, col3 = st.columns([1, 4, 1])
+##with col2:
+##    st.image("UAMAZC.jpg", use_container_width=True)
 
-# --- MENÚ DE NAVEGACIÓN ---
-if "seccion" not in st.session_state:
-    st.session_state.seccion = "Introducción"
+# ----------------------------------------------------- MENÚ DE NAVEGACIÓN -------------------------------------------------------------#
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -66,7 +64,7 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# --- SECCIONES ---
+# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
