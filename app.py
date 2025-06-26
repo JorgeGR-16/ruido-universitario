@@ -10,23 +10,28 @@ st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wid
 # --- ESTILO PERSONALIZADO ---
 st.markdown("""
     <style>
+        /* Quitar padding/margen superior general de la app */
         .stApp {
-            background-color: white;
-            color: black;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
         }
+        /* Título principal (h1) sin margen arriba ni abajo */
         h1 {
-            margin-top: 0.5rem !important;  /* controla espacio arriba */
-            margin-bottom: 0.5rem !important; /* controla espacio abajo */
+            margin-top: 0 !important;
+            margin-bottom: 0.25rem !important;  /* un poquito de espacio abajo para no pegarlo */
             color: black;
         }
+        /* Otros encabezados */
         h2 {
             font-size: 16px !important;
             color: red !important;
-            margin-top: 0.25rem !important;
-            margin-bottom: 0.25rem !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
         }
         h3, h4, h5, h6 {
             color: black;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
         }
         .subheader {
             color: #333;
@@ -45,6 +50,7 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 # --- TÍTULO GENERAL ---
 #col1, col2, col3 = st.columns([1, 4, 1])
