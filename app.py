@@ -17,7 +17,7 @@ st.markdown("""
         }
         /* Título principal (h1) sin margen arriba ni abajo */
         h1 {
-            margin-top: 0 !important;
+            margin-top: -1.5 !important;
             margin-bottom: 0.25rem !important;  /* un poquito de espacio abajo para no pegarlo */
             color: black;
         }
