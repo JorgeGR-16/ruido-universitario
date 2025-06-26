@@ -37,7 +37,7 @@ st.markdown("""
 
 # --- TÍTULO GENERAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
-with col2:
+with col1, col2, col3:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 
 # ----------------------------------------------------- IMAGEN PRINCIPAL----------------------------------------------------------------#
@@ -46,7 +46,9 @@ with col2:
 ##    st.image("UAMAZC.jpg", use_container_width=True)
 
 # ----------------------------------------------------- MENÚ DE NAVEGACIÓN -------------------------------------------------------------#
-
+if "seccion" not in st.session_state:
+    st.session_state.seccion = "Introducción"
+    
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     if st.button("Introducción", use_container_width=True):
@@ -65,6 +67,7 @@ seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
 # --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
+#_________________________________________________________Introduccion________________________________________________________________#
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
@@ -108,15 +111,18 @@ if seccion_activa == "Introducción":
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image("Diagrama.png", use_container_width=True)
-
+# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
+#_________________________________________________________Objetivo________________________________________________________________#
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
     st.markdown("* Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos...")
-
+# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
+#_________________________________________________________Desarrollo________________________________________________________________#
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
     st.markdown("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
-
+# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
+#_________________________________________________________Resultados________________________________________________________________#
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
