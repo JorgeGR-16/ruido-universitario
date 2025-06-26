@@ -18,7 +18,7 @@ st.markdown("""
             color: black;
         }
         h3 {
-            color: red;
+            color: red !important;;
             }
         .subheader {
             color: #333;
