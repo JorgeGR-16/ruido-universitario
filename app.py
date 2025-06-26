@@ -80,7 +80,7 @@ if seccion_activa == "Introducción":
     </div>
     """, unsafe_allow_html=True)
 
-    st.("### 1.1 Principio de funcionamiento")
+    st.markdown("### 1.1 Principio de funcionamiento")
     st.subheader("""
     <div style='text-align: justify;'>
     **1. Captación del sonido:**  
