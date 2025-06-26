@@ -10,16 +10,19 @@ st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wid
 # --- ESTILO PERSONALIZADO ---
 st.markdown("""
     <style>
-        /* Quitar padding/margen superior general de la app */
         .stApp {
-            padding-top: 0.5 !important;
-            margin-top: 0 !important;
+            padding-top: 0rem !important;
+            margin-top: 0rem !important;
         }
-        /* Título principal (h1) sin margen arriba ni abajo */
+        header { 
+            visibility: hidden;
+        }
+        .block-container {
+            padding-top: 1rem;
+        }
         h1 {
-            margin-top: -1.5 !important;
-            margin-bottom: 0.25rem !important;  /* un poquito de espacio abajo para no pegarlo */
-            color: black;
+            margin-top: -2rem;
+        }
         }
         /* Otros encabezados */
         h2 {
