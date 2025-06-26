@@ -166,6 +166,24 @@ elif seccion_activa == "Resultados":
 
         with st.expander("🔧 Parámetros de visualización (haz clic para mostrar/ocultar)", expanded=True):
             st.info("Puedes modificar la **fecha, hora y nodos** desde la **barra lateral izquierda** 📊.")
+            
+            # --- Análisis estadístico básico por nodo ---
+        st.markdown("### 📊 Análisis estadístico básico por nodo")
+
+        resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
+            Mínimo="min",
+            Máximo="max",
+            Media="mean",
+            Mediana="median",
+            Desviación_Estd="std",
+            Conteo="count"
+        ).round(2)
+
+        st.dataframe(resumen_estadistico, use_container_width=True)
+
+        # (Opcional) Gráfico de valores promedio por nodo
+        st.markdown("### 📈 Gráfico de valores promedio por nodo")
+        st.bar_chart(resumen_estadistico["Media"])
 
         tab1, tab2, tab3 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general"])
 
