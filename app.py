@@ -211,7 +211,7 @@ elif seccion_activa == "Resultados":
             st.line_chart(df_pivot, height=300, use_container_width=True)
 
         with tab4:
-            st.markdown("### 📊 Análisis estadístico básico por nodo")
+            st.markdown("### Análisis estadístico básico por nodo")
     
             resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
                 Minimo="min",
@@ -223,7 +223,7 @@ elif seccion_activa == "Resultados":
             ).round(2)
     
             st.dataframe(resumen_estadistico, use_container_width=True)
-            st.markdown("### 📈 Gráfico de valores maximos por nodo")
+            st.markdown("### Gráfico de valores maximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
