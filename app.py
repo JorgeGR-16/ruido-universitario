@@ -12,7 +12,7 @@ st.markdown("""
     <style>
         /* Quitar padding/margen superior general de la app */
         .stApp {
-            padding-top: 0 !important;
+            padding-top: 0.5 !important;
             margin-top: 0 !important;
         }
         /* Título principal (h1) sin margen arriba ni abajo */
