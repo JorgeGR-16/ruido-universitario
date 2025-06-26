@@ -14,10 +14,10 @@ st.markdown("""
             background-color: white;
             color: black;
         }
-        h1, h2, h4, h5, h6{
+        h1, h3, h4, h5, h6{
             color: black;
         }
-        h3 {
+        h2 {
             color: red !important;;
             }
         .subheader {
@@ -123,7 +123,7 @@ elif seccion_activa == "Objetivo":
 #_________________________________________________________Desarrollo________________________________________________________________#
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
-    st.subheader("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
+    st.header("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
 # --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
 #_________________________________________________________Resultados________________________________________________________________#
 elif seccion_activa == "Resultados":
