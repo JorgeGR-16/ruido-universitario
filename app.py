@@ -123,11 +123,12 @@ elif seccion_activa == "Objetivo":
 #_________________________________________________________Desarrollo________________________________________________________________#
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
-    st.markdown("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
+    st.subheader("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
 # --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
 #_________________________________________________________Resultados________________________________________________________________#
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
+    
 
     with st.sidebar:
         st.header("Parámetros de entrada")
