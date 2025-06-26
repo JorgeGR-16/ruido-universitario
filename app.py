@@ -13,16 +13,21 @@ st.markdown("""
         .stApp {
             background-color: white;
             color: black;
-            padding-top: 0rem !important;
-            margin-top: 0rem !important;
         }
-        h1, h3, h4, h5, h6{
+        h1 {
+            margin-top: 0.5rem !important;  /* controla espacio arriba */
+            margin-bottom: 0.5rem !important; /* controla espacio abajo */
             color: black;
         }
         h2 {
-            font-size: 16px !important;  /* tamaño en píxeles */
+            font-size: 16px !important;
             color: red !important;
-            }
+            margin-top: 0.25rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        h3, h4, h5, h6 {
+            color: black;
+        }
         .subheader {
             color: #333;
         }
