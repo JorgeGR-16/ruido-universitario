@@ -18,7 +18,7 @@ st.markdown("""
             color: black;
         }
         h2 {
-            font-size: 36px !important;  /* tamaño en píxeles */
+            font-size: 16px !important;  /* tamaño en píxeles */
             color: red !important;
             }
         .subheader {
