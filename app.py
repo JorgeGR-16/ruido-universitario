@@ -13,6 +13,8 @@ st.markdown("""
         .stApp {
             background-color: white;
             color: black;
+            padding-top: 0rem !important;
+            margin-top: 0rem !important;
         }
         h1, h3, h4, h5, h6{
             color: black;
