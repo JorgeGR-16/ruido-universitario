@@ -243,7 +243,6 @@ elif seccion_activa == "Resultados":
                 Maximo="max",
                 Media="mean",
                 Mediana="median",
-            
                 Conteo="count"
             ).round(2)
     
