@@ -145,42 +145,48 @@ elif seccion_activa == "Desarrollo":
 #_________________________________________________________Resultados________________________________________________________________#
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
-    
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "40nodos.csv"
+        uploaded_file = "/mnt/data/40nodos.csv"  # Ruta al archivo cargado
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
             columnas_requeridas = ['_time', 'nodo', '_value']
+
             if not all(col in df.columns for col in columnas_requeridas):
                 st.error("El archivo no contiene las columnas necesarias.")
                 df_filtrado = pd.DataFrame()
             else:
                 df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
-                tiempo_min = df['_time'].min()
-                tiempo_max = df['_time'].max()
+                df = df.dropna(subset=['_time'])
 
-                fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+                if df.empty:
+                    st.error("No se encontraron datos válidos en la columna '_time'.")
+                    df_filtrado = pd.DataFrame()
+                else:
+                    tiempo_min = df['_time'].min()
+                    tiempo_max = df['_time'].max()
 
-                nodos_disponibles = sorted(df["nodo"].unique())
-                nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos que deseas visualizar:",
-                    options=nodos_disponibles,
-                    default=nodos_disponibles
-                )
+                    fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
-                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+                    nodos_disponibles = sorted(df["nodo"].unique())
+                    nodos_seleccionados = st.multiselect(
+                        "Selecciona los nodos que deseas visualizar:",
+                        options=nodos_disponibles,
+                        default=nodos_disponibles
+                    )
 
-                df_filtrado = df[
-                    (df['_time'] >= fecha_inicio) &
-                    (df['_time'] <= fecha_fin) &
-                    (df['nodo'].isin(nodos_seleccionados))
-                ]
+                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+                    df_filtrado = df[
+                        (df['_time'] >= fecha_inicio) &
+                        (df['_time'] <= fecha_fin) &
+                        (df['nodo'].isin(nodos_seleccionados))
+                    ]
 
         except Exception as e:
             st.error(f"Error al cargar el archivo: {e}")
@@ -191,9 +197,6 @@ elif seccion_activa == "Resultados":
 
         with st.expander("🔧 Parámetros de visualización (haz clic para mostrar/ocultar)", expanded=True):
             st.info("Puedes modificar la **fecha, hora y nodos** desde la **barra lateral izquierda** 📊.")
-            
-            # --- Análisis estadístico básico por nodo ---
-        
 
         tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general", "📊 Análisis estadístico"])
 
@@ -237,7 +240,7 @@ elif seccion_activa == "Resultados":
 
         with tab4:
             st.markdown("### Análisis estadístico básico por nodo")
-    
+
             resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
                 Minimo="min",
                 Maximo="max",
@@ -245,9 +248,9 @@ elif seccion_activa == "Resultados":
                 Mediana="median",
                 Conteo="count"
             ).round(2)
-    
+
             st.dataframe(resumen_estadistico, use_container_width=True)
-            st.markdown("### Gráfico de valores maximos por nodo")
+            st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
