@@ -152,6 +152,12 @@ elif seccion_activa == "Resultados":
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
+            st.write("### Vista preliminar del archivo CSV (primeras filas):")
+            st.write(df.head())
+        
+            st.write("### Nombres de columnas detectadas:")
+            st.write(df.columns.tolist())
+
             columnas_requeridas = ['_time', 'nodo', '_value']
 
             if not all(col in df.columns for col in columnas_requeridas):
