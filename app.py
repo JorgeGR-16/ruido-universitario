@@ -148,7 +148,7 @@ elif seccion_activa == "Resultados":
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "/mnt/data/40nodos.csv"  # Ruta al archivo cargado
+        uploaded_file = "40nodos.csv"  # Ruta al archivo cargado
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
