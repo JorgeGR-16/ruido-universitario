@@ -148,27 +148,21 @@ elif seccion_activa == "Resultados":
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "40nodos.csv"  # Ruta al archivo cargado
+        uploaded_file = "/mnt/data/40nodos.csv"  # Ruta fija al archivo subido
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
-            st.write("### Vista preliminar del archivo CSV (primeras filas):")
-            st.write(df.head())
-        
-            st.write("### Nombres de columnas detectadas:")
-            st.write(df.columns.tolist())
-
             columnas_requeridas = ['_time', 'nodo', '_value']
 
             if not all(col in df.columns for col in columnas_requeridas):
                 st.error("El archivo no contiene las columnas necesarias.")
                 df_filtrado = pd.DataFrame()
             else:
-                df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%dT%H:%M:%S.%fZ', utc=True, errors='coerce')
-                df = df.dropna(subset=['_time'])
+                # Conversión segura de fechas
+                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
 
-                if df.empty:
-                    st.error("No se encontraron datos válidos en la columna '_time'.")
+                if df['_time'].isna().all():
+                    st.error("No se pudieron interpretar las fechas en la columna '_time'.")
                     df_filtrado = pd.DataFrame()
                 else:
                     tiempo_min = df['_time'].min()
