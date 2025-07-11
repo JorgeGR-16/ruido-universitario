@@ -58,7 +58,7 @@ st.markdown("""
 # --- TÍTULO GENERAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
+    st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 
 ## ----------------------------------------------------- IMAGEN PRINCIPAL----------------------------------------------------------------#
 col1, col2, col3 = st.columns([1, 4, 1])
