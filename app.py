@@ -56,14 +56,14 @@ st.markdown("""
 
 
 # --- TÍTULO GENERAL ---
-#col1, col2, col3 = st.columns([1, 4, 1])
-#with col2:
+col1, col2, col3 = st.columns([1, 4, 1])
+with col2:
 st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 
 ## ----------------------------------------------------- IMAGEN PRINCIPAL----------------------------------------------------------------#
-#col1, col2, col3 = st.columns([1, 4, 1])
-#with col2:
-##    st.image("UAMAZC.jpg", use_container_width=True)
+col1, col2, col3 = st.columns([1, 4, 1])
+with col2:
+    st.image("UAMAZC.jpg", use_container_width=True)
 
 # ----------------------------------------------------- MENÚ DE NAVEGACIÓN -------------------------------------------------------------#
 if "seccion" not in st.session_state:
