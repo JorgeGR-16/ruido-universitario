@@ -193,7 +193,10 @@ elif seccion_activa == "Resultados":
             df_filtrado = pd.DataFrame()
 
     if not df_filtrado.empty:
-        tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general", "📊 Análisis estadístico"])
+        tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", 
+                                          "📈 Gráficos por nodo", 
+                                          "🧩 Comparación general", 
+                                          "📊 Análisis estadístico"])
 
         with tab1:
             st.markdown("Mapa de niveles de sonido:")
