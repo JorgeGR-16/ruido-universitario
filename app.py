@@ -194,10 +194,6 @@ elif seccion_activa == "Resultados":
 
     if not df_filtrado.empty:
         st.success(f"Se encontraron {len(df_filtrado)} registros.")
-
-        with st.expander("🔧 Parámetros de visualización (haz clic para mostrar/ocultar)", expanded=True):
-            st.info("Puedes modificar la **fecha, hora y nodos** desde la **barra lateral izquierda** 📊.")
-
         tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general", "📊 Análisis estadístico"])
 
         with tab1:
