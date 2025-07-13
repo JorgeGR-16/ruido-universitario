@@ -193,7 +193,6 @@ elif seccion_activa == "Resultados":
             df_filtrado = pd.DataFrame()
 
     if not df_filtrado.empty:
-        st.success(f"Se encontraron {len(df_filtrado)} registros.")
         tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", "📈 Gráficos por nodo", "🧩 Comparación general", "📊 Análisis estadístico"])
 
         with tab1:
