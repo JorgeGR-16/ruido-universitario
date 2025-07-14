@@ -247,6 +247,18 @@ elif seccion_activa == "Resultados":
             st.bar_chart(resumen_estadistico["Maximo"])
 
         with tab5:
+            st.markdown("### 🔊 **Rangos de niveles de sonido (dB SPL)**")
+
+            st.markdown("""
+            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
+            |----------------|-------------------------------------|--------------------------------------------------------|
+            | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
+            | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
+            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
+            | **85–100 dB**  | Moto, concierto                     | **Puede causar daño si hay exposición prolongada (>8h)** |
+            | **100–120 dB** | Sirena ambulancia, martillo neumático | **Daño auditivo posible en minutos**                  |
+            """)
+
             st.markdown("### Distribución de niveles de riesgo por hora")
         
             horas_disponibles = sorted(df_filtrado["hora"].unique())
