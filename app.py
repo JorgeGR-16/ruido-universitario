@@ -304,7 +304,7 @@ elif seccion_activa == "Resultados":
         
             # Selector de hora
             horas_disponibles = sorted(df_filtrado["hora"].unique())
-            horas_seleccionadas = st.multiselect(
+            horas_seleccionadas = st.selectbox(
                 "Selecciona las horas que deseas visualizar (formato 24h):",
                 options=horas_disponibles,
                 default=horas_disponibles
