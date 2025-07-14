@@ -216,10 +216,6 @@ elif seccion_activa == "Resultados":
             # Reemplaza NaN con un valor mínimo (para evitar errores de visualización)
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
         
-            # --- MÁSCARA para ocultar todo lo que sea <= 85 dB ---
-            mask = Z_grid <= 85
-        
-        
             # --- Crear el gráfico ---
             fig, ax = plt.subplots(figsize=(10, 6))
         
