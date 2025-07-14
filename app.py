@@ -334,8 +334,7 @@ elif seccion_activa == "Resultados":
             )
             ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
             st.pyplot(fig)
-            else:
-                st.info("Selecciona al menos una hora para visualizar los gráficos.")
+           
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
