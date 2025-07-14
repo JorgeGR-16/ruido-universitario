@@ -148,7 +148,7 @@ elif seccion_activa == "Resultados":
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"  # Ruta fija al archivo subido
+        uploaded_file = "40nodos.csv"  # Ruta fija al archivo subido
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
@@ -199,49 +199,30 @@ elif seccion_activa == "Resultados":
                                           "📊 Análisis estadístico"])
 
         with tab1:
-            st.markdown("### 🔊 Mapa de niveles de sonido con alertas")
-        
-            # Preparamos los datos
+            st.markdown("Mapa de niveles de sonido:")
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
-        
-            # Creamos la rejilla
+
             x_unique = np.unique(X)
             y_unique = np.unique(tiempos_segundos)
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
-        
-             # --- Anotaciones solo para valores > 85 ---
-            annotaciones = np.empty_like(Z_grid, dtype=object)
-            for i in range(Z_grid.shape[0]):
-                for j in range(Z_grid.shape[1]):
-                    valor = Z_grid[i, j]
-                    if valor > 85:
-                        annotaciones[i, j] = f"{int(valor)}💥"
-                    else:
-                        annotaciones[i, j] = ""
-        
-            # Creamos el mapa de calor
+
             fig, ax = plt.subplots(figsize=(10, 6))
-        
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-        
-            sb.heatmap(Z_grid, annot=annotaciones, fmt='', cmap='jet', xticklabels=x_unique,
-                       yticklabels=False, ax=ax, linewidths=0.2, linecolor='gray')
-        
+
+            sb.heatmap(Z_grid, xticklabels=x_unique, yticklabels=False, cmap='jet', ax=ax)
             ax.invert_yaxis()
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticklabels, rotation=0)
             ax.set_xlabel("Nodos")
             ax.set_ylabel("Hora (HH:MM)")
-            
-        
+            ax.set_title("Mapa de niveles de sonido", fontsize=14)
             st.pyplot(fig)
-
 
         with tab2:
             st.markdown("#### Evolución temporal por nodo")
