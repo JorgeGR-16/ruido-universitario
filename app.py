@@ -214,17 +214,15 @@ elif seccion_activa == "Resultados":
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
         
-            # --- AÑADIMOS ANOTACIONES CON EMOJIS ---
+             # --- Anotaciones solo para valores > 85 ---
             annotaciones = np.empty_like(Z_grid, dtype=object)
             for i in range(Z_grid.shape[0]):
                 for j in range(Z_grid.shape[1]):
                     valor = Z_grid[i, j]
                     if valor > 85:
                         annotaciones[i, j] = f"{int(valor)}💥"
-                    elif valor > 75:
-                        annotaciones[i, j] = f"{int(valor)}⚠️"
                     else:
-                        annotaciones[i, j] = f"{int(valor)}"
+                        annotaciones[i, j] = ""
         
             # Creamos el mapa de calor
             fig, ax = plt.subplots(figsize=(10, 6))
