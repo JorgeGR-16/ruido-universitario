@@ -233,6 +233,10 @@ elif seccion_activa == "Resultados":
             st.pyplot(fig)
 
         with tab2:
+            st.markdown("""
+            En esta sección se muestra la evolución del nivel de ruido a lo largo del tiempo para cada nodo seleccionado.
+            Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
+            """)
             st.markdown("#### Evolución temporal por nodo")
             for nodo in sorted(df_filtrado["nodo"].unique()):
                 st.subheader(f"Nodo {nodo}")
