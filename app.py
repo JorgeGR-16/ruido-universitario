@@ -198,7 +198,7 @@ elif seccion_activa == "Resultados":
                                           "🧩 Comparación general", 
                                           "📊 Análisis estadístico"])
 
-       with tab1:
+        with tab1:
             st.markdown("### 💥 Mapa de niveles de sonido ")
         
             # Preparamos los datos
