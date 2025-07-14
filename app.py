@@ -245,9 +245,8 @@ elif seccion_activa == "Resultados":
             st.dataframe(resumen_estadistico, use_container_width=True)
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
-
         with tab5:
-            st.markdown("### 🔊 **Rangos de niveles de sonido (dB SPL)**")
+            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
 
             st.markdown("""
             | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
@@ -258,12 +257,28 @@ elif seccion_activa == "Resultados":
             | **85–100 dB**  | Moto, concierto                     | **Puede causar daño si hay exposición prolongada (>8h)** |
             | **100–120 dB** | Sirena ambulancia, martillo neumático | **Daño auditivo posible en minutos**                  |
             """)
-
-            st.markdown("### Distribución de niveles de riesgo por hora")
+            st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
         
+            # Clasificación personalizada
+            def clasificar_rango(db):
+                if db < 30:
+                    return "0–30 dB: Sin riesgo"
+                elif db < 60:
+                    return "30–60 dB: Sin riesgo"
+                elif db < 85:
+                    return "60–85 dB: Riesgo leve"
+                elif db < 100:
+                    return "85–100 dB: Riesgo moderado"
+                else:
+                    return "100–120+ dB: Peligroso"
+        
+            df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
+            df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+        
+            # Selector de hora
             horas_disponibles = sorted(df_filtrado["hora"].unique())
             horas_seleccionadas = st.multiselect(
-                "Selecciona las horas que deseas visualizar (en formato 24h):",
+                "Selecciona las horas que deseas visualizar (formato 24h):",
                 options=horas_disponibles,
                 default=horas_disponibles
             )
@@ -271,7 +286,15 @@ elif seccion_activa == "Resultados":
             if horas_seleccionadas:
                 for h in horas_seleccionadas:
                     df_hora = df_filtrado[df_filtrado["hora"] == h]
-                    conteo = df_hora["riesgo"].value_counts()
+                    conteo = df_hora["rango"].value_counts().sort_index()
+        
+                    colores = {
+                        "0–30 dB: Sin riesgo": "#b3d9ff",
+                        "30–60 dB: Sin riesgo": "#80bfff",
+                        "60–85 dB: Riesgo leve": "#ffcc80",
+                        "85–100 dB: Riesgo moderado": "#ff9966",
+                        "100–120+ dB: Peligroso": "#ff4d4d"
+                    }
         
                     fig, ax = plt.subplots()
                     ax.pie(
@@ -279,12 +302,12 @@ elif seccion_activa == "Resultados":
                         labels=conteo.index,
                         autopct="%1.1f%%",
                         startangle=90,
-                        colors=["#2ca02c", "#ff7f0e", "#d62728"]
+                        colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
                     )
-                    ax.set_title(f"{h}:00 hrs — Niveles de Riesgo")
+                    ax.set_title(f"{h}:00 hrs — Niveles de sonido por rango")
                     st.pyplot(fig)
             else:
-                st.info("Selecciona al menos una hora para visualizar los diagramas.")
+                st.info("Selecciona al menos una hora para visualizar los gráficos.")
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
