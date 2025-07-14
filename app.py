@@ -246,9 +246,11 @@ elif seccion_activa == "Resultados":
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
         with tab5:
+            st.markdown("### **Efectos del Ruido en la Audición*")
             st.markdown("""
                 <div style='text-align: justify;'>
                 La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
+                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
                 </div>
             """, unsafe_allow_html=True)
             
