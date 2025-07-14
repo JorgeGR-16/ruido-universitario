@@ -198,7 +198,6 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("### 💥 Mapa de niveles de sonido ")
-            st.markdown("### 💥 Mapa de niveles de sonido ")
     
             st.markdown("""
             Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
