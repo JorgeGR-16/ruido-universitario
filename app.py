@@ -244,6 +244,10 @@ elif seccion_activa == "Resultados":
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
         with tab3:
+            st.markdown("""
+            Aquí se visualizan todos los nodos juntos para comparar sus niveles de ruido en el tiempo.
+            Esto facilita detectar diferencias o similitudes en el comportamiento acústico entre distintas áreas.
+            """)
             st.markdown("### Comparación general de nodos en un solo gráfico")
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
             st.line_chart(df_pivot, height=300, use_container_width=True)
