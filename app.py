@@ -198,6 +198,18 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("### 💥 Mapa de niveles de sonido ")
+            st.markdown("### 💥 Mapa de niveles de sonido ")
+    
+            st.markdown("""
+            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
+            
+            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
+            - **Eje vertical:** representa la hora del día (formato HH:MM).
+            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
+            
+            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
+            """)
+            
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
