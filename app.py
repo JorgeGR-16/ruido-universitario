@@ -302,36 +302,37 @@ elif seccion_activa == "Resultados":
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
         
-            # Selector de hora
-            horas_seleccionadas = st.selectbox(
+            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
+            hora_seleccionada = st.selectbox(
                 "Selecciona la hora que deseas visualizar (formato 24h):",
-                options=horas_disponibles,
-                index=0  # Por ejemplo, selecciona la primera opción por defecto
+                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
+                index=0  # opcional, elige cuál aparece por defecto
             )
-                    
-            if horas_seleccionadas:
-                for h in horas_seleccionadas:
-                    df_hora = df_filtrado[df_filtrado["hora"] == h]
-                    conteo = df_hora["rango"].value_counts().sort_index()
-        
-                    colores = {
-                        "0–30 dB: Sin riesgo": "#b3d9ff",
-                        "30–60 dB: Sin riesgo": "#80bfff",
-                        "60–85 dB: Riesgo leve": "#ffcc80",
-                        "85–100 dB: Riesgo moderado": "#ff9966",
-                        "100–120+ dB: Peligroso": "#ff4d4d"
-                    }
-        
-                    fig, ax = plt.subplots()
-                    ax.pie(
-                        conteo,
-                        labels=conteo.index,
-                        autopct="%1.1f%%",
-                        startangle=90,
-                        colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
-                    )
-                    ax.set_title(f"{h}:00 hrs — Niveles de sonido por rango")
-                    st.pyplot(fig)
+            
+            # Filtrar datos por la hora seleccionada
+            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+            conteo = df_hora["rango"].value_counts().sort_index()
+            
+            # Colores personalizados por rango de riesgo
+            colores = {
+                "0–30 dB: Sin riesgo": "#b3d9ff",
+                "30–60 dB: Sin riesgo": "#80bfff",
+                "60–85 dB: Riesgo leve": "#ffcc80",
+                "85–100 dB: Riesgo moderado": "#ff9966",
+                "100–120+ dB: Peligroso": "#ff4d4d"
+            }
+            
+            # Crear gráfico de pastel
+            fig, ax = plt.subplots()
+            ax.pie(
+                conteo,
+                labels=conteo.index,
+                autopct="%1.1f%%",
+                startangle=90,
+                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+            )
+            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
+            st.pyplot(fig)
             else:
                 st.info("Selecciona al menos una hora para visualizar los gráficos.")
 
