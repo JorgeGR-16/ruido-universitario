@@ -248,19 +248,31 @@ elif seccion_activa == "Resultados":
 
         with tab5:
             st.markdown("### Distribución de niveles de riesgo por hora")
+        
             horas_disponibles = sorted(df_filtrado["hora"].unique())
-            for h in horas_disponibles:
-                df_hora = df_filtrado[df_filtrado["hora"] == h]
-                conteo = df_hora["riesgo"].value_counts()
-                fig, ax = plt.subplots()
-                ax.pie(
-                    conteo,
-                    labels=conteo.index,
-                    autopct="%1.1f%%",
-                    startangle=90,
-                    colors=["#2ca02c", "#ff7f0e", "#d62728"]
-                )
-                ax.set_title(f"{h}:00 hrs — Niveles de Riesgo")
-                st.pyplot(fig)
+            horas_seleccionadas = st.multiselect(
+                "Selecciona las horas que deseas visualizar (en formato 24h):",
+                options=horas_disponibles,
+                default=horas_disponibles
+            )
+        
+            if horas_seleccionadas:
+                for h in horas_seleccionadas:
+                    df_hora = df_filtrado[df_filtrado["hora"] == h]
+                    conteo = df_hora["riesgo"].value_counts()
+        
+                    fig, ax = plt.subplots()
+                    ax.pie(
+                        conteo,
+                        labels=conteo.index,
+                        autopct="%1.1f%%",
+                        startangle=90,
+                        colors=["#2ca02c", "#ff7f0e", "#d62728"]
+                    )
+                    ax.set_title(f"{h}:00 hrs — Niveles de Riesgo")
+                    st.pyplot(fig)
+            else:
+                st.info("Selecciona al menos una hora para visualizar los diagramas.")
+
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
