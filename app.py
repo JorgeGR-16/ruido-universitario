@@ -301,7 +301,8 @@ elif seccion_activa == "Resultados":
         
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
-        
+            horas_disponibles = sorted(df_filtrado["hora"].unique())
+            
             # Selector de una sola hora (por ejemplo: 13, 14, 15...)
             hora_seleccionada = st.selectbox(
                 "Selecciona la hora que deseas visualizar (formato 24h):",
