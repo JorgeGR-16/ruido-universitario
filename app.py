@@ -238,7 +238,7 @@ elif seccion_activa == "Resultados":
             ax.set_yticklabels(yticklabels, rotation=0)
             ax.set_xlabel("Nodos")
             ax.set_ylabel("Hora (HH:MM)")
-            ax.set_title("💥 Mapa de niveles de sonido con alertas visuales", fontsize=14)
+            
         
             st.pyplot(fig)
 
