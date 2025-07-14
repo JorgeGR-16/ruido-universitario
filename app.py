@@ -222,7 +222,7 @@ elif seccion_activa == "Resultados":
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
         
-            sb.heatmap(Z_grid, mask=mask, cmap='jet',
+            sb.heatmap(Z_grid, cmap='jet',
                        xticklabels=x_unique, yticklabels=False, ax=ax, linewidths=0.3, linecolor='gray')
         
             ax.invert_yaxis()
