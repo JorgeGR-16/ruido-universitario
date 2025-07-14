@@ -219,15 +219,6 @@ elif seccion_activa == "Resultados":
             # --- MÁSCARA para ocultar todo lo que sea <= 85 dB ---
             mask = Z_grid <= 85
         
-            # --- Anotaciones solo para valores > 85 ---
-            annotaciones = np.empty_like(Z_grid, dtype=object)
-            for i in range(Z_grid.shape[0]):
-                for j in range(Z_grid.shape[1]):
-                    valor = Z_grid[i, j]
-                    if valor > 85:
-                        annotaciones[i, j] = f"{int(valor)}💥"
-                    else:
-                        annotaciones[i, j] = ""
         
             # --- Crear el gráfico ---
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -235,7 +226,7 @@ elif seccion_activa == "Resultados":
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
         
-            sb.heatmap(Z_grid, mask=mask, annot=annotaciones, fmt='', cmap='Reds',
+            sb.heatmap(Z_grid, mask=mask, annot=annotaciones, fmt='', cmap='jet',
                        xticklabels=x_unique, yticklabels=False, ax=ax, linewidths=0.3, linecolor='gray')
         
             ax.invert_yaxis()
