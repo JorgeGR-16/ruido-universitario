@@ -303,13 +303,12 @@ elif seccion_activa == "Resultados":
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
         
             # Selector de hora
-            horas_disponibles = sorted(df_filtrado["hora"].unique())
             horas_seleccionadas = st.selectbox(
-                "Selecciona las horas que deseas visualizar (formato 24h):",
+                "Selecciona la hora que deseas visualizar (formato 24h):",
                 options=horas_disponibles,
-                default=horas_disponibles
+                index=0  # Por ejemplo, selecciona la primera opción por defecto
             )
-        
+                    
             if horas_seleccionadas:
                 for h in horas_seleccionadas:
                     df_hora = df_filtrado[df_filtrado["hora"] == h]
