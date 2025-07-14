@@ -186,17 +186,31 @@ elif seccion_activa == "Resultados":
                         (df['_time'] >= fecha_inicio) &
                         (df['_time'] <= fecha_fin) &
                         (df['nodo'].isin(nodos_seleccionados))
+                    # Clasificamos los niveles de riesgo
+                    def clasificar_riesgo(db):
+                        if db < 85:
+                            return "Seguro"
+                        elif db < 100:
+                            return "Riesgo moderado"
+                        else:
+                            return "Peligroso"
+                    
+                    df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
+                    df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+
                     ]
 
         except Exception as e:
             st.error(f"Error al cargar el archivo: {e}")
             df_filtrado = pd.DataFrame()
 
-    if not df_filtrado.empty:
-        tab1, tab2, tab3, tab4 = st.tabs(["📊 Mapa de Sonido", 
-                                          "📈 Gráficos por nodo", 
-                                          "🧩 Comparación general", 
-                                          "📊 Análisis estadístico"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                                            "📊 Mapa de Sonido", 
+                                            "📈 Gráficos por nodo", 
+                                            "🧩 Comparación general", 
+                                            "📊 Análisis estadístico",
+                                            "🧨 Riesgos por hora"
+                                        ])
 
         with tab1:
             st.markdown("### 💥 Mapa de niveles de sonido ")
@@ -260,5 +274,26 @@ elif seccion_activa == "Resultados":
             st.dataframe(resumen_estadistico, use_container_width=True)
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
+        
+        with tab5:
+            st.markdown("### Distribución de niveles de riesgo por hora")
+        
+            horas_disponibles = sorted(df_filtrado["hora"].unique())
+            
+            for h in horas_disponibles:
+                df_h = df_filtrado[df_filtrado["hora"] == h]
+                conteo = df_h["riesgo"].value_counts()
+        
+                fig, ax = plt.subplots()
+                ax.pie(
+                    conteo,
+                    labels=conteo.index,
+                    autopct="%1.1f%%",
+                    startangle=90,
+                    colors=["#2ca02c", "#ff7f0e", "#d62728"]
+                )
+                ax.set_title(f"Riesgos a las {h}:00 hrs")
+                st.pyplot(fig)
+
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
