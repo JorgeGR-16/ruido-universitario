@@ -23,8 +23,6 @@ st.markdown("""
         h1 {
             margin-top: -2rem;
         }
-        }
-        /* Otros encabezados */
         h2 {
             font-size: 16px !important;
             color: red !important;
@@ -54,18 +52,17 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
 # --- TÍTULO GENERAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
 
-## ----------------------------------------------------- IMAGEN PRINCIPAL----------------------------------------------------------------#
+# --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.image("UAMAZC.jpg", use_container_width=True)
 
-# ----------------------------------------------------- MENÚ DE NAVEGACIÓN -------------------------------------------------------------#
+# --- MENÚ DE NAVEGACIÓN ---
 if "seccion" not in st.session_state:
     st.session_state.seccion = "Introducción"
     
@@ -86,17 +83,13 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
-#_________________________________________________________Introduccion________________________________________________________________#
+# --- SECCIONES ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
     <div style='text-align: justify;'>
      El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario. Por ello, es fundamental identificar y cuantificar las fuentes y niveles de ruido presentes para poder plantear estrategias de mitigación efectivas.
-     A través de esta investigación, se pretende obtener datos precisos que permitan evaluar el impacto acústico en el entorno universitario y promover un ambiente más adecuado para el estudio y desarrollo académico.
-     La red está conformada por varios sonómetros basados en el microcontrolador LoRa32, un micrófono digital INMP441 y una batería recargable, todo alojado en una carcasa impresa en 3D.
-     La red utiliza una topología de estrella en la que los sonómetros se comunican directamente con un gateway central, también basado en un LoRa32. Este gateway actúa como puente entre los sensores y una computadora central, permitiendo la transferencia de datos de ruido en tiempo real, mediante enlace USB o el protocolo MQTT.
+     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
     </div>
     """, unsafe_allow_html=True)
 
@@ -104,16 +97,7 @@ if seccion_activa == "Introducción":
     st.markdown("""
     <div style='text-align: justify;'>
     **1. Captación del sonido:**  
-    El sonido ambiente es captado por un micrófono de condensador, el cual detecta las variaciones de presión del aire generadas por las ondas sonoras.
-
-    **2. Conversión eléctrica:**  
-    Estas variaciones se transforman en una señal eléctrica proporcional a la presión acústica.
-
-    **3. Procesamiento de la señal:**  
-    La señal eléctrica es amplificada y procesada mediante un circuito electrónico o un microcontrolador. Durante este proceso, se aplica una ponderación frecuencial (normalmente del tipo A), que ajusta la medición de acuerdo con la sensibilidad del oído humano.
-
-    **4. Cálculo y visualización en decibelios (dB):**  
-    Finalmente, el sistema calcula el nivel de presión sonora utilizando la fórmula logarítmica:
+    El sonido ambiente es captado por un micrófono de condensador...
     </div>
     """, unsafe_allow_html=True)
 
@@ -124,31 +108,28 @@ if seccion_activa == "Introducción":
     st.markdown("""
         Donde:  
         - \( P \): presión sonora medida  
-        - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia en el aire
+        - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia
     """, unsafe_allow_html=True)
 
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image("Diagrama.png", use_container_width=True)
-# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
-#_________________________________________________________Objetivo________________________________________________________________#
+
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
-    st.markdown("* Visualizar el comportamiento del sonido en una área específica, utilizando sensores y gráficos...")
-# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
-#_________________________________________________________Desarrollo________________________________________________________________#
+    st.markdown("* Visualizar el comportamiento del sonido en una área específica...")
+
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
     st.header("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
-# --------------------------------------------------------SECCIONES ------------------------------------------------------------------#
-#_________________________________________________________Resultados________________________________________________________________#
+
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"  # Ruta fija al archivo subido
+        uploaded_file = "mediciones_1.csv"  # Ruta fija
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
@@ -158,11 +139,10 @@ elif seccion_activa == "Resultados":
                 st.error("El archivo no contiene las columnas necesarias.")
                 df_filtrado = pd.DataFrame()
             else:
-                # Conversión segura de fechas
                 df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
 
                 if df['_time'].isna().all():
-                    st.error("No se pudieron interpretar las fechas en la columna '_time'.")
+                    st.error("No se pudieron interpretar las fechas.")
                     df_filtrado = pd.DataFrame()
                 else:
                     tiempo_min = df['_time'].min()
@@ -174,7 +154,7 @@ elif seccion_activa == "Resultados":
 
                     nodos_disponibles = sorted(df["nodo"].unique())
                     nodos_seleccionados = st.multiselect(
-                        "Selecciona los nodos que deseas visualizar:",
+                        "Selecciona los nodos:",
                         options=nodos_disponibles,
                         default=nodos_disponibles
                     )
@@ -186,66 +166,59 @@ elif seccion_activa == "Resultados":
                         (df['_time'] >= fecha_inicio) &
                         (df['_time'] <= fecha_fin) &
                         (df['nodo'].isin(nodos_seleccionados))
-                    # Clasificamos los niveles de riesgo
-                    def clasificar_riesgo(db):
-                        if db < 85:
-                            return "Seguro"
-                        elif db < 100:
-                            return "Riesgo moderado"
-                        else:
-                            return "Peligroso"
-                    
-                    df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
-                    df_filtrado["hora"] = df_filtrado["_time"].dt.hour
-
                     ]
 
         except Exception as e:
             st.error(f"Error al cargar el archivo: {e}")
             df_filtrado = pd.DataFrame()
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                                            "📊 Mapa de Sonido", 
-                                            "📈 Gráficos por nodo", 
-                                            "🧩 Comparación general", 
-                                            "📊 Análisis estadístico",
-                                            "🧨 Riesgos por hora"
-                                        ])
+    if not df_filtrado.empty:
+        df_filtrado = df_filtrado.copy()
+
+        # Clasificar riesgo
+        def clasificar_riesgo(db):
+            if db < 85:
+                return "Seguro"
+            elif db < 100:
+                return "Riesgo moderado"
+            else:
+                return "Peligroso"
+
+        df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
+        df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+
+        # Tabs
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "📊 Mapa de Sonido", 
+            "📈 Gráficos por nodo", 
+            "🧩 Comparación general", 
+            "📊 Análisis estadístico",
+            "🧨 Riesgo por hora"
+        ])
 
         with tab1:
             st.markdown("### 💥 Mapa de niveles de sonido ")
-        
-            # Preparamos los datos
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
-        
-            # Crear la rejilla
+
             x_unique = np.unique(X)
             y_unique = np.unique(tiempos_segundos)
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            
-            # Reemplaza NaN con un valor mínimo (para evitar errores de visualización)
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
-        
-            # --- Crear el gráfico ---
+
             fig, ax = plt.subplots(figsize=(10, 6))
-        
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-        
-            sb.heatmap(Z_grid, cmap='jet',
-                       xticklabels=x_unique, yticklabels=False, ax=ax, linewidths=0.3, linecolor='gray')
-        
+
+            sb.heatmap(Z_grid, cmap='jet', xticklabels=x_unique, yticklabels=False, ax=ax, linewidths=0.3, linecolor='gray')
             ax.invert_yaxis()
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticklabels, rotation=0)
             ax.set_xlabel("Nodos")
             ax.set_ylabel("Hora (HH:MM)")
-          
-        
             st.pyplot(fig)
 
         with tab2:
@@ -262,7 +235,6 @@ elif seccion_activa == "Resultados":
 
         with tab4:
             st.markdown("### Análisis estadístico básico por nodo")
-
             resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
                 Minimo="min",
                 Maximo="max",
@@ -270,20 +242,16 @@ elif seccion_activa == "Resultados":
                 Mediana="median",
                 Conteo="count"
             ).round(2)
-
             st.dataframe(resumen_estadistico, use_container_width=True)
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
-        
+
         with tab5:
             st.markdown("### Distribución de niveles de riesgo por hora")
-        
             horas_disponibles = sorted(df_filtrado["hora"].unique())
-            
             for h in horas_disponibles:
-                df_h = df_filtrado[df_filtrado["hora"] == h]
-                conteo = df_h["riesgo"].value_counts()
-        
+                df_hora = df_filtrado[df_filtrado["hora"] == h]
+                conteo = df_hora["riesgo"].value_counts()
                 fig, ax = plt.subplots()
                 ax.pie(
                     conteo,
@@ -292,8 +260,7 @@ elif seccion_activa == "Resultados":
                     startangle=90,
                     colors=["#2ca02c", "#ff7f0e", "#d62728"]
                 )
-                ax.set_title(f"Riesgos a las {h}:00 hrs")
+                ax.set_title(f"{h}:00 hrs — Niveles de Riesgo")
                 st.pyplot(fig)
-
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
