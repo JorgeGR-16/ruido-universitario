@@ -129,7 +129,7 @@ elif seccion_activa == "Resultados":
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "40nodos.csv"  # Ruta fija
+        uploaded_file = "mediciones_1.csv"  # Ruta fija
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
