@@ -112,9 +112,9 @@ if seccion_activa == "Introducción":
     """, unsafe_allow_html=True)
 
     st.markdown("### 1.2 Diagrama del dispositivo.")
-   ## col1, col2, col3 = st.columns([1, 2, 1])
-   ## with col2:
-   ##     st.image("Diagrama.png", use_container_width=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
