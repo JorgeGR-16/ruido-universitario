@@ -93,6 +93,11 @@ if seccion_activa == "Introducción":
     </div>
     """, unsafe_allow_html=True)
 
+    st.markdown("""
+    <div style='text-align: justify;'> HOLA MUNDO
+     </div>
+    """, unsafe_allow_html=True)
+
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
