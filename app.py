@@ -132,10 +132,10 @@ elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
     st.markdown("* Visualizar el comportamiento del sonido en una área específica...")
 
-    st.markdown("*Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
-    st.markdown("*Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido")
-    st.markdown("*Comparar los resultados con los límites establecidos en las normas oficiales")
-    st.markdown("*Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales")
+    st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
+    st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
+    st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
+    st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
 
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
