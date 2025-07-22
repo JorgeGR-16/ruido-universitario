@@ -283,7 +283,6 @@ elif seccion_activa == "Resultados":
             | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
             | **85–100 dB**  | Moto, concierto                     | **Puede causar daño si hay exposición prolongada (>8h)** |
             | **100–120 dB** | Sirena ambulancia, martillo neumático | **Daño auditivo posible en minutos**                  |
-            |hola            |hola                                 |  hola                                                   | 
             """)
             st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
         
