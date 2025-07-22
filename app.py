@@ -141,6 +141,23 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
     st.header("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
 
+    #st.markdown("""
+    #<div style='text-align: justify;'>
+     #La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
+     #A continuación, se explican en detalle los elementos que componen un sonómetro.
+     #- **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
+     #- **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
+     #- **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
+     #- **Circuito de procesamiento de señales:** cuando la señal ha sido amplificada y filtrada, pasa al circuito de procesamiento que se encarga de convertir la señal analógica en digital y realizar los cálculos necesarios para determinar el nivel de presión sonora.
+     #- **Pantalla de visualización:**  es el componente que permite visualizar los resultados de las mediciones. Dependiendo del modelo del sonómetro, puede ser una pantalla LCD o LED.
+     #- **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
+     #- **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
+
+     #Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
+    #</div>
+    #""", unsafe_allow_html=True)
+    
+
    
     
 
