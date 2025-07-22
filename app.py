@@ -93,11 +93,18 @@ if seccion_activa == "Introducción":
     </div>
     """, unsafe_allow_html=True)
 
+
     st.markdown("""
-    <div style='text-align: justify;'> HOLA MUNDO
-     </div>
+    <div style='text-align: justify;'>
+    El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
+    Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas. 
+    </div>
     """, unsafe_allow_html=True)
 
+
+
+
+    
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
@@ -125,9 +132,17 @@ elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
     st.markdown("* Visualizar el comportamiento del sonido en una área específica...")
 
+    st.markdown("*Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
+    st.markdown("*Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido")
+    st.markdown("*Comparar los resultados con los límites establecidos en las normas oficiales")
+    st.markdown("*Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales")
+
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
     st.header("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
+
+   
+    
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
