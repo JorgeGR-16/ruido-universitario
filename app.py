@@ -98,10 +98,10 @@ if seccion_activa == "Introducción":
     st.markdown("""
     <div style='text-align: justify;'>
     El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
-    Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas. 
-
+    Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
     </div>
     """, unsafe_allow_html=True)
+    
     #st.markdown("""
     #<div style='text-align: justify;'>
     #Está diseñado para simular la respuesta del oído humano mediante filtros (como el filtro A, dBA), que ponderan las frecuencias del sonido.Su importancia radica en que permite
@@ -173,8 +173,12 @@ elif seccion_activa == "Desarrollo":
     #</div>
     #""", unsafe_allow_html=True)
     
-
-   
+     #st.markdown("""
+    #<div style='text-align: justify;'>
+     #st.markdown("### 3.1 Diseño del modelo ESP32")
+     #st.markdown("### 3.2 Construcción del sonómetro")
+    #</div>
+    #""", unsafe_allow_html=True)
     
 
 elif seccion_activa == "Resultados":
