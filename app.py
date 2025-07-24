@@ -280,59 +280,87 @@ elif seccion_activa == "Resultados":
         with tab1:
             st.markdown("### Mapa de niveles de sonido - Análisis Espacio-Temporal")
             
-            # Explicación más detallada
-            st.markdown("""
-            <div style='text-align: justify;'>
-            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo. 
-            Permite identificar patrones acústicos y correlaciones entre ubicaciones y horarios.
-            
-            - <strong>Interpretación:</strong> Los colores cálidos (rojos/naranjas) indican niveles críticos (>85 dB), 
-              mientras que los fríos (azules/verdes) representan niveles seguros.
-            - <strong>Recomendación:</strong> Busque patrones repetitivos que puedan indicar fuentes de ruido específicas 
-              (ej: horarios de clases, tráfico, eventos).
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Selector de paleta de colores
-            palette = st.selectbox(
-                "Seleccione paleta de colores:",
-                options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'cividis'],
-                index=0
-            )
-            
-            # Mejorar la visualización del heatmap
-            fig, ax = plt.subplots(figsize=(12, 8))
-            heatmap = sb.heatmap(
-                Z_grid, 
-                cmap=palette, 
-                xticklabels=x_unique, 
-                yticklabels=False, 
-                ax=ax,
-                cbar_kws={'label': 'Nivel de sonido (dB)'}
-            )
-            
-            # Mejorar etiquetas y título
-            ax.invert_yaxis()
-            ax.set_yticks(yticks)
-            ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos (ubicación de sensores)", fontsize=12)
-            ax.set_ylabel("Hora del día", fontsize=12)
-            ax.set_title("Distribución espacio-temporal de niveles de sonido", pad=20, fontsize=14)
-            
-            # Añadir líneas de referencia para niveles críticos
-            cbar = heatmap.collections[0].colorbar
-            cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)  # 85 dB
-            cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
-            
-            st.pyplot(fig)
-            
-            # Añadir análisis automático de puntos críticos
-            max_db = np.nanmax(Z_grid)
-            if max_db > 85:
-                st.warning(f"⚠️ Se detectaron niveles críticos de hasta {max_db:.1f} dB")
-                st.markdown("**Recomendaciones:**")
-                st.markdown("- Identificar fuentes de ruido en horarios pico")
-                st.markdown("- Considerar medidas de mitigación en áreas críticas")
+            # Verificar y preparar los datos primero
+            if not df_filtrado.empty:
+                try:
+                    # Convertir nodos a valores numéricos secuenciales si no lo son
+                    nodos_unicos = df_filtrado['nodo'].unique()
+                    nodo_a_num = {nodo: i for i, nodo in enumerate(nodos_unicos)}
+                    X = df_filtrado['nodo'].map(nodo_a_num).values
+                    
+                    # Convertir tiempos a segundos desde medianoche
+                    fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+                    tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+                    Z = df_filtrado['_value'].astype(float).values
+                    
+                    # Crear grid para interpolación
+                    x_unique = np.unique(X)
+                    y_unique = np.linspace(tiempos_segundos.min(), tiempos_segundos.max(), 100)  # 100 puntos en el tiempo
+                    X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+                    
+                    # Interpolación (usar 'nearest' si hay problemas con 'linear')
+                    Z_grid = griddata(
+                        (X, tiempos_segundos), 
+                        Z, 
+                        (X_grid, Y_grid), 
+                        method='linear',  # Puedes probar con 'nearest' si hay errores
+                        fill_value=np.nanmin(Z)
+                    )
+                    
+                    # Manejar valores NaN
+                    Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z))
+                    
+                    # Configurar el gráfico
+                    fig, ax = plt.subplots(figsize=(12, 6))
+                    
+                    # Selector de paleta de colores
+                    palette = st.selectbox(
+                        "Seleccione paleta de colores:",
+                        options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'cividis'],
+                        index=0
+                    )
+                    
+                    # Crear heatmap
+                    heatmap = sb.heatmap(
+                        Z_grid, 
+                        cmap=palette, 
+                        xticklabels=[f"Nodo {n}" for n in nodos_unicos],
+                        yticklabels=50,  # Mostrar cada 50 etiquetas
+                        ax=ax,
+                        cbar_kws={'label': 'Nivel de sonido (dB)'}
+                    )
+                    
+                    # Configurar etiquetas de tiempo
+                    num_ticks = 10
+                    step = len(y_unique) // num_ticks
+                    yticks = np.arange(0, len(y_unique), step)
+                    yticklabels = [pd.to_datetime(t, unit='s', origin=fecha_base).strftime('%H:%M') 
+                                  for t in y_unique[::step]]
+                    
+                    ax.set_yticks(yticks)
+                    ax.set_yticklabels(yticklabels, rotation=0)
+                    ax.set_xlabel("Nodos")
+                    ax.set_ylabel("Hora del día")
+                    ax.set_title("Mapa de Calor - Distribución de Niveles de Sonido")
+                    
+                    # Añadir línea de referencia en la barra de color
+                    cbar = heatmap.collections[0].colorbar
+                    cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)
+                    cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
+                    
+                    st.pyplot(fig)
+                    
+                    # Análisis automático
+                    max_db = np.nanmax(Z_grid)
+                    if max_db > 85:
+                        st.warning(f"⚠️ Se detectaron niveles críticos de hasta {max_db:.1f} dB")
+                        
+                except Exception as e:
+                    st.error(f"Error al generar el mapa de calor: {str(e)}")
+                    st.write("Datos utilizados para el gráfico:")
+                    st.write(df_filtrado[['_time', 'nodo', '_value']].head())
+            else:
+                st.warning("No hay datos disponibles para generar el mapa de calor")
 
         with tab2:
             st.markdown("""
