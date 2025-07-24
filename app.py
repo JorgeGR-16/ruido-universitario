@@ -278,7 +278,7 @@ elif seccion_activa == "Resultados":
         ])
 
         with tab1:
-            st.markdown("###Mapa de niveles de sonido ")
+            st.markdown("### Mapa de niveles de sonido ")
     
             st.markdown("""
             Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
@@ -362,8 +362,8 @@ elif seccion_activa == "Resultados":
             | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
             | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
             | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
-            | **85–100 dB**  | Moto, concierto                     | **Puede causar daño si hay exposición prolongada (>8h)** |
-            | **100–120 dB** | Sirena ambulancia, martillo neumático | **Daño auditivo posible en minutos**                  |
+            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
+            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
             """)
             st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
         
