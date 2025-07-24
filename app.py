@@ -140,68 +140,68 @@ elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
     st.markdown("* Visualizar el comportamiento del sonido en una área específica...")
 
-    #st.markdown("### 2.1 Objetivo General")
-    #st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
+    st.markdown("### 2.1 Objetivo General")
+    st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
     
-    #st.markdown("### 2.2 Objetivos específicos")
-    #st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
-    #st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
-    #st.markdown("* Integrar un sistema de visualización en pantalla.")
-    #st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
-    #st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
-    #st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
-    #st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
-    #st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
+    st.markdown("### 2.2 Objetivos específicos")
+    st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
+    st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
+    st.markdown("* Integrar un sistema de visualización en pantalla.")
+    st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
+    st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
+    st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
+    st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
+    st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
 
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
     st.header("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
 
-    #st.markdown("""
-    #<div style='text-align: justify;'>
-     #La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
-     #A continuación, se explican en detalle los elementos que componen un sonómetro.
-     #- **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
-     #- **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
-     #- **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
-     #- **Circuito de procesamiento de señales:** cuando la señal ha sido amplificada y filtrada, pasa al circuito de procesamiento que se encarga de convertir la señal analógica en digital y realizar los cálculos necesarios para determinar el nivel de presión sonora.
-     #- **Pantalla de visualización:**  es el componente que permite visualizar los resultados de las mediciones. Dependiendo del modelo del sonómetro, puede ser una pantalla LCD o LED.
-     #- **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
-     #- **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
+    st.markdown("""
+    <div style='text-align: justify;'>
+     La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
+     A continuación, se explican en detalle los elementos que componen un sonómetro.
+     - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
+     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
+     - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
+     - **Circuito de procesamiento de señales:** cuando la señal ha sido amplificada y filtrada, pasa al circuito de procesamiento que se encarga de convertir la señal analógica en digital y realizar los cálculos necesarios para determinar el nivel de presión sonora.
+     - **Pantalla de visualización:**  es el componente que permite visualizar los resultados de las mediciones. Dependiendo del modelo del sonómetro, puede ser una pantalla LCD o LED.
+     - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
+     - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
 
-     #Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
-    #</div>
-    #""", unsafe_allow_html=True)
+     Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
+    </div>
+    """, unsafe_allow_html=True)
     
     
-    #st.markdown("### 3.1 Diseño del modelo ESP32")
-    #col1, col2, col3 = st.columns([1, 3, 1])
-    #with col2:
-        #st.image("ESP32.jpg", use_container_width=True)
+    st.markdown("### 3.1 Diseño del modelo ESP32")
+    col1, col2, col3 = st.columns([1, 3, 1])
+    with col2:
+        st.image("ESP32.jpg", use_container_width=True)
         
-    #st.markdown("### 3.2 Construcción del sonómetro")
-    #st.markdown("### Materiales necesarios")
-    #st.markdown("""
-            #| Componente     | Descripción                            
-            #|----------------|-------------------------------------|
-            #| ESP32 T3 V1.6.1        | Microcontrolador                | 
-            #| Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
-            #| Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
-            #| Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
-            #| Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
-            #| Caja impresa en 3D | Para encapsular el dispositivo |
-            #| Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
-    #""")
-    #st.markdown("### Procedimiento de armado")
-    #st.markdown("""
-    #<div style='text-align: justify;'>
-        #1. Conexión del sensor de sonido
-        #2. Conexión de la pantalla OLED
-        #3. Botón de control
-        #4. Código en Arduino
-        #5. Montaje físico y carcas
-    #</div>
-     #""", unsafe_allow_html=True)
+    st.markdown("### 3.2 Construcción del sonómetro")
+    st.markdown("### Materiales necesarios")
+    st.markdown("""
+            | Componente     | Descripción                            
+            |----------------|-------------------------------------|
+            | ESP32 T3 V1.6.1        | Microcontrolador                | 
+            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
+            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
+            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
+            | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
+            | Caja impresa en 3D | Para encapsular el dispositivo |
+            | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+    """)
+    st.markdown("### Procedimiento de armado")
+    st.markdown("""
+    <div style='text-align: justify;'>
+        1. Conexión del sensor de sonido
+        2. Conexión de la pantalla OLED
+        3. Botón de control
+        4. Código en Arduino
+        5. Montaje físico y carcas
+    </div>
+     """, unsafe_allow_html=True)
     
     
 
