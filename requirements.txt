@@ -1,7 +1,8 @@
 streamlit
-seaborn
+streamlit-autorefresh
+influxdb-client
 pandas
 numpy
 matplotlib
+seaborn
 scipy
-influxdb-client
