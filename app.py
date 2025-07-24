@@ -373,26 +373,6 @@ elif seccion_activa == "Resultados":
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
         with tab5:
-            st.markdown("### **Efectos del ruido en la audición**")
-            st.markdown("""
-                <div style='text-align: justify;'>
-                La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
-                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
-
-            st.markdown("""
-            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
-            |----------------|-------------------------------------|--------------------------------------------------------|
-            | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
-            | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
-            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
-            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
-            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
-            """)
-           
             st.markdown("### Análisis de Riesgo Acústico")
             
             # Mejorar la visualización de efectos
@@ -452,8 +432,7 @@ elif seccion_activa == "Resultados":
                 - Considerar medidas de mitigación en el Nodo {max_nodo}
                 - Evitar actividades prolongadas en áreas críticas entre las {max_hora-1}-{max_hora+1} hrs
                 - Implementar controles de ruido en fuentes identificadas
-            """)
-                   
+            """)       
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
