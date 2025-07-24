@@ -278,91 +278,42 @@ elif seccion_activa == "Resultados":
         ])
 
         with tab1:
-            st.markdown("### Mapa de niveles de sonido - Análisis Espacio-Temporal")
+            st.markdown("### Mapa de niveles de sonido ")
+    
+            st.markdown("""
+            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
             
-            if not df_filtrado.empty:
-                try:
-                    # 1. Preparación y ordenamiento de nodos
-                    # Convertir nodos a valores numéricos manteniendo un orden específico
-                    nodos_unicos = sorted(df_filtrado['nodo'].unique(), key=lambda x: int(x) if x.isdigit() else x)
-                    nodo_a_num = {nodo: idx for idx, nodo in enumerate(nodos_unicos)}
-                    num_a_nodo = {idx: nodo for nodo, idx in nodo_a_num.items()}
+            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
+            - **Eje vertical:** representa la hora del día (formato HH:MM).
+            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
+            
+            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
+            """)
+            
+            X = df_filtrado['nodo'].astype(int).values
+            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+            Z = df_filtrado['_value'].astype(float).values
+
+            x_unique = np.unique(X)
+            y_unique = np.unique(tiempos_segundos)
+            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+
+            sb.heatmap(Z_grid, cmap='jet', xticklabels=x_unique, yticklabels=False, ax=ax)
+            ax.invert_yaxis()
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(yticklabels, rotation=0)
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Hora (HH:MM)")
+            st.pyplot(fig)
                     
-                    # 2. Mapear los datos a valores ordenados
-                    df_filtrado['nodo_ordenado'] = df_filtrado['nodo'].map(nodo_a_num)
-                    X = df_filtrado['nodo_ordenado'].values
-                    
-                    # 3. Preparación del tiempo (asegurar formato correcto)
-                    fecha_base = pd.Timestamp(fecha)
-                    df_filtrado['_time_naive'] = df_filtrado['_time'].dt.tz_localize(None)
-                    tiempos_segundos = (df_filtrado['_time_naive'] - fecha_base).dt.total_seconds().values
-                    Z = df_filtrado['_value'].astype(float).values
-                    
-                    # 4. Creación del grid para interpolación
-                    xi = np.linspace(min(X), max(X), len(nodos_unicos))  # Un punto por nodo
-                    yi = np.linspace(min(tiempos_segundos), max(tiempos_segundos), 100)
-                    X_grid, Y_grid = np.meshgrid(xi, yi)
-                    
-                    # 5. Interpolación
-                    Z_grid = griddata(
-                        (X, tiempos_segundos),
-                        Z,
-                        (X_grid, Y_grid),
-                        method='linear',
-                        fill_value=np.nanmin(Z)
-                    )
-                    Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z))
-                    
-                    # 6. Configuración del gráfico
-                    fig, ax = plt.subplots(figsize=(12, 6))
-                    
-                    # Heatmap con configuración personalizada
-                    heatmap = sb.heatmap(
-                        Z_grid,
-                        cmap='viridis',
-                        xticklabels=False,  # Desactivar etiquetas automáticas
-                        yticklabels=20,
-                        ax=ax,
-                        cbar_kws={'label': 'Nivel de sonido (dB)'}
-                    )
-                    
-                    # 7. Configuración personalizada del eje X
-                    # Posiciones exactas para cada nodo
-                    xticks_positions = np.arange(0.5, len(nodos_unicos), 1)
-                    
-                    # Etiquetas ordenadas correctamente
-                    ax.set_xticks(xticks_positions)
-                    ax.set_xticklabels([f"Nodo {nodo}" for nodo in nodos_unicos], rotation=45, ha='right')
-                    
-                    # 8. Configuración del eje Y (horas)
-                    num_ticks = 10
-                    step = len(yi) // num_ticks
-                    yticks = np.arange(0, len(yi), step)
-                    yticklabels = [
-                        (fecha_base + pd.Timedelta(seconds=yi[i])).strftime('%H:%M') 
-                        for i in range(0, len(yi), step)
-                    ]
-                    
-                    ax.set_yticks(yticks)
-                    ax.set_yticklabels(yticklabels, rotation=0)
-                    ax.set_xlabel("Nodos de medición (ordenados correctamente)")
-                    ax.set_ylabel("Hora del día")
-                    ax.set_title("Distribución espacio-temporal de niveles de sonido", pad=20)
-                    
-                    # 9. Línea de referencia para 85 dB
-                    if hasattr(heatmap, 'collections'):
-                        cbar = heatmap.collections[0].colorbar
-                        if cbar:
-                            cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)
-                            cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
-                    
-                    st.pyplot(fig)
-                    
-                except Exception as e:
-                    st.error(f"Error al generar el mapa de calor: {str(e)}")
-                    st.write("Datos de nodos:", nodos_unicos)
-            else:
-                st.warning("No hay datos disponibles para generar el mapa de calor")
+                   
 
         with tab2:
             st.markdown("""
