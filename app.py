@@ -280,30 +280,29 @@ elif seccion_activa == "Resultados":
         with tab1:
             st.markdown("### Mapa de niveles de sonido - Análisis Espacio-Temporal")
             
-            # Verificar y preparar los datos primero
             if not df_filtrado.empty:
                 try:
-                    # Convertir nodos a valores numéricos secuenciales si no lo son
+                    # Convertir nodos a valores numéricos secuenciales
                     nodos_unicos = df_filtrado['nodo'].unique()
                     nodo_a_num = {nodo: i for i, nodo in enumerate(nodos_unicos)}
                     X = df_filtrado['nodo'].map(nodo_a_num).values
                     
-                    # Convertir tiempos a segundos desde medianoche
-                    fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-                    tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+                    # Convertir tiempos - AQUÍ ESTÁ EL CAMBIO PRINCIPAL
+                    fecha_base = pd.Timestamp(fecha)  # Removemos tz_localize para hacerlo naive
+                    tiempos_segundos = (df_filtrado['_time'].dt.tz_localize(None) - fecha_base).dt.total_seconds().values
                     Z = df_filtrado['_value'].astype(float).values
                     
                     # Crear grid para interpolación
-                    x_unique = np.unique(X)
-                    y_unique = np.linspace(tiempos_segundos.min(), tiempos_segundos.max(), 100)  # 100 puntos en el tiempo
-                    X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+                    xi = np.linspace(X.min(), X.max(), 100)
+                    yi = np.linspace(tiempos_segundos.min(), tiempos_segundos.max(), 100)
+                    X_grid, Y_grid = np.meshgrid(xi, yi)
                     
-                    # Interpolación (usar 'nearest' si hay problemas con 'linear')
+                    # Interpolación
                     Z_grid = griddata(
-                        (X, tiempos_segundos), 
-                        Z, 
-                        (X_grid, Y_grid), 
-                        method='linear',  # Puedes probar con 'nearest' si hay errores
+                        (X, tiempos_segundos),
+                        Z,
+                        (X_grid, Y_grid),
+                        method='linear',
                         fill_value=np.nanmin(Z)
                     )
                     
@@ -313,29 +312,33 @@ elif seccion_activa == "Resultados":
                     # Configurar el gráfico
                     fig, ax = plt.subplots(figsize=(12, 6))
                     
-                    # Selector de paleta de colores
+                    # Selector de paleta
                     palette = st.selectbox(
                         "Seleccione paleta de colores:",
                         options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'cividis'],
                         index=0
                     )
                     
-                    # Crear heatmap
+                    # Heatmap
                     heatmap = sb.heatmap(
-                        Z_grid, 
-                        cmap=palette, 
+                        Z_grid,
+                        cmap=palette,
                         xticklabels=[f"Nodo {n}" for n in nodos_unicos],
-                        yticklabels=50,  # Mostrar cada 50 etiquetas
+                        yticklabels=20,
                         ax=ax,
                         cbar_kws={'label': 'Nivel de sonido (dB)'}
                     )
                     
                     # Configurar etiquetas de tiempo
                     num_ticks = 10
-                    step = len(y_unique) // num_ticks
-                    yticks = np.arange(0, len(y_unique), step)
-                    yticklabels = [pd.to_datetime(t, unit='s', origin=fecha_base).strftime('%H:%M') 
-                                  for t in y_unique[::step]]
+                    step = len(yi) // num_ticks
+                    yticks = np.arange(0, len(yi), step)
+                    
+                    # Convertir segundos a horas:minutos (naive)
+                    yticklabels = [
+                        (fecha_base + pd.Timedelta(seconds=yi[i])).strftime('%H:%M') 
+                        for i in range(0, len(yi), step)
+                    ]
                     
                     ax.set_yticks(yticks)
                     ax.set_yticklabels(yticklabels, rotation=0)
@@ -343,10 +346,12 @@ elif seccion_activa == "Resultados":
                     ax.set_ylabel("Hora del día")
                     ax.set_title("Mapa de Calor - Distribución de Niveles de Sonido")
                     
-                    # Añadir línea de referencia en la barra de color
-                    cbar = heatmap.collections[0].colorbar
-                    cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)
-                    cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
+                    # Línea de referencia
+                    if hasattr(heatmap, 'collections'):
+                        cbar = heatmap.collections[0].colorbar
+                        if cbar:
+                            cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)
+                            cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
                     
                     st.pyplot(fig)
                     
@@ -357,8 +362,11 @@ elif seccion_activa == "Resultados":
                         
                 except Exception as e:
                     st.error(f"Error al generar el mapa de calor: {str(e)}")
-                    st.write("Datos utilizados para el gráfico:")
+                    st.write("Debug - Primeras filas de datos:")
                     st.write(df_filtrado[['_time', 'nodo', '_value']].head())
+                    st.write("Debug - Tipos de datos:")
+                    st.write(f"Tipo de fecha_base: {type(fecha_base)}")
+                    st.write(f"Tipo de _time: {df_filtrado['_time'].dtype}")
             else:
                 st.warning("No hay datos disponibles para generar el mapa de calor")
 
