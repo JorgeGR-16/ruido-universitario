@@ -5,12 +5,15 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from scipy.interpolate import griddata
 from influxdb_client import InfluxDBClient
+from influxdb_client import InfluxDBClient
+from datetime import datetime, timedelta
+
 
 # --- CONFIGURACIÓN DE INFLUXDB ---
-INFLUXDB_URL = "http://localhost:8086"  # Cambia esto si no estás en localhost
-INFLUXDB_TOKEN = "TU_TOKEN_AQUI"
-INFLUXDB_ORG = "TU_ORG_AQUI"
-INFLUXDB_BUCKET = "TU_BUCKET_AQUI"
+INFLUXDB_URL = "http://localhost:8086"
+INFLUXDB_TOKEN = "AQUÍ_TU_TOKEN"
+INFLUXDB_ORG = "CADI"
+INFLUXDB_BUCKET = "Ruido
 
 # --- CLIENTE ---
 client = InfluxDBClient(
@@ -22,6 +25,50 @@ query_api = client.query_api()
 
 
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
+
+
+@st.cache_data(ttl=10)  # Cachea por 10 segundos para evitar saturar Influx
+def obtener_datos_realtime(nodos, minutos=10):
+    try:
+        client = InfluxDBClient(
+            url=INFLUXDB_URL,
+            token=INFLUXDB_TOKEN,
+            org=INFLUXDB_ORG
+        )
+        query_api = client.query_api()
+        dfs = []
+
+        for nodo in nodos:
+            query = f'''
+                from(bucket: "{INFLUXDB_BUCKET}")
+                    |> range(start: -{minutos}m)
+                    |> filter(fn: (r) => r["_measurement"] == "leq")
+                    |> filter(fn: (r) => r["nodo"] == "{nodo}")
+                    |> aggregateWindow(every: 1s, fn: last, createEmpty: false)
+                    |> yield(name: "last")
+            '''
+            result = query_api.query(org=INFLUXDB_ORG, query=query)
+
+            data = []
+            for table in result:
+                for record in table.records:
+                    data.append({
+                        "time": record.get_time(),
+                        "nodo": nodo,
+                        "value": record.get_value()
+                    })
+
+            df_nodo = pd.DataFrame(data)
+            dfs.append(df_nodo)
+
+        df_total = pd.concat(dfs, ignore_index=True)
+        df_total["time"] = pd.to_datetime(df_total["time"]) - pd.Timedelta(hours=6)  # Ajuste de UTC a tu zona
+        return df_total
+
+    except Exception as e:
+        st.error(f"Error al consultar InfluxDB: {e}")
+        return pd.DataFrame()
+
 
 # --- ESTILO PERSONALIZADO ---
 st.markdown("""
@@ -226,10 +273,17 @@ elif seccion_activa == "Resultados":
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"  # Ruta fija
+        with st.sidebar:
+        st.header("Datos en tiempo real desde InfluxDB")
+    
+        nodos_disponibles = [1, 2, 3, 4]
+        nodos_seleccionados = st.multiselect("Selecciona los nodos:", nodos_disponibles, default=nodos_disponibles)
+    
+        minutos = st.slider("Últimos minutos a consultar", 1, 60, 10)
+        
+        # Esta función ya tiene manejo de errores por dentro
+        df_filtrado = obtener_datos_realtime(nodos_seleccionados, minutos)
 
-        try:
-            df = pd.read_csv(uploaded_file, skiprows=3)
             columnas_requeridas = ['_time', 'nodo', '_value']
 
             if not all(col in df.columns for col in columnas_requeridas):
