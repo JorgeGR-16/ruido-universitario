@@ -192,7 +192,7 @@ elif seccion_activa == "Desarrollo":
             #| Caja impresa en 3D | Para encapsular el dispositivo |
             #| Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
             #""")
-        st.markdown("""### Procedimiento de armado"
+        st.markdown("""### Procedimiento de armado
         1. Conexión del sensor de sonido
         2. Conexión de la pantalla OLED
         3. Botón de control
