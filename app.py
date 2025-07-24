@@ -392,57 +392,68 @@ elif seccion_activa == "Resultados":
             | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
             | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
             """)
-            st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
-        
-            # Clasificación personalizada
-            def clasificar_rango(db):
-                if db < 30:
-                    return "0–30 dB: Sin riesgo"
-                elif db < 60:
-                    return "30–60 dB: Sin riesgo"
-                elif db < 85:
-                    return "60–85 dB: Riesgo leve"
-                elif db < 100:
-                    return "85–100 dB: Riesgo moderado"
-                else:
-                    return "100–120+ dB: Peligroso"
-        
-            df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
-            df_filtrado["hora"] = df_filtrado["_time"].dt.hour
-            horas_disponibles = sorted(df_filtrado["hora"].unique())
-            
-            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
-            hora_seleccionada = st.selectbox(
-                "Selecciona la hora que deseas visualizar (formato 24h):",
-                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
-                index=0  # opcional, elige cuál aparece por defecto
-            )
-            
-            # Filtrar datos por la hora seleccionada
-            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-            conteo = df_hora["rango"].value_counts().sort_index()
-            
-            # Colores personalizados por rango de riesgo
-            colores = {
-                "0–30 dB: Sin riesgo": "#b3d9ff",
-                "30–60 dB: Sin riesgo": "#80bfff",
-                "60–85 dB: Riesgo leve": "#ffcc80",
-                "85–100 dB: Riesgo moderado": "#ff9966",
-                "100–120+ dB: Peligroso": "#ff4d4d"
-            }
-            
-            # Crear gráfico de pastel
-            fig, ax = plt.subplots()
-            ax.pie(
-                conteo,
-                labels=conteo.index,
-                autopct="%1.1f%%",
-                startangle=90,
-                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
-            )
-            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-            st.pyplot(fig)
            
+            st.markdown("### Análisis de Riesgo Acústico")
+            
+            # Mejorar la visualización de efectos
+            st.markdown("""
+            #### Efectos del ruido en la salud
+            <div style='text-align: justify;'>
+            La exposición a diferentes niveles de ruido puede tener diversos efectos en la salud:
+            - **<85 dB:** Generalmente seguro sin efectos adversos
+            - **85-100 dB:** Riesgo de pérdida auditiva con exposición prolongada (>8h)
+            - **>100 dB:** Daño auditivo posible en minutos, riesgo de tinnitus
+            - **>120 dB:** Dolor inmediato y daño auditivo irreversible
+            
+            Fuente: Norma OSHA 1910.95 y directrices de la OMS
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Gráfico de radar para comparar riesgos
+            st.markdown("#### Perfil de riesgo por hora")
+            
+            # Calcular porcentajes por hora
+            df_riesgo_hora = df_filtrado.groupby(["hora", "rango"]).size().unstack().fillna(0)
+            df_riesgo_hora = df_riesgo_hora.div(df_riesgo_hora.sum(axis=1), axis=0) * 100
+            
+            fig_radar = go.Figure()
+            
+            for categoria in df_riesgo_hora.columns:
+                fig_radar.add_trace(go.Scatterpolar(
+                    r=df_riesgo_hora[categoria],
+                    theta=df_riesgo_hora.index,
+                    fill='toself',
+                    name=categoria.split(":")[0]
+                ))
+            
+            fig_radar.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100]
+                    )),
+                showlegend=True,
+                title="Distribución de riesgo por hora del día"
+            )
+            
+            st.plotly_chart(fig_radar, use_container_width=True)
+            
+            # Recomendaciones personalizadas
+            st.markdown("#### Recomendaciones según los datos")
+            
+            # Analizar datos para generar recomendaciones
+            max_hora = df_filtrado.groupby("hora")["_value"].mean().idxmax()
+            max_nodo = df_filtrado.groupby("nodo")["_value"].mean().idxmax()
+            
+            st.markdown(f"""
+            - **Horario más crítico:** {max_hora}:00 hrs
+            - **Zona más ruidosa:** Nodo {max_nodo}
+            - **Recomendaciones específicas:**
+                - Considerar medidas de mitigación en el Nodo {max_nodo}
+                - Evitar actividades prolongadas en áreas críticas entre las {max_hora-1}-{max_hora+1} hrs
+                - Implementar controles de ruido en fuentes identificadas
+            """)
+                   
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
