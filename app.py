@@ -373,81 +373,75 @@ elif seccion_activa == "Resultados":
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
         with tab5:
+            st.markdown("### **Efectos del ruido en la audición**")
+            st.markdown("""
+                <div style='text-align: justify;'>
+                La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
+                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
+
+            st.markdown("""
+            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
+            |----------------|-------------------------------------|--------------------------------------------------------|
+            | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
+            | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
+            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
+            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
+            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
+            """)
             st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
-            
-            # 1. Crear las columnas necesarias si no existen
-            if 'hora' not in df_filtrado.columns:
-                df_filtrado['hora'] = df_filtrado['_time'].dt.hour
-            
-            # 2. Definir la función de clasificación
+        
+            # Clasificación personalizada
             def clasificar_rango(db):
                 if db < 30:
-                    return "0-30 dB: Sin riesgo"
+                    return "0–30 dB: Sin riesgo"
                 elif db < 60:
-                    return "30-60 dB: Sin riesgo"
+                    return "30–60 dB: Sin riesgo"
                 elif db < 85:
-                    return "60-85 dB: Riesgo leve"
+                    return "60–85 dB: Riesgo leve"
                 elif db < 100:
-                    return "85-100 dB: Riesgo moderado"
+                    return "85–100 dB: Riesgo moderado"
                 else:
-                    return "100+ dB: Peligroso"
+                    return "100–120+ dB: Peligroso"
+        
+            df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
+            df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+            horas_disponibles = sorted(df_filtrado["hora"].unique())
             
-            # 3. Aplicar la clasificación si no existe la columna
-            if 'rango' not in df_filtrado.columns:
-                df_filtrado['rango'] = df_filtrado['_value'].apply(clasificar_rango)
+            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
+            hora_seleccionada = st.selectbox(
+                "Selecciona la hora que deseas visualizar (formato 24h):",
+                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
+                index=0  # opcional, elige cuál aparece por defecto
+            )
             
-            # 4. Verificar que las columnas existen antes de agrupar
-            if all(col in df_filtrado.columns for col in ['hora', 'rango']):
-                try:
-                    # Crear el DataFrame agrupado
-                    df_riesgo_hora = df_filtrado.groupby(["hora", "rango"]).size().unstack().fillna(0)
-                    
-                    # Ordenar las columnas para consistencia
-                    orden_categorias = [
-                        "0-30 dB: Sin riesgo",
-                        "30-60 dB: Sin riesgo",
-                        "60-85 dB: Riesgo leve",
-                        "85-100 dB: Riesgo moderado",
-                        "100+ dB: Peligroso"
-                    ]
-                    
-                    # Asegurarse de que todas las categorías existan
-                    for cat in orden_categorias:
-                        if cat not in df_riesgo_hora.columns:
-                            df_riesgo_hora[cat] = 0
-                    
-                    df_riesgo_hora = df_riesgo_hora[orden_categorias]
-                    
-                    # Selector de hora
-                    horas_disponibles = sorted(df_filtrado["hora"].unique())
-                    hora_seleccionada = st.selectbox(
-                        "Selecciona la hora que deseas visualizar (formato 24h):",
-                        options=horas_disponibles,
-                        index=0
-                    )
-                    
-                    # Filtrar datos por la hora seleccionada
-                    df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-                    conteo = df_hora["rango"].value_counts().reindex(orden_categorias, fill_value=0)
-                    
-                    # Crear gráfico de pastel
-                    fig, ax = plt.subplots()
-                    ax.pie(
-                        conteo,
-                        labels=conteo.index,
-                        autopct="%1.1f%%",
-                        startangle=90,
-                        colors=['#b3d9ff', '#80bfff', '#ffcc80', '#ff9966', '#ff4d4d']
-                    )
-                    ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-                    st.pyplot(fig)
-                    
-                except Exception as e:
-                    st.error(f"Error al generar el gráfico: {str(e)}")
-                    st.write("Debug - Columnas disponibles:", df_filtrado.columns.tolist())
-            else:
-                st.error("Las columnas 'hora' o 'rango' no existen en el DataFrame")
-                st.write("Columnas disponibles:", df_filtrado.columns.tolist())       
+            # Filtrar datos por la hora seleccionada
+            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+            conteo = df_hora["rango"].value_counts().sort_index()
+            
+            # Colores personalizados por rango de riesgo
+            colores = {
+                "0–30 dB: Sin riesgo": "#b3d9ff",
+                "30–60 dB: Sin riesgo": "#80bfff",
+                "60–85 dB: Riesgo leve": "#ffcc80",
+                "85–100 dB: Riesgo moderado": "#ff9966",
+                "100–120+ dB: Peligroso": "#ff4d4d"
+            }
+            
+            # Crear gráfico de pastel
+            fig, ax = plt.subplots()
+            ax.pie(
+                conteo,
+                labels=conteo.index,
+                autopct="%1.1f%%",
+                startangle=90,
+                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+            )
+            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
+            st.pyplot(fig)     
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
