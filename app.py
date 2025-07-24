@@ -282,26 +282,28 @@ elif seccion_activa == "Resultados":
             
             if not df_filtrado.empty:
                 try:
-                    # 1. Preparación de datos
-                    # Convertir nodos a valores numéricos secuenciales manteniendo el orden original
-                    nodos_unicos = df_filtrado['nodo'].unique()
+                    # 1. Ordenar los datos por tiempo primero
+                    df_filtrado = df_filtrado.sort_values('_time')
+                    
+                    # 2. Preparación y ordenamiento de nodos
+                    nodos_unicos = sorted(df_filtrado['nodo'].unique(), key=lambda x: int(x) if str(x).isdigit() else x)
                     nodo_a_num = {nodo: idx for idx, nodo in enumerate(nodos_unicos)}
-                    num_a_nodo = {idx: nodo for nodo, idx in nodo_a_num.items()}
                     
-                    X = df_filtrado['nodo'].map(nodo_a_num).values
-                    
-                    # Convertir tiempos (asegurando que sean timezone-naive)
-                    fecha_base = pd.Timestamp(fecha)  # Sin zona horaria
+                    # 3. Convertir tiempos y asegurar orden cronológico
                     df_filtrado['_time_naive'] = df_filtrado['_time'].dt.tz_localize(None)
-                    tiempos_segundos = (df_filtrado['_time_naive'] - fecha_base).dt.total_seconds().values
-                    Z = df_filtrado['_value'].astype(float).values
+                    fecha_min = df_filtrado['_time_naive'].min().replace(hour=0, minute=0, second=0)
+                    tiempos_segundos = (df_filtrado['_time_naive'] - fecha_min).dt.total_seconds().values
                     
-                    # 2. Creación del grid para interpolación
-                    xi = np.linspace(min(X), max(X), len(nodos_unicos)*2)  # Más puntos para mejor resolución
-                    yi = np.linspace(min(tiempos_segundos), max(tiempos_segundos), 100)
+                    # 4. Mapear datos a la cuadrícula
+                    X = df_filtrado['nodo'].map(nodo_a_num).values
+                    Z = df_filtrado['_value'].values
+                    
+                    # 5. Crear grid con orden temporal correcto
+                    xi = np.linspace(0, len(nodos_unicos)-1, len(nodos_unicos))
+                    yi = np.linspace(0, tiempos_segundos.max(), 24)  # 24 puntos para las horas del día
                     X_grid, Y_grid = np.meshgrid(xi, yi)
                     
-                    # 3. Interpolación
+                    # 6. Interpolación
                     Z_grid = griddata(
                         (X, tiempos_segundos),
                         Z,
@@ -309,69 +311,48 @@ elif seccion_activa == "Resultados":
                         method='linear',
                         fill_value=np.nanmin(Z)
                     )
-                    Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z))
                     
-                    # 4. Configuración del gráfico
-                    fig, ax = plt.subplots(figsize=(12, 6))
+                    # 7. Configuración del gráfico
+                    fig, ax = plt.subplots(figsize=(12, 8))
                     
-                    # Selector de paleta
-                    palette = st.selectbox(
-                        "Seleccione paleta de colores:",
-                        options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'cividis'],
-                        index=0
-                    )
-                    
-                    # Heatmap con etiquetas personalizadas
+                    # Heatmap con orden correcto (invertir eje Y para tiempo ascendente)
                     heatmap = sb.heatmap(
                         Z_grid,
-                        cmap=palette,
-                        xticklabels=False,  # Primero desactivamos las etiquetas automáticas
-                        yticklabels=20,
+                        cmap='viridis',
+                        xticklabels=False,
+                        yticklabels=False,  # Configuraremos manualmente
                         ax=ax,
                         cbar_kws={'label': 'Nivel de sonido (dB)'}
                     )
                     
-                    # 5. Configuración personalizada del eje X
-                    # Posiciones donde queremos las etiquetas (centro de cada nodo)
-                    xticks_positions = np.linspace(0, len(xi)-1, len(nodos_unicos), dtype=int)
+                    # 8. Configurar eje X (nodos)
+                    ax.set_xticks(np.arange(0.5, len(nodos_unicos)+0.5, 1))
+                    ax.set_xticklabels([f"Nodo {nodo}" for nodo in nodos_unicos], rotation=45, ha='right')
                     
-                    # Etiquetas personalizadas para los nodos
-                    ax.set_xticks(xticks_positions)
-                    ax.set_xticklabels([f"Nodo {num_a_nodo.get(i//2, '')}" for i in xticks_positions], rotation=45, ha='right')
+                    # 9. Configurar eje Y (horas) - Orden correcto
+                    hour_labels = [f"{h:02d}:00" for h in range(0, 24)]
+                    hour_positions = np.linspace(0, len(yi)-1, len(hour_labels))
                     
-                    # 6. Configuración del eje Y (horas)
-                    num_ticks = 10
-                    step = len(yi) // num_ticks
-                    yticks = np.arange(0, len(yi), step)
-                    yticklabels = [
-                        (fecha_base + pd.Timedelta(seconds=yi[i])).strftime('%H:%M') 
-                        for i in range(0, len(yi), step)
-                    ]
+                    ax.set_yticks(hour_positions)
+                    ax.set_yticklabels(hour_labels, rotation=0)
+                    ax.invert_yaxis()  # Para que 00:00 quede arriba y 23:00 abajo
                     
-                    ax.set_yticks(yticks)
-                    ax.set_yticklabels(yticklabels, rotation=0)
                     ax.set_xlabel("Nodos de medición")
                     ax.set_ylabel("Hora del día")
-                    ax.set_title("Distribución espacio-temporal de niveles de sonido", pad=20)
+                    ax.set_title("Distribución de niveles de sonido por nodo y hora", pad=20)
                     
-                    # 7. Línea de referencia para 85 dB
+                    # 10. Línea de referencia para 85 dB
                     if hasattr(heatmap, 'collections'):
                         cbar = heatmap.collections[0].colorbar
-                        if cbar:
-                            cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)
-                            cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
+                        cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)
+                        cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
                     
                     st.pyplot(fig)
                     
-                    # 8. Análisis automático
-                    max_db = np.nanmax(Z_grid)
-                    if max_db > 85:
-                        st.warning(f"⚠️ Se detectaron niveles críticos de hasta {max_db:.1f} dB")
-                        
                 except Exception as e:
                     st.error(f"Error al generar el mapa de calor: {str(e)}")
-                    st.write("Datos utilizados para el gráfico:")
-                    st.write(df_filtrado[['_time', 'nodo', '_value']].head())
+                    st.write("Primeras filas de datos temporales:")
+                    st.write(df_filtrado[['_time', '_time_naive']].head())
             else:
                 st.warning("No hay datos disponibles para generar el mapa de calor")
 
