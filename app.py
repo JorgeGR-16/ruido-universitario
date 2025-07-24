@@ -148,10 +148,10 @@ elif seccion_activa == "Objetivo":
     #st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
     #st.markdown("* Integrar un sistema de visualización en pantalla.")
     #st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
-    st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
-    st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
-    st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
-    st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
+    #st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
+    #st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
+    #st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
+    #st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
 
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
@@ -179,19 +179,19 @@ elif seccion_activa == "Desarrollo":
     #with col2:
         #st.image("ESP32.jpg", use_container_width=True)
         
-    st.markdown("### 3.2 Construcción del sonómetro")
-    st.markdown("### Materiales necesarios")
-    st.markdown("""
-            | Componente     | Descripción                            
-            |----------------|-------------------------------------|
-            | ESP32 T3 V1.6.1        | Microcontrolador                | 
-            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
-            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
-            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
-            | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
-            | Caja impresa en 3D | Para encapsular el dispositivo |
-            | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
-    """)
+    #st.markdown("### 3.2 Construcción del sonómetro")
+    #st.markdown("### Materiales necesarios")
+    #st.markdown("""
+            #| Componente     | Descripción                            
+            #|----------------|-------------------------------------|
+            #| ESP32 T3 V1.6.1        | Microcontrolador                | 
+            #| Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
+            #| Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
+            #| Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
+            #| Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
+            #| Caja impresa en 3D | Para encapsular el dispositivo |
+            #| Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+    #""")
     #st.markdown("### Procedimiento de armado")
     #st.markdown("""
     #<div style='text-align: justify;'>
