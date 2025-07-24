@@ -175,13 +175,13 @@ elif seccion_activa == "Desarrollo":
     
      #st.markdown("""
     
-     #st.markdown("### 3.1 Diseño del modelo ESP32")
-     #col1, col2, col3 = st.columns([1, 2, 1])
-        #with col2:
-        #st.image("ESP32.png", use_container_width=True)
-     #st.markdown("### 3.2 Construcción del sonómetro")
-        #st.markdown("### Materiales necesarios")
-        #st.markdown("""
+    st.markdown("### 3.1 Diseño del modelo ESP32")
+    col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+        st.image("ESP32.png", use_container_width=True)
+    #st.markdown("### 3.2 Construcción del sonómetro")
+    #st.markdown("### Materiales necesarios")
+    #st.markdown("""
             #| Componente     | Descripción                            
             #|----------------|-------------------------------------|
             #| ESP32 T3 V1.6.1        | Microcontrolador                | 
@@ -191,17 +191,17 @@ elif seccion_activa == "Desarrollo":
             #| Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
             #| Caja impresa en 3D | Para encapsular el dispositivo |
             #| Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
-            #""")
-    st.markdown("### Procedimiento de armado")
-    st.markdown("""
-    <div style='text-align: justify;'>
-        1. Conexión del sensor de sonido
-        2. Conexión de la pantalla OLED
-        3. Botón de control
-        4. Código en Arduino
-        5. Montaje físico y carcas
-    </div>
-     """, unsafe_allow_html=True)
+    #""")
+    #st.markdown("### Procedimiento de armado")
+    #st.markdown("""
+    #<div style='text-align: justify;'>
+        #1. Conexión del sensor de sonido
+        #2. Conexión de la pantalla OLED
+        #3. Botón de control
+        #4. Código en Arduino
+        #5. Montaje físico y carcas
+    #</div>
+     #""", unsafe_allow_html=True)
     
     
 
