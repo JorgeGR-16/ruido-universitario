@@ -278,40 +278,61 @@ elif seccion_activa == "Resultados":
         ])
 
         with tab1:
-            st.markdown("### Mapa de niveles de sonido ")
-    
+            st.markdown("### Mapa de niveles de sonido - Análisis Espacio-Temporal")
+            
+            # Explicación más detallada
             st.markdown("""
-            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
+            <div style='text-align: justify;'>
+            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo. 
+            Permite identificar patrones acústicos y correlaciones entre ubicaciones y horarios.
             
-            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
-            - **Eje vertical:** representa la hora del día (formato HH:MM).
-            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
+            - <strong>Interpretación:</strong> Los colores cálidos (rojos/naranjas) indican niveles críticos (>85 dB), 
+              mientras que los fríos (azules/verdes) representan niveles seguros.
+            - <strong>Recomendación:</strong> Busque patrones repetitivos que puedan indicar fuentes de ruido específicas 
+              (ej: horarios de clases, tráfico, eventos).
+            </div>
+            """, unsafe_allow_html=True)
             
-            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
-            """)
+            # Selector de paleta de colores
+            palette = st.selectbox(
+                "Seleccione paleta de colores:",
+                options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'cividis'],
+                index=0
+            )
             
-            X = df_filtrado['nodo'].astype(int).values
-            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-            Z = df_filtrado['_value'].astype(float).values
-
-            x_unique = np.unique(X)
-            y_unique = np.unique(tiempos_segundos)
-            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
-
-            fig, ax = plt.subplots(figsize=(10, 6))
-            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
-            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-
-            sb.heatmap(Z_grid, cmap='jet', xticklabels=x_unique, yticklabels=False, ax=ax)
+            # Mejorar la visualización del heatmap
+            fig, ax = plt.subplots(figsize=(12, 8))
+            heatmap = sb.heatmap(
+                Z_grid, 
+                cmap=palette, 
+                xticklabels=x_unique, 
+                yticklabels=False, 
+                ax=ax,
+                cbar_kws={'label': 'Nivel de sonido (dB)'}
+            )
+            
+            # Mejorar etiquetas y título
             ax.invert_yaxis()
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos")
-            ax.set_ylabel("Hora (HH:MM)")
+            ax.set_xlabel("Nodos (ubicación de sensores)", fontsize=12)
+            ax.set_ylabel("Hora del día", fontsize=12)
+            ax.set_title("Distribución espacio-temporal de niveles de sonido", pad=20, fontsize=14)
+            
+            # Añadir líneas de referencia para niveles críticos
+            cbar = heatmap.collections[0].colorbar
+            cbar.ax.axhline(0.85, color='white', linestyle='--', linewidth=2)  # 85 dB
+            cbar.ax.text(1.5, 0.85, ' Límite seguro (85 dB)', va='center', ha='left', color='white')
+            
             st.pyplot(fig)
+            
+            # Añadir análisis automático de puntos críticos
+            max_db = np.nanmax(Z_grid)
+            if max_db > 85:
+                st.warning(f"⚠️ Se detectaron niveles críticos de hasta {max_db:.1f} dB")
+                st.markdown("**Recomendaciones:**")
+                st.markdown("- Identificar fuentes de ruido en horarios pico")
+                st.markdown("- Considerar medidas de mitigación en áreas críticas")
 
         with tab2:
             st.markdown("""
