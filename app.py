@@ -177,7 +177,7 @@ elif seccion_activa == "Desarrollo":
     
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
+    with col2:
         st.image("ESP32.png", use_container_width=True)
     #st.markdown("### 3.2 Construcción del sonómetro")
     #st.markdown("### Materiales necesarios")
