@@ -95,12 +95,12 @@ if seccion_activa == "Introducción":
     """, unsafe_allow_html=True)
 
 
-    st.markdown("""
-    <div style='text-align: justify;'>
-    El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
-    Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
-    </div>
-    """, unsafe_allow_html=True)
+    #st.markdown("""
+    #<div style='text-align: justify;'>
+    #El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
+    #Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
+    #</div>
+    #""", unsafe_allow_html=True)
     
     #st.markdown("""
     #<div style='text-align: justify;'>
@@ -174,14 +174,37 @@ elif seccion_activa == "Desarrollo":
     #""", unsafe_allow_html=True)
     
      #st.markdown("""
-    #<div style='text-align: justify;'>
+    
      #st.markdown("### 3.1 Diseño del modelo ESP32")
      #col1, col2, col3 = st.columns([1, 2, 1])
         #with col2:
         #st.image("ESP32.png", use_container_width=True)
      #st.markdown("### 3.2 Construcción del sonómetro")
+        #st.markdown("### Materiales necesarios")
+        #st.markdown("""
+            #| Componente     | Descripción                            
+            #|----------------|-------------------------------------|
+            #| ESP32 T3 V1.6.1        | Microcontrolador                | 
+            #| Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
+            #| Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
+            #| Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
+            #| Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
+            #| Caja impresa en 3D | Para encapsular el dispositivo |
+            #| Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+            #""")
+        st.markdown("""### Procedimiento de armado"
+        1. Conexión del sensor de sonido
+        2. Conexión de la pantalla OLED
+        3. Botón de control
+        4. Código en Arduino
+        5. Montaje físico y carcas
+        """)
+        
+    #<div style='text-align: justify;'>
+        
     #</div>
-    #""", unsafe_allow_html=True)
+     #""", unsafe_allow_html=True)
+    
     
 
 elif seccion_activa == "Resultados":
