@@ -290,17 +290,17 @@ elif seccion_activa == "Resultados":
             Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
             """)
             
-            # Selector de paleta de colores en el sidebar
-            with st.sidebar:
-                st.markdown("### Configuración del Mapa de Calor")
+            # Selector de paleta de colores encima del mapa
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
                 palette = st.selectbox(
-                    "Seleccione paleta de colores:",
+                    "Seleccione la paleta de colores:",
                     options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
                     index=0,
-                    help="Elija una paleta de colores para visualizar los niveles de sonido"
+                    key="palette_selector"
                 )
             
-            # Procesamiento de datos
+            # Procesamiento de datos (manteniendo tu estructura original)
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
@@ -313,51 +313,30 @@ elif seccion_activa == "Resultados":
             Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
         
             # Configuración del gráfico
-            fig, ax = plt.subplots(figsize=(12, 6))
-            
-            # Heatmap con paleta seleccionada
-            heatmap = sb.heatmap(
-                Z_grid, 
-                cmap=palette, 
-                xticklabels=x_unique, 
-                yticklabels=False, 
-                ax=ax,
-                cbar_kws={'label': 'Nivel de sonido (dB)'}
-            )
-            
-            # Configuración de ejes
-            ax.invert_yaxis()
+            fig, ax = plt.subplots(figsize=(10, 6))
             yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+        
+            # Heatmap con paleta seleccionada
+            sb.heatmap(
+                Z_grid, 
+                cmap=palette,  # Usando la paleta seleccionada
+                xticklabels=x_unique, 
+                yticklabels=False, 
+                ax=ax
+            )
             
+            ax.invert_yaxis()
             ax.set_yticks(yticks)
             ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos", fontsize=12)
-            ax.set_ylabel("Hora (HH:MM)", fontsize=12)
-            ax.set_title(f"Mapa de niveles de sonido - Paleta: {palette}", pad=15, fontsize=14)
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Hora (HH:MM)")
             
-            # Mejorar la barra de color
-            cbar = heatmap.collections[0].colorbar
-            cbar.set_label('Decibeles (dB)', rotation=270, labelpad=20)
-            
-            # Añadir línea de referencia para 85 dB
-            norm = plt.Normalize(Z_grid.min(), Z_grid.max())
-            if Z_grid.max() > 85:  # Solo mostrar si hay valores sobre 85 dB
-                cbar.ax.axhline(norm(85), color='white', linestyle='--', linewidth=2)
-                cbar.ax.text(1.5, norm(85), ' Límite seguro (85 dB)', va='center', ha='left', color='white')
+            # Añadir barra de color con etiqueta
+            cbar = ax.collections[0].colorbar
+            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
             
             st.pyplot(fig)
-            
-            # Análisis adicional automático
-            max_db = np.nanmax(Z_grid)
-            if max_db > 85:
-                st.warning(f"**¡Atención!** Se detectaron niveles críticos de hasta {max_db:.1f} dB")
-                st.markdown("""
-                **Recomendaciones:**
-                - Identificar las fuentes de ruido en estos horarios
-                - Considerar medidas de mitigación acústica
-                - Revisar los nodos con mayor exposición
-                """)
                             
                    
 
