@@ -4,6 +4,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
 from scipy.interpolate import griddata
+from influxdb_client import InfluxDBClient
+
+# --- CONFIGURACIÓN DE INFLUXDB ---
+INFLUXDB_URL = "http://localhost:8086"  # Cambia esto si no estás en localhost
+INFLUXDB_TOKEN = "TU_TOKEN_AQUI"
+INFLUXDB_ORG = "TU_ORG_AQUI"
+INFLUXDB_BUCKET = "TU_BUCKET_AQUI"
+
+# --- CLIENTE ---
+client = InfluxDBClient(
+    url=INFLUXDB_URL,
+    token=INFLUXDB_TOKEN,
+    org=INFLUXDB_ORG
+)
+query_api = client.query_api()
+
 
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
