@@ -173,26 +173,25 @@ elif seccion_activa == "Desarrollo":
     #</div>
     #""", unsafe_allow_html=True)
     
-     #st.markdown("""
     
-    st.markdown("### 3.1 Diseño del modelo ESP32")
-    col1, col2, col3 = st.columns([1, 3, 1])
-    with col2:
-        st.image("ESP32.jpg", use_container_width=True)
+    #st.markdown("### 3.1 Diseño del modelo ESP32")
+    #col1, col2, col3 = st.columns([1, 3, 1])
+    #with col2:
+        #st.image("ESP32.jpg", use_container_width=True)
         
-    #st.markdown("### 3.2 Construcción del sonómetro")
-    #st.markdown("### Materiales necesarios")
-    #st.markdown("""
-            #| Componente     | Descripción                            
-            #|----------------|-------------------------------------|
-            #| ESP32 T3 V1.6.1        | Microcontrolador                | 
-            #| Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
-            #| Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
-            #| Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
-            #| Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
-            #| Caja impresa en 3D | Para encapsular el dispositivo |
-            #| Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
-    #""")
+    st.markdown("### 3.2 Construcción del sonómetro")
+    st.markdown("### Materiales necesarios")
+    st.markdown("""
+            | Componente     | Descripción                            
+            |----------------|-------------------------------------|
+            | ESP32 T3 V1.6.1        | Microcontrolador                | 
+            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
+            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
+            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
+            | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
+            | Caja impresa en 3D | Para encapsular el dispositivo |
+            | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+    """)
     #st.markdown("### Procedimiento de armado")
     #st.markdown("""
     #<div style='text-align: justify;'>
