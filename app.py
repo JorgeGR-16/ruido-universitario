@@ -198,7 +198,7 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-    Conecta el sensor de sonido al ESP32 de la siguiente forma:
+    
         | Sensor     | ESP32 T3 V1.6.1                            
         |----------------|-------------------------------------|
         | VCC        | 3.3V                | 
