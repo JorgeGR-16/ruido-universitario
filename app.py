@@ -181,7 +181,7 @@ elif seccion_activa == "Desarrollo":
         st.image("ESP32.jpg", use_container_width=True)
         
     st.markdown("### 3.2 Construcción del sonómetro")
-    st.markdown("### Materiales necesarios")
+    st.markdown("### 3.2.1 Materiales necesarios")
     st.markdown("""
             | Componente     | Descripción                            
             |----------------|-------------------------------------|
@@ -193,7 +193,7 @@ elif seccion_activa == "Desarrollo":
             | Caja impresa en 3D | Para encapsular el dispositivo |
             | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
     """)
-    st.markdown("### Procedimiento de armado")
+    st.markdown("### 3.2.2 Procedimiento de armado")
     st.markdown("""
     <div style='text-align: justify;'>
     
