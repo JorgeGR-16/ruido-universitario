@@ -198,7 +198,13 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-    
+        Conecta el sensor de sonido al ESP32 de la siguiente forma:
+        | Sensor     | ESP32 T3 V1.6.1                            
+        |----------------|-------------------------------------|
+        | VCC        | 3.3V                | 
+        | GND      | GND                 | 
+        | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
+        
     2. **Conexión de la pantalla OLED**
     
     3. **Botón de control**
