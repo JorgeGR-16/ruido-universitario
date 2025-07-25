@@ -198,7 +198,6 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-    
         | Sensor     | ESP32 T3 V1.6.1                            
         |----------------|-------------------------------------|
         | VCC        | 3.3V                | 
@@ -206,8 +205,15 @@ elif seccion_activa == "Desarrollo":
         | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
         
     2. **Conexión de la pantalla OLED**
+        | OLED SSD1306     | ESP32 T3 V1.6.1                            
+        |----------------|-------------------------------------|
+        | VCC        | 3.3V                | 
+        | GND      | GND                 | 
+        | SDA       | GPIO 21          |
+        | SCL       | GPIO 22          |
     
     3. **Botón de control**
+    st.markdown("Conecta un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones.")
     
     4. **Código en Arduino**
     
