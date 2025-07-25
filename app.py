@@ -217,6 +217,10 @@ elif seccion_activa == "Desarrollo":
     4. **Código en Arduino**
     
     5. **Montaje físico y carcasa**
+    - Usa una impresora 3D para crear la carcasa
+    - Inserta los módulos asegurándolos con presión
+    - Dejar espcio para los conectores, pantalla visible y ventilación del micrófono
+    - Cerrar el circuito y conectar la alimentación
     </div>
      """, unsafe_allow_html=True)
     
