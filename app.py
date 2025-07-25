@@ -161,7 +161,7 @@ elif seccion_activa == "Desarrollo":
     st.markdown("""
     <div style='text-align: justify;'>
     La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
-    A continuación, se explican en detalle los elementos que componen un sonómetro.
+    A continuación, se explican en detalle los elementos que componen un sonómetro:
      
     - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
