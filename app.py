@@ -213,7 +213,6 @@ elif seccion_activa == "Desarrollo":
         | SCL       | GPIO 22          |
     
     3. **Botón de control**
-    st.markdown("Conecta un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones.")
     
     4. **Código en Arduino**
     
