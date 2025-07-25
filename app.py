@@ -96,9 +96,18 @@ if seccion_activa == "Introducción":
     st.markdown("""
     <div style='text-align: justify;'><br>
     El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
-    Está diseñado para simular la respuesta del oído humano mediante filtros (como el filtro A, dBA), que ponderan las frecuencias del sonido. Su importancia radica en que permite
-    cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
-    Medir el ruido con sonómetros es fundamental para diagnosticar problemas de contaminación acústica, realizar mapas de ruido en zonas urbanas, evaluar el impacto ambiental de proyectos de infraestructura, proteger zonas sensibles como hospitales, escuelas o áreas naturales y realizar controles laborales en entornos con maquinaria ruidosa.
+    Su importancia radica en que permite cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
+    Los niveles elevados de ruido pueden interferir en actividades cotidianas, como el trabajo o el descanso, y tienen un impacto directo en la salud pública. Las mediciones precisas del sonido son necesarias para evaluar estos efectos y tomar medidas correctivas.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='text-align: justify;'><br>
+    Los sonómetros tienen aplicaciones en diversas áreas, como:
+    - **Salud pública:** se utilizan para medir los niveles de ruido en hospitales, escuelas y vecindarios.
+    - **Industria y construcción:** para monitorear el ruido en fábricas y sitios de construcción, asegurando la seguridad de los trabajadores y el cumplimiento de las regulaciones.
+    - **Transporte:** se emplean en la medición del ruido de tráfico, ferroviario y aéreo, con el fin de minimizar su impacto en las comunidades cercanas.
+    - **Investigación acústica:** en estudios científicos y de ingeniería, se utilizan para evaluar la propagación del sonido y el diseño de soluciones para reducir el ruido.
     </div>
     """, unsafe_allow_html=True)
     
