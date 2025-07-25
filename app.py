@@ -95,9 +95,8 @@ if seccion_activa == "Introducción":
 
     st.markdown("""
     <div style='text-align: justify;'><br>
-    El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
-    Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
-    Está diseñado para simular la respuesta del oído humano mediante filtros (como el filtro A, dBA), que ponderan las frecuencias del sonido.Su importancia radica en que permite
+    El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
+    Está diseñado para simular la respuesta del oído humano mediante filtros (como el filtro A, dBA), que ponderan las frecuencias del sonido. Su importancia radica en que permite
     cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
     Medir el ruido con sonómetros es fundamental para diagnosticar problemas de contaminación acústica, realizar mapas de ruido en zonas urbanas, evaluar el impacto ambiental de proyectos de infraestructura, proteger zonas sensibles como hospitales, escuelas o áreas naturales y realizar controles laborales en entornos con maquinaria ruidosa.
     </div>
@@ -106,6 +105,7 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
+    
     **1. Captación del sonido:**  
     El sonido ambiente es captado por un micrófono de condensador...
     </div>
