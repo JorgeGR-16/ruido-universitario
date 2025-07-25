@@ -176,7 +176,7 @@ elif seccion_activa == "Desarrollo":
     
     
     st.markdown("### 3.1 Diseño del modelo ESP32")
-    col1, col2, col3 = st.columns([1, 3, 1])
+    col1, col2, col3 = st.columns([2, 1, 2])
     with col2:
         st.image("ESP32.jpg", use_container_width=True)
         
