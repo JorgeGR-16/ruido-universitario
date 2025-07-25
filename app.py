@@ -104,10 +104,12 @@ if seccion_activa == "Introducción":
     st.markdown("""
     <div style='text-align: justify;'><br>
     Los sonómetros tienen aplicaciones en diversas áreas, como:
+    
     - **Salud pública:** se utilizan para medir los niveles de ruido en hospitales, escuelas y vecindarios.
     - **Industria y construcción:** para monitorear el ruido en fábricas y sitios de construcción, asegurando la seguridad de los trabajadores y el cumplimiento de las regulaciones.
     - **Transporte:** se emplean en la medición del ruido de tráfico, ferroviario y aéreo, con el fin de minimizar su impacto en las comunidades cercanas.
     - **Investigación acústica:** en estudios científicos y de ingeniería, se utilizan para evaluar la propagación del sonido y el diseño de soluciones para reducir el ruido.
+    
     </div>
     """, unsafe_allow_html=True)
     
