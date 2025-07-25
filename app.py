@@ -90,27 +90,14 @@ if seccion_activa == "Introducción":
     <div style='text-align: justify;'>
      El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
      El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
-    
+
+     El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
+     Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
+     Está diseñado para simular la respuesta del oído humano mediante filtros (como el filtro A, dBA), que ponderan las frecuencias del sonido.Su importancia radica en que permite
+     cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
+     Medir el ruido con sonómetros es fundamental para diagnosticar problemas de contaminación acústica, realizar mapas de ruido en zonas urbanas, evaluar el impacto ambiental de proyectos de infraestructura, proteger zonas sensibles como hospitales, escuelas o áreas naturales y realizar controles laborales en entornos con maquinaria ruidosa.
     </div>
     """, unsafe_allow_html=True)
-
-
-    st.markdown("""
-    <div style='text-align: justify;'>
-    El sonómetro es un instrumento utilizado para medir el nivel de presión sonora, es decir, la intensidad del sonido en el ambiente. 
-    Sirve para medir la intensidad del sonido, expresada en decibeles (dB). Se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style='text-align: justify;'>
-    Está diseñado para simular la respuesta del oído humano mediante filtros (como el filtro A, dBA), que ponderan las frecuencias del sonido.Su importancia radica en que permite
-    cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
-    Medir el ruido con sonómetros es fundamental para diagnosticar problemas de contaminación acústica, realizar mapas de ruido en zonas urbanas, evaluar el impacto ambiental de proyectos de infraestructura, proteger zonas sensibles como hospitales, escuelas o áreas naturales y realizar controles laborales en entornos con maquinaria ruidosa.
-    </div>
-    """, unsafe_allow_html=True)
-    
-
 
     
     st.markdown("### 1.1 Principio de funcionamiento")
