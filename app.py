@@ -116,8 +116,8 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
-    **1.Captación del sonido:**  
-    El sonido ambiente es captado por un micrófono de condensador...
+    
+    1. **Captación del sonido:** El sonido ambiente es captado por un micrófono de condensador...
     </div>
     """, unsafe_allow_html=True)
 
