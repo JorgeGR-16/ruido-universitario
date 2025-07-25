@@ -196,6 +196,7 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### Procedimiento de armado")
     st.markdown("""
     <div style='text-align: justify;'>
+    
     1. **Conexión del sensor de sonido**
     
     2. **Conexión de la pantalla OLED**
