@@ -196,11 +196,11 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### Procedimiento de armado")
     st.markdown("""
     <div style='text-align: justify;'>
-        1. Conexión del sensor de sonido
-        2. Conexión de la pantalla OLED
-        3. Botón de control
-        4. Código en Arduino
-        5. Montaje físico y carcas
+        - 1. Conexión del sensor de sonido
+        - 2. Conexión de la pantalla OLED
+        - 3. Botón de control
+        - 4. Código en Arduino
+        - 5. Montaje físico y carcas
     </div>
      """, unsafe_allow_html=True)
     
