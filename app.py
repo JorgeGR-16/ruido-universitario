@@ -147,12 +147,12 @@ elif seccion_activa == "Objetivo":
     st.markdown("### 2.2 Objetivos específicos")
     st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
     st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
-    st.markdown("* Integrar un sistema de visualización en pantalla.")
+    #st.markdown("* Integrar un sistema de visualización en pantalla.")
     st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
     st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
     st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
     st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
-    st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
+    #st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
 
 elif seccion_activa == "Desarrollo":
     st.markdown("### Desarrollo del prototipo")
