@@ -109,9 +109,7 @@ if seccion_activa == "Introducción":
 
     - **Pérdida auditiva inducida por ruido** 
     - **Estrés, irritabilidad y fatiga mental** 
-    - **Trastornos del sueño**
     - **Aumento del riesgo cardiovascular**
-    - **Efectos en el desarrollo infantil**
     </div>
     """, unsafe_allow_html=True)
     
