@@ -116,7 +116,7 @@ if seccion_activa == "Introducción":
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div style='text-align: justify;'><br>
+    <div style='text-align: justify;'>
     Los sonómetros tienen aplicaciones en diversas áreas, como:
     
     - **Salud pública:** se utilizan para medir los niveles de ruido en hospitales, escuelas y vecindarios.
