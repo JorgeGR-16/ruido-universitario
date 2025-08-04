@@ -132,11 +132,7 @@ if seccion_activa == "Introducción":
     El punto de emisión nos permite calibrar el ruido para supervisar la vibración, pero se excluyen las normas móviles. La Organización Mundial de la salud dicen que modifican la intensidad del sonido al oír ruidos excesivos subiéndolos.
     La afectación por el ruido se divide en primarios y secundarios. Los primarios se pueden percibir al revelar el ruido alterando al ser humano por 8 horas
     y los secundarios tienen gran alcance que pueden ocasionar en enfermedades psicosomáticas.
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style='text-align: justify;'><br>
+    <br><br>
     La exposición constante al ruido puede tener serias consecuencias tanto físicas como psicológicas. A nivel emocional, puede generar inensibilidad que sucede a nuestro alrededor,
     promover el aislamiento social e incrementar el estrés, lo que deriva en conductas agresivas o intolerantes. En el plano físico, el ruido interfiere con el descanso adecuado,
     afectando la recuperación del cuerpo, incluso cuando es de baja intensidad. También puede provocar transtornos relacionados con la tensión nerviosa como
@@ -162,6 +158,16 @@ if seccion_activa == "Introducción":
     <br><br>
     Tienen campañas de difusión para la denuncia del ruido que deben decir los ressponables para inspeccionar la contaminación acústica.
     En 2019, PAOT realizó más de 50 precauciones en los comerciales que cada acción se resuelve los encargados en reformar las emisiones sonoras y que sigan el límite mínimos por la norma ambiental NADF-005.
+    En la guía del PAOT brinda propietarios, administradores y responsables de comercios especialmente restaurantes y bares, una herramienta práctica para controlar y mitigar las emisiones sonoras, 
+    facilitando el cumplimiento de la normativa ambiental vigente en la Ciudad de México (NADF‑005‑AMBT‑2013).
+    Hay diferentes contenidos que se deben solucionar para el ruido:
+
+    - Vías de transmisión
+    - Mejora de aislamiento en los edificios
+    - Instalación y ubicación en máquinas ruidosas, sistemas de audio y ruidos de impacto
+
+    La Procuraduría Ambiental y del Ordenamiento Territorial de la Ciudad de México (PAOT) examina de que todo sea legal y que podemos denunciar por
+    internet, teléfono y hablar de forma presencial en la dirección indicada y horario.
     </div>
     """, unsafe_allow_html=True)
     
@@ -520,6 +526,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
