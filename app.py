@@ -171,6 +171,9 @@ if seccion_activa == "Introducción":
     </div>
     """, unsafe_allow_html=True)
     
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("Niveles_de_ruido.jpg", use_container_width=True)
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -526,6 +529,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
