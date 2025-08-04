@@ -114,7 +114,7 @@ if seccion_activa == "Introducción":
     """, unsafe_allow_html=True)
     
     st.markdown("""
-    <div style='text-align: justify;'>
+    <div style='text-align: justify;'><br>
     Los sonómetros tienen aplicaciones en diversas áreas, como:
     
     - **Salud pública:** se utilizan para medir los niveles de ruido en hospitales, escuelas y vecindarios.
@@ -124,6 +124,21 @@ if seccion_activa == "Introducción":
     </div>
     """, unsafe_allow_html=True)
 
+    st.markdown("""
+    <div style='text-align: justify;'><br>
+    En el ruido hay diferentes objetos y lugares que causan volumen excesivo con 2 fuentes que pueden proporcionar el sonido: **fuentes fijas** y **móviles**.
+    Las fuentes fijas se encuentran en espacios públicos en sitios de construcción, manufactura industrial y empresa de servicios. Las fuentes móviles se ecuentran por medios de transporte.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='text-align: justify;'><br>
+    La norma ambiental tiene límites máximos en decibeles que debemos seguir en las fuentes fijas por niveles de emisiones sonoras.
+    El punto de emisión nos permite calibrar el ruido para supervisar la vibración, pero se excluyen las normas móviles. La Organización Mundial de la salud dicen que modifican la intensidad del sonido al oír ruidos excesivos subiéndolos.
+    La afectación por el ruido se divide en primarios y secundarios. Los primarios se pueden percibir al revelar el ruido alterando al ser humano por 8 horas
+    y los secundarios tienen gran alcance que pueden ocasionar en enfermedades psicosomáticas.
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -479,3 +494,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
