@@ -156,8 +156,7 @@ if seccion_activa == "Introducción":
     cumplir con límites de sonido en su interior. La norma NADF-005-AMBT-2013 regula el ruido en el exterior. También se prohibe el uso de bocinas o música en zonas de enseres.
     Por su parte, la Ley de Cultura Cívica considera infracción generar ruidos que afecten la tranquilidad o salud.
     Las sanciones por incumplimiento van desde multas, clausuras, arrestos administrativos y otras medidas legales.
-    <br>
-    También
+    También deben escuchar y responder
     </div>
     """, unsafe_allow_html=True)
     
@@ -516,6 +515,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
