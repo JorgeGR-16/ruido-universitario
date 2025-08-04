@@ -126,7 +126,7 @@ if seccion_activa == "Introducción":
 
     st.markdown("""
     <div style='text-align: justify;'><br>
-    En el ruido hay diferentes objetos y lugares que causan volumen excesivo con 2 fuentes que pueden proporcionar el sonido: **fuentes fijas** y **móviles**.
+    En el ruido hay diferentes objetos y lugares que causan volumen excesivo con 2 fuentes que pueden proporcionar el sonido: fuentes fijas y móviles.
     Las fuentes fijas se encuentran en espacios públicos en sitios de construcción, manufactura industrial y empresa de servicios. Las fuentes móviles se ecuentran por medios de transporte.
     </div>
     """, unsafe_allow_html=True)
@@ -139,6 +139,28 @@ if seccion_activa == "Introducción":
     y los secundarios tienen gran alcance que pueden ocasionar en enfermedades psicosomáticas.
     </div>
     """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='text-align: justify;'><br>
+    La exposición constante al ruido puede tener serias consecuencias tanto físicas como psicológicas. A nivel emocional, puede generar inensibilidad que sucede a nuestro alrededor,
+    promover el aislamiento social e incrementar el estrés, lo que deriva en conductas agresivas o intolerantes. En el plano físico, el ruido interfiere con el descanso adecuado,
+    afectando la recuperación del cuerpo, incluso cuando es de baja intensidad. También puede provocar transtornos relacionados con la tensión nerviosa como
+    problemas circulatorios, presión arterial alta y alteraciones digestivas.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style='text-align: justify;'><br>
+    Las siguientes leyes se deben cumplir y seguir para los ciudadanos:
+
+    - El artículo 4° establece varios derechos fundamentales para todos los mexicanos.
+    - La Ley Ambiental de Protección a la Tierra permite que todos los ciudadanos deben concluir el límite máximo de emisiones sonoras.
+    - Los límites se deben continuar de acuerdo a la norma ambiental para que los sonómetros guarden los sonidos producidos.
+
+    En la Ciudad de México
+    </div>
+    """, unsafe_allow_html=True)
+    
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -494,4 +516,5 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
