@@ -294,7 +294,7 @@ elif seccion_activa == "Resultados":
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "mediciones_1.csv"  # Ruta fija
+        uploaded_file = "consulta3.csv"  # Ruta fija
 
         try:
             df = pd.read_csv(uploaded_file, skiprows=3)
@@ -529,6 +529,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
