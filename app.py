@@ -296,7 +296,7 @@ elif seccion_activa == "Resultados":
         st.header("Parámetros de entrada")
     
         # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
-        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=Hoja1"
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
             df = pd.read_csv(sheet_url, skiprows=3)
@@ -531,6 +531,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
