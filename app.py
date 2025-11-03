@@ -295,12 +295,11 @@ elif seccion_activa == "Resultados":
     with st.sidebar:
         st.header("Parámetros de entrada")
     
-        # --- CARGA AUTOMÁTICA DESDE GOOGLE DRIVE ---
-        drive_id = "1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE"  # ID extraído
-        url = f"https://docs.google.com/spreadsheets/d/{drive_id}/export?format=csv&gid=0"
+        # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=Hoja1"
     
         try:
-            df = pd.read_csv(url, skiprows=3)
+            df = pd.read_csv(sheet_url, skiprows=3)
             columnas_requeridas = ['_time', 'nodo', '_value']
     
             if not all(col in df.columns for col in columnas_requeridas):
@@ -336,8 +335,9 @@ elif seccion_activa == "Resultados":
                         (df['nodo'].isin(nodos_seleccionados))
                     ]
         except Exception as e:
-            st.error(f"Error al cargar el archivo desde Google Drive: {e}")
+            st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
             df_filtrado = pd.DataFrame()
+
 
     if not df_filtrado.empty:
         df_filtrado = df_filtrado.copy()
@@ -531,6 +531,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
