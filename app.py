@@ -310,17 +310,15 @@ elif seccion_activa == "Resultados":
             df = df.dropna(subset=[4, 5, 8], how='any')
             
             # Renombrar solo las columnas necesarias
-            df = df.rename(columns={
-                4: '_time',   # columna E (fecha)
-                5: '_value',  # columna F (decibelios)
-                8: 'nodo'     # columna I (número de nodo)
-            })[['_time', '_value', 'nodo']]
+            df = pd.read_csv(sheet_url, skiprows=6, header=None)
 
-    
-            # Convertir tipos de datos
-            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-            df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
-            df['nodo'] = df['nodo'].astype(str)
+            df = df.rename(columns={
+                4: '_time',
+                5: '_value',
+                8: 'nodo'
+            })
+            df = df[['_time', '_value', 'nodo']]
+
     
             # --- Validación ---
             if df.empty or df['_time'].isna().all():
@@ -549,6 +547,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
