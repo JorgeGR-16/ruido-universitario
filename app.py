@@ -60,6 +60,7 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
+    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -107,9 +108,7 @@ if seccion_activa == "Introducción":
     El ruido excesivo es una forma de contaminación ambiental que puede tener efectos perjudiciales sobre la salud humana, tanto a corto como a largo plazo. Los sonómetros son instrumentos clave para medir, controlar y prevenir estos riesgos.
     A continuación, se explican diferentes riesgos contra la salud humana:
 
-    - **Pérdida auditiva inducida por ruido** 
-    - **Estrés, irritabilidad y fatiga mental** 
-    - **Aumento del riesgo cardiovascular**
+    - **Pérdida auditiva inducida por ruido** - **Estrés, irritabilidad y fatiga mental** - **Aumento del riesgo cardiovascular**
     </div>
     """, unsafe_allow_html=True)
     
@@ -206,7 +205,7 @@ elif seccion_activa == "Objetivo":
     st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
     
     st.markdown("### 2.2 Objetivos específicos")
-    st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
+    st.markdown("* Seleccionar y calibrar un sensor de sonido compatible con microcontroladores.")
     st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
     st.markdown("* Integrar un sistema de visualización en pantalla.")
     st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
@@ -228,7 +227,7 @@ elif seccion_activa == "Desarrollo":
     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
     - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
     - **Circuito de procesamiento de señales:** cuando la señal ha sido amplificada y filtrada, pasa al circuito de procesamiento que se encarga de convertir la señal analógica en digital y realizar los cálculos necesarios para determinar el nivel de presión sonora.
-    - **Pantalla de visualización:**  es el componente que permite visualizar los resultados de las mediciones. Dependiendo del modelo del sonómetro, puede ser una pantalla LCD o LED.
+    - **Pantalla de visualización:** es el componente que permite visualizar los resultados de las mediciones. Dependiendo del modelo del sonómetro, puede ser una pantalla LCD o LED.
     - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
     - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
 
@@ -291,6 +290,9 @@ elif seccion_activa == "Desarrollo":
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
+    
+    # Inicialización segura
+    df_filtrado = pd.DataFrame()
 
     with st.sidebar:
         st.header("Parámetros de entrada")
@@ -299,7 +301,9 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            f = pd.read_csv(sheet_url, skiprows=6, header=None) 
+            # CORRECCIÓN: Usar 'df' en lugar de 'f' y luego 'df' nuevamente
+            df = pd.read_csv(sheet_url, skiprows=6, header=None) 
+            
             # Renombrar columnas manualmente según su posición 
             df = df.rename(columns={ 
                 4: '_time', # Columna E → tiempo 
@@ -316,7 +320,7 @@ elif seccion_activa == "Resultados":
     
             # --- Validación ---
             if df.empty or df['_time'].isna().all():
-                st.error("No se pudieron interpretar los datos de tiempo.")
+                st.error("No se pudieron interpretar los datos de tiempo o el DataFrame está vacío.")
                 df_filtrado = pd.DataFrame()
             else:
                 tiempo_min = df['_time'].min()
@@ -334,6 +338,7 @@ elif seccion_activa == "Resultados":
                     default=nodos_disponibles
                 )
     
+                # Asegurar la zona horaria UTC para la comparación
                 fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
                 fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
     
@@ -344,12 +349,13 @@ elif seccion_activa == "Resultados":
                 ]
         except Exception as e:
             st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
-            df_filtrado = pd.DataFrame()
+            df_filtrado = pd.DataFrame() # Asegurar que es un DataFrame vacío en caso de error
 
 
 
 
     if not df_filtrado.empty:
+        # Usar .copy() para evitar SettingWithCopyWarning en cadenas de operaciones
         df_filtrado = df_filtrado.copy()
 
         # Clasificar riesgo
@@ -397,20 +403,37 @@ elif seccion_activa == "Resultados":
                 )
             
             # Procesamiento de datos (manteniendo tu estructura original)
+            # Asegurarse de que X es una lista de enteros únicos (para el grid)
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
         
+            # Crear la rejilla de interpolación
             x_unique = np.unique(X)
-            y_unique = np.unique(tiempos_segundos)
+            # Para el eje Y, usamos los segundos únicos (o un linspace si hay demasiados puntos)
+            # Aquí se simplifica usando los tiempos únicos registrados
+            y_unique = np.unique(tiempos_segundos) 
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            
+            # Interpolación
+            # Los puntos para la interpolación son (X, tiempos_segundos)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+            
+            # Rellenar NaNs (áreas no interpoladas) con el valor mínimo para visualización
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0)
         
             # Configuración del gráfico
             fig, ax = plt.subplots(figsize=(10, 6))
-            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            
+            # Generar etiquetas del eje Y (tiempo)
+            if len(y_unique) > 10:
+                # Seleccionar 10 ticks espaciados
+                yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            else:
+                # Usar todos los ticks si son pocos
+                yticks = np.arange(len(y_unique))
+                
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
         
             # Heatmap con paleta seleccionada
@@ -540,26 +563,4 @@ elif seccion_activa == "Resultados":
             st.pyplot(fig)     
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados.")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        st.warning("No hay datos para los parámetros seleccionados o la carga inicial falló.")
