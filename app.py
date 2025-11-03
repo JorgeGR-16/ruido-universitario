@@ -60,7 +60,6 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -301,7 +300,7 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            # CORRECCIÓN: Usar 'df' en lugar de 'f' y luego 'df' nuevamente
+            # CORRECCIÓN: Usar 'df' para el DataFrame leído.
             df = pd.read_csv(sheet_url, skiprows=6, header=None) 
             
             # Renombrar columnas manualmente según su posición 
@@ -313,6 +312,7 @@ elif seccion_activa == "Resultados":
             # Conservar solo las columnas que interesan 
             df = df[['_time', '_value', 'nodo']] 
             # Convertir tipos de datos 
+            # Esto puede ser una fuente de error si los datos no están limpios
             df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
             df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
             df['nodo'] = df['nodo'].astype(str)
@@ -349,10 +349,24 @@ elif seccion_activa == "Resultados":
                 ]
         except Exception as e:
             st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
-            df_filtrado = pd.DataFrame() # Asegurar que es un DataFrame vacío en caso de error
+            df_filtrado = pd.DataFrame() 
 
-
-
+    # -------------------------------------------------------------
+    # --- HERRAMIENTAS DE DEPURACIÓN AÑADIDAS PARA DIAGNÓSTICO ---
+    # -------------------------------------------------------------
+    if st.checkbox("🐞 Mostrar Diagnóstico de Datos (Chequear si df_filtrado está vacío)"):
+        st.header("🐞 Diagnóstico de DataFrame Filtrado")
+        if df_filtrado.empty:
+            st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
+            st.write(f"Filas Totales en Dataframe Original: {len(df) if 'df' in locals() else 'No cargado'}")
+            st.write(f"Rango de Tiempo Seleccionado: {fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}")
+        else:
+            st.success(f"✅ Filas disponibles para graficar: {len(df_filtrado)}")
+            st.write("Primeras 5 filas (Datos Filtrados):")
+            st.dataframe(df_filtrado.head())
+            st.write("Tipos de datos (dtypes):")
+            st.write(df_filtrado.dtypes)
+    # -------------------------------------------------------------
 
     if not df_filtrado.empty:
         # Usar .copy() para evitar SettingWithCopyWarning en cadenas de operaciones
@@ -384,12 +398,6 @@ elif seccion_activa == "Resultados":
             
             st.markdown("""
             Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
-            
-            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
-            - **Eje vertical:** representa la hora del día (formato HH:MM).
-            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
-            
-            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
             """)
             
             # Selector de paleta de colores encima del mapa
@@ -402,67 +410,66 @@ elif seccion_activa == "Resultados":
                     key="palette_selector"
                 )
             
-            # Procesamiento de datos (manteniendo tu estructura original)
+            # Procesamiento de datos
             # Asegurarse de que X es una lista de enteros únicos (para el grid)
-            X = df_filtrado['nodo'].astype(int).values
-            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-            Z = df_filtrado['_value'].astype(float).values
-        
-            # Crear la rejilla de interpolación
-            x_unique = np.unique(X)
-            # Para el eje Y, usamos los segundos únicos (o un linspace si hay demasiados puntos)
-            # Aquí se simplifica usando los tiempos únicos registrados
-            y_unique = np.unique(tiempos_segundos) 
-            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            try:
+                X = df_filtrado['nodo'].astype(int).values
+                fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+                tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+                Z = df_filtrado['_value'].astype(float).values
             
-            # Interpolación
-            # Los puntos para la interpolación son (X, tiempos_segundos)
-            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            
-            # Rellenar NaNs (áreas no interpoladas) con el valor mínimo para visualización
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0)
-        
-            # Configuración del gráfico
-            fig, ax = plt.subplots(figsize=(10, 6))
-            
-            # Generar etiquetas del eje Y (tiempo)
-            if len(y_unique) > 10:
-                # Seleccionar 10 ticks espaciados
-                yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
-            else:
-                # Usar todos los ticks si son pocos
-                yticks = np.arange(len(y_unique))
+                # Crear la rejilla de interpolación
+                x_unique = np.unique(X)
+                y_unique = np.unique(tiempos_segundos) 
+                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                 
-            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-        
-            # Heatmap con paleta seleccionada
-            sb.heatmap(
-                Z_grid, 
-                cmap=palette,  # Usando la paleta seleccionada
-                xticklabels=x_unique, 
-                yticklabels=False, 
-                ax=ax
-            )
+                # Interpolación
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+                
+                # Rellenar NaNs (áreas no interpoladas) con el valor mínimo para visualización
+                # Se utiliza el valor mínimo válido o 0 si todo es NaN
+                min_val = np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0
+                Z_grid = np.nan_to_num(Z_grid, nan=min_val)
             
-            ax.invert_yaxis()
-            ax.set_yticks(yticks)
-            ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos")
-            ax.set_ylabel("Hora (HH:MM)")
+                # Configuración del gráfico
+                fig, ax = plt.subplots(figsize=(10, 6))
+                
+                # Generar etiquetas del eje Y (tiempo)
+                if len(y_unique) > 10:
+                    yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+                else:
+                    yticks = np.arange(len(y_unique))
+                    
+                yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
             
-            # Añadir barra de color con etiqueta
-            cbar = ax.collections[0].colorbar
-            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
-            
-            st.pyplot(fig)
+                # Heatmap con paleta seleccionada
+                sb.heatmap(
+                    Z_grid, 
+                    cmap=palette,  # Usando la paleta seleccionada
+                    xticklabels=x_unique, 
+                    yticklabels=False, 
+                    ax=ax
+                )
+                
+                ax.invert_yaxis()
+                ax.set_yticks(yticks)
+                ax.set_yticklabels(yticklabels, rotation=0)
+                ax.set_xlabel("Nodos")
+                ax.set_ylabel("Hora (HH:MM)")
+                
+                # Añadir barra de color con etiqueta
+                cbar = ax.collections[0].colorbar
+                cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+                
+                st.pyplot(fig)
+            except ValueError as ve:
+                 st.warning(f"No se pudo generar el Mapa de Calor (Griddata): {ve}. Esto puede ocurrir si solo hay un nodo seleccionado o muy pocos puntos de datos.")
                             
                    
 
         with tab2:
             st.markdown("""
             En esta sección se muestra la evolución del nivel de ruido a lo largo del tiempo para cada nodo seleccionado.
-            Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
             """)
             st.markdown("#### Evolución temporal por nodo")
             for nodo in sorted(df_filtrado["nodo"].unique()):
@@ -473,7 +480,6 @@ elif seccion_activa == "Resultados":
         with tab3:
             st.markdown("""
             Aquí se visualizan todos los nodos juntos para comparar sus niveles de ruido en el tiempo.
-            Esto facilita detectar diferencias o similitudes en el comportamiento acústico entre distintas áreas.
             """)
             st.markdown("### Comparación general de nodos en un solo gráfico")
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
@@ -491,12 +497,12 @@ elif seccion_activa == "Resultados":
             st.dataframe(resumen_estadistico, use_container_width=True)
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
+            
         with tab5:
             st.markdown("### **Efectos del ruido en la audición**")
             st.markdown("""
                 <div style='text-align: justify;'>
-                La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
-                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
+                La sensibilidad al ruido varía de persona a persona. Cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición.
                 </div>
             """, unsafe_allow_html=True)
             
@@ -530,37 +536,40 @@ elif seccion_activa == "Resultados":
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
             horas_disponibles = sorted(df_filtrado["hora"].unique())
             
-            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
-            hora_seleccionada = st.selectbox(
-                "Selecciona la hora que deseas visualizar (formato 24h):",
-                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
-                index=0  # opcional, elige cuál aparece por defecto
-            )
-            
-            # Filtrar datos por la hora seleccionada
-            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-            conteo = df_hora["rango"].value_counts().sort_index()
-            
-            # Colores personalizados por rango de riesgo
-            colores = {
-                "0–30 dB: Sin riesgo": "#b3d9ff",
-                "30–60 dB: Sin riesgo": "#80bfff",
-                "60–85 dB: Riesgo leve": "#ffcc80",
-                "85–100 dB: Riesgo moderado": "#ff9966",
-                "100–120+ dB: Peligroso": "#ff4d4d"
-            }
-            
-            # Crear gráfico de pastel
-            fig, ax = plt.subplots()
-            ax.pie(
-                conteo,
-                labels=conteo.index,
-                autopct="%1.1f%%",
-                startangle=90,
-                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
-            )
-            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-            st.pyplot(fig)     
+            # Selector de una sola hora 
+            if horas_disponibles:
+                hora_seleccionada = st.selectbox(
+                    "Selecciona la hora que deseas visualizar (formato 24h):",
+                    options=horas_disponibles,
+                    index=0 
+                )
+                
+                # Filtrar datos por la hora seleccionada
+                df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+                conteo = df_hora["rango"].value_counts().sort_index()
+                
+                # Colores personalizados por rango de riesgo
+                colores = {
+                    "0–30 dB: Sin riesgo": "#b3d9ff",
+                    "30–60 dB: Sin riesgo": "#80bfff",
+                    "60–85 dB: Riesgo leve": "#ffcc80",
+                    "85–100 dB: Riesgo moderado": "#ff9966",
+                    "100–120+ dB: Peligroso": "#ff4d4d"
+                }
+                
+                # Crear gráfico de pastel
+                fig, ax = plt.subplots()
+                ax.pie(
+                    conteo,
+                    labels=conteo.index,
+                    autopct="%1.1f%%",
+                    startangle=90,
+                    colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+                )
+                ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
+                st.pyplot(fig)
+            else:
+                 st.warning("No hay datos en el rango seleccionado para calcular la distribución por hora.")     
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados o la carga inicial falló.")
+        st.warning("No hay datos para los parámetros seleccionados. **Por favor, revise la casilla de diagnóstico para verificar que el DataFrame Filtrado tiene filas.**")
