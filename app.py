@@ -300,10 +300,10 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            # --- MODIFICACIÓN CLAVE: skiprows=7 para saltar el encabezado (Fila 7) ---
+            # Corrección: skiprows=7 para saltar el encabezado
             df = pd.read_csv(sheet_url, skiprows=7, header=None) 
             
-            # Renombrar columnas manualmente según su posición 
+            # Renombrar columnas manualmente
             df = df.rename(columns={ 
                 4: '_time', # Columna E 
                 5: '_value', # Columna F
@@ -311,6 +311,12 @@ elif seccion_activa == "Resultados":
             }) 
             # Conservar solo las columnas que interesan 
             df = df[['_time', '_value', 'nodo']] 
+            
+            # === MODIFICACIÓN CLAVE DE LIMPIEZA ===
+            # Eliminar cualquier fila donde el nodo sea nulo, lo que podría causar el error al convertir a int en el mapa de calor
+            df.dropna(subset=['nodo'], inplace=True) 
+            # ======================================
+
             # Convertir tipos de datos 
             df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
             df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
@@ -349,6 +355,11 @@ elif seccion_activa == "Resultados":
         except Exception as e:
             st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
             df_filtrado = pd.DataFrame() 
+
+    # -------------------------------------------------------------
+    # --- HERRAMIENTAS DE DEPURACIÓN PARA VERIFICAR CARGA ---
+    # -------------------------------------------------------------
+    # ... (el resto del código de diagnóstico, tabs y gráficas permanece igual) ...
 
     # -------------------------------------------------------------
     # --- HERRAMIENTAS DE DEPURACIÓN PARA VERIFICAR CARGA ---
@@ -515,3 +526,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados. **Active el diagnóstico para verificar la carga.**")
+
