@@ -293,7 +293,7 @@ elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
        with st.sidebar:
-            st.header("Parámetros de entrada")
+        st.header("Parámetros de entrada")
         
             # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
             sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
@@ -543,6 +543,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
