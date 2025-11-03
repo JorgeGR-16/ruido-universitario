@@ -292,62 +292,63 @@ elif seccion_activa == "Desarrollo":
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
-       with st.sidebar:
+    with st.sidebar:
         st.header("Parámetros de entrada")
-        
-            # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
-            sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
-        
-            try:
-                # Saltar las 6 primeras filas porque tus datos empiezan en la fila 7
-                df = pd.read_csv(sheet_url, skiprows=6, header=None)
-        
-                # Renombrar columnas manualmente según su posición
-                df = df.rename(columns={
-                    4: '_time',   # Columna E → tiempo
-                    5: '_value',  # Columna F → nivel de sonido (Leq)
-                    8: 'nodo'     # Columna I → número de nodo
-                })
-        
-                # Conservar solo las columnas que interesan
-                df = df[['_time', '_value', 'nodo']]
-        
-                # Convertir tipos de datos
-                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-                df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
-                df['nodo'] = df['nodo'].astype(str)
-        
-                # --- Validación ---
-                if df.empty or df['_time'].isna().all():
-                    st.error("No se pudieron interpretar los datos de tiempo.")
-                    df_filtrado = pd.DataFrame()
-                else:
-                    tiempo_min = df['_time'].min()
-                    tiempo_max = df['_time'].max()
-        
-                    fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                          min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-        
-                    nodos_disponibles = sorted(df["nodo"].unique())
-                    nodos_seleccionados = st.multiselect(
-                        "Selecciona los nodos:",
-                        options=nodos_disponibles,
-                        default=nodos_disponibles
-                    )
-        
-                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-        
-                    df_filtrado = df[
-                        (df['_time'] >= fecha_inicio) &
-                        (df['_time'] <= fecha_fin) &
-                        (df['nodo'].isin(nodos_seleccionados))
-                    ]
-            except Exception as e:
-                st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
+    
+        # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
+    
+        try:
+            # Saltar las 6 primeras filas porque tus datos empiezan en la fila 7
+            df = pd.read_csv(sheet_url, skiprows=6, header=None)
+    
+            # Renombrar columnas manualmente según su posición
+            df = df.rename(columns={
+                4: '_time',   # Columna E → tiempo
+                5: '_value',  # Columna F → nivel de sonido (Leq)
+                8: 'nodo'     # Columna I → número de nodo
+            })
+    
+            # Conservar solo las columnas que interesan
+            df = df[['_time', '_value', 'nodo']]
+    
+            # Convertir tipos de datos
+            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+            df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
+            df['nodo'] = df['nodo'].astype(str)
+    
+            # --- Validación ---
+            if df.empty or df['_time'].isna().all():
+                st.error("No se pudieron interpretar los datos de tiempo.")
                 df_filtrado = pd.DataFrame()
+            else:
+                tiempo_min = df['_time'].min()
+                tiempo_max = df['_time'].max()
+    
+                fecha = st.date_input("Fecha", value=tiempo_min.date(),
+                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+    
+                nodos_disponibles = sorted(df["nodo"].unique())
+                nodos_seleccionados = st.multiselect(
+                    "Selecciona los nodos:",
+                    options=nodos_disponibles,
+                    default=nodos_disponibles
+                )
+    
+                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+    
+                df_filtrado = df[
+                    (df['_time'] >= fecha_inicio) &
+                    (df['_time'] <= fecha_fin) &
+                    (df['nodo'].isin(nodos_seleccionados))
+                ]
+        except Exception as e:
+            st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
+            df_filtrado = pd.DataFrame()
+
 
 
 
@@ -543,6 +544,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
