@@ -56,10 +56,11 @@ st.markdown("""
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-
+    
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
+    # Asegúrate de que esta imagen ("UAMAZC.jpg") esté disponible si la aplicación se ejecuta localmente
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -83,7 +84,7 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# --- SECCIONES ---
+# --- SECCIONES DE INTRODUCCIÓN, OBJETIVO, DESARROLLO (sin cambios) ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
@@ -171,6 +172,7 @@ if seccion_activa == "Introducción":
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Asegúrate de que esta imagen ("Niveles_de_ruido.jpg") esté disponible
         st.image("Niveles_de_ruido.jpg", use_container_width=True)
     
     st.markdown("### 1.1 Principio de funcionamiento")
@@ -194,6 +196,7 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Asegúrate de que esta imagen ("Diagrama.png") esté disponible
         st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
@@ -238,6 +241,7 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Asegúrate de que esta imagen ("ESP32.jpg") esté disponible
         st.image("ESP32.jpg", use_container_width=True)
         
     st.markdown("### 3.2 Construcción del sonómetro")
@@ -286,7 +290,7 @@ elif seccion_activa == "Desarrollo":
      """, unsafe_allow_html=True)
     
     
-
+# --- SECCIÓN DE RESULTADOS (Con la corrección crítica) ---
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
@@ -300,10 +304,10 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            # --- MODIFICACIÓN CLAVE: skiprows=7 para saltar el encabezado (Fila 7) ---
+            # CORRECCIÓN CRÍTICA: Se cambia skiprows=6 a skiprows=7 para saltar la fila de encabezado
             df = pd.read_csv(sheet_url, skiprows=7, header=None) 
             
-            # Renombrar columnas manualmente según su posición 
+            # Renombrar columnas manualmente según su posición (0-based)
             df = df.rename(columns={ 
                 4: '_time', # Columna E 
                 5: '_value', # Columna F
@@ -357,7 +361,9 @@ elif seccion_activa == "Resultados":
         st.header("🐞 Diagnóstico de DataFrame Filtrado")
         if df_filtrado.empty:
             st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
-            st.write(f"Rango de Tiempo Seleccionado: {fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}")
+            # Asegúrate de que las variables de fecha estén definidas antes de usarlas aquí
+            if 'fecha_inicio' in locals() and 'fecha_fin' in locals():
+                 st.write(f"Rango de Tiempo Seleccionado: {fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}")
         else:
             st.success(f"✅ Filas disponibles para graficar: {len(df_filtrado)}")
             st.write("Primeras 5 filas (Datos Filtrados):")
@@ -393,6 +399,7 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
+            st.markdown("Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo.")
             
             # Selector de paleta de colores encima del mapa
             col1, col2, col3 = st.columns([1, 2, 1])
@@ -404,19 +411,20 @@ elif seccion_activa == "Resultados":
                     key="palette_selector"
                 )
             
-            # Procesamiento de datos
+            # Procesamiento de datos para el mapa de calor
             try:
+                # Asegúrate de que X y Z sean numéricos
                 X = df_filtrado['nodo'].astype(int).values
                 fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                 tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
                 Z = df_filtrado['_value'].astype(float).values
             
-                # Crear la rejilla de interpolación
+                # Creación de la rejilla
                 x_unique = np.unique(X)
                 y_unique = np.unique(tiempos_segundos) 
                 X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                 
-                # Interpolación
+                # Interpolación (Puede fallar con muy pocos puntos)
                 Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
                 
                 # Rellenar NaNs 
@@ -449,13 +457,12 @@ elif seccion_activa == "Resultados":
                 ax.set_xlabel("Nodos")
                 ax.set_ylabel("Hora (HH:MM)")
                 
-                # Añadir barra de color con etiqueta
                 cbar = ax.collections[0].colorbar
                 cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
                 
                 st.pyplot(fig)
-            except ValueError as ve:
-                 st.warning(f"No se pudo generar el Mapa de Calor (Griddata): {ve}. Esto puede ocurrir si solo hay un nodo seleccionado o muy pocos puntos de datos.")
+            except Exception as ve:
+                 st.warning(f"No se pudo generar el Mapa de Calor (Griddata): {ve}. Asegúrese de seleccionar múltiples nodos y suficientes puntos de datos para la interpolación.")
                             
                    
 
@@ -481,8 +488,18 @@ elif seccion_activa == "Resultados":
             st.bar_chart(resumen_estadistico["Maximo"])
             
         with tab5:
-            # ... (el resto del código de la tab5, que es extenso pero no requiere cambios aquí)
-            
+            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
+            st.markdown("""
+            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
+            |----------------|-------------------------------------|--------------------------------------------------------|
+            | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
+            | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
+            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
+            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
+            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
+            """)
+            st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
+        
             # Clasificación personalizada
             def clasificar_rango(db):
                 if db < 30: return "0–30 dB: Sin riesgo"
@@ -495,8 +512,14 @@ elif seccion_activa == "Resultados":
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
             horas_disponibles = sorted(df_filtrado["hora"].unique())
             
+            # Selector de una sola hora 
             if horas_disponibles:
-                hora_seleccionada = st.selectbox("Selecciona la hora que deseas visualizar (formato 24h):", options=horas_disponibles, index=0 )
+                hora_seleccionada = st.selectbox(
+                    "Selecciona la hora que deseas visualizar (formato 24h):",
+                    options=horas_disponibles,
+                    index=0 
+                )
+                
                 df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
                 conteo = df_hora["rango"].value_counts().sort_index()
                 
