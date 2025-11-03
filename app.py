@@ -299,25 +299,19 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            # Saltar las 6 primeras filas porque tus datos empiezan en la fila 7
-            df = pd.read_csv(sheet_url, skiprows=6, header=None)
-    
-            # Renombrar columnas manualmente según su posición
-            # Leer todo el archivo (sin saltar filas)
-            df = pd.read_csv(sheet_url, header=None)
-            
-            # Buscar filas que tengan datos válidos en las columnas de interés
-            df = df.dropna(subset=[4, 5, 8], how='any')
-            
-            # Renombrar solo las columnas necesarias
-            df = pd.read_csv(sheet_url, skiprows=6, header=None)
-
-            df = df.rename(columns={
-                4: '_time',
-                5: '_value',
-                8: 'nodo'
-            })
-            df = df[['_time', '_value', 'nodo']]
+            f = pd.read_csv(sheet_url, skiprows=6, header=None) 
+            # Renombrar columnas manualmente según su posición 
+            df = df.rename(columns={ 
+                4: '_time', # Columna E → tiempo 
+                5: '_value', # Columna F → nivel de sonido (Leq) 
+                8: 'nodo' # Columna I → número de nodo 
+            }) 
+            # Conservar solo las columnas que interesan 
+            df = df[['_time', '_value', 'nodo']] 
+            # Convertir tipos de datos 
+            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
+            df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
+            df['nodo'] = df['nodo'].astype(str)
 
     
             # --- Validación ---
@@ -547,6 +541,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
