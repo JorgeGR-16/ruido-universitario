@@ -293,51 +293,51 @@ elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     with st.sidebar:
-    st.header("Parámetros de entrada")
-
-    # --- CARGA AUTOMÁTICA DESDE GOOGLE DRIVE ---
-    drive_id = "1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE"  # ID extraído
-    url = f"https://docs.google.com/spreadsheets/d/{drive_id}/export?format=csv&gid=0"
-
-    try:
-        df = pd.read_csv(url, skiprows=3)
-        columnas_requeridas = ['_time', 'nodo', '_value']
-
-        if not all(col in df.columns for col in columnas_requeridas):
-            st.error("El archivo no contiene las columnas necesarias.")
-            df_filtrado = pd.DataFrame()
-        else:
-            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-            if df['_time'].isna().all():
-                st.error("No se pudieron interpretar las fechas.")
+        st.header("Parámetros de entrada")
+    
+        # --- CARGA AUTOMÁTICA DESDE GOOGLE DRIVE ---
+        drive_id = "1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE"  # ID extraído
+        url = f"https://docs.google.com/spreadsheets/d/{drive_id}/export?format=csv&gid=0"
+    
+        try:
+            df = pd.read_csv(url, skiprows=3)
+            columnas_requeridas = ['_time', 'nodo', '_value']
+    
+            if not all(col in df.columns for col in columnas_requeridas):
+                st.error("El archivo no contiene las columnas necesarias.")
                 df_filtrado = pd.DataFrame()
             else:
-                tiempo_min = df['_time'].min()
-                tiempo_max = df['_time'].max()
-
-                fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-
-                nodos_disponibles = sorted(df["nodo"].unique())
-                nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos:",
-                    options=nodos_disponibles,
-                    default=nodos_disponibles
-                )
-
-                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-
-                df_filtrado = df[
-                    (df['_time'] >= fecha_inicio) &
-                    (df['_time'] <= fecha_fin) &
-                    (df['nodo'].isin(nodos_seleccionados))
-                ]
-    except Exception as e:
-        st.error(f"Error al cargar el archivo desde Google Drive: {e}")
-        df_filtrado = pd.DataFrame()
+                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+                if df['_time'].isna().all():
+                    st.error("No se pudieron interpretar las fechas.")
+                    df_filtrado = pd.DataFrame()
+                else:
+                    tiempo_min = df['_time'].min()
+                    tiempo_max = df['_time'].max()
+    
+                    fecha = st.date_input("Fecha", value=tiempo_min.date(),
+                                          min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+    
+                    nodos_disponibles = sorted(df["nodo"].unique())
+                    nodos_seleccionados = st.multiselect(
+                        "Selecciona los nodos:",
+                        options=nodos_disponibles,
+                        default=nodos_disponibles
+                    )
+    
+                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+    
+                    df_filtrado = df[
+                        (df['_time'] >= fecha_inicio) &
+                        (df['_time'] <= fecha_fin) &
+                        (df['nodo'].isin(nodos_seleccionados))
+                    ]
+        except Exception as e:
+            st.error(f"Error al cargar el archivo desde Google Drive: {e}")
+            df_filtrado = pd.DataFrame()
 
     if not df_filtrado.empty:
         df_filtrado = df_filtrado.copy()
@@ -531,6 +531,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
