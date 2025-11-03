@@ -56,10 +56,11 @@ st.markdown("""
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-
+    
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
+    # Asegúrate de que esta imagen ("UAMAZC.jpg") esté disponible si la aplicación se ejecuta localmente
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -83,7 +84,7 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# --- SECCIONES ---
+# --- SECCIONES DE INTRODUCCIÓN, OBJETIVO, DESARROLLO (sin cambios) ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
@@ -171,6 +172,7 @@ if seccion_activa == "Introducción":
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Asegúrate de que esta imagen ("Niveles_de_ruido.jpg") esté disponible
         st.image("Niveles_de_ruido.jpg", use_container_width=True)
     
     st.markdown("### 1.1 Principio de funcionamiento")
@@ -194,6 +196,7 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Asegúrate de que esta imagen ("Diagrama.png") esté disponible
         st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
@@ -238,6 +241,7 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
+        # Asegúrate de que esta imagen ("ESP32.jpg") esté disponible
         st.image("ESP32.jpg", use_container_width=True)
         
     st.markdown("### 3.2 Construcción del sonómetro")
@@ -286,7 +290,7 @@ elif seccion_activa == "Desarrollo":
      """, unsafe_allow_html=True)
     
     
-
+# --- SECCIÓN DE RESULTADOS (Con la corrección crítica) ---
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
@@ -312,63 +316,76 @@ elif seccion_activa == "Resultados":
             # Conservar solo las columnas que interesan 
             df = df[['_time', '_value', 'nodo']] 
             
-            # === MODIFICACIÓN CLAVE DE LIMPIEZA ===
-            # Eliminar cualquier fila donde el nodo sea nulo, lo que podría causar el error al convertir a int en el mapa de calor
+            # === MODIFICACIÓN CLAVE DE LIMPIEZA 1: NODO ===
+            # Eliminar cualquier fila donde el nodo sea nulo (es lo que causa el error al convertir a int en el mapa de calor)
             df.dropna(subset=['nodo'], inplace=True) 
-            # ======================================
+            # ===============================================
 
             # Convertir tipos de datos 
             df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
+            
+            # === MODIFICACIÓN CLAVE DE LIMPIEZA 2: VALUE ===
+            # Asegurar que _value se convierta a numérico, forzando errores a NaN
             df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
+            # Eliminar cualquier fila donde _value NO sea numérico (NaN), lo que previene errores de graficación
+            df.dropna(subset=['_value'], inplace=True)
+            # ===============================================
+
             df['nodo'] = df['nodo'].astype(str)
 
     
             # --- Validación ---
-            if df.empty or df['_time'].isna().all():
-                st.error("No se pudieron interpretar los datos de tiempo o el DataFrame está vacío.")
+            if df.empty or df['_time'].isna().all() or df['_value'].isna().all():
+                st.error("No se pudieron interpretar los datos de tiempo/valor o el DataFrame está vacío.")
                 df_filtrado = pd.DataFrame()
             else:
                 tiempo_min = df['_time'].min()
                 tiempo_max = df['_time'].max()
     
-                fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-    
-                nodos_disponibles = sorted(df["nodo"].unique())
-                nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos:",
-                    options=nodos_disponibles,
-                    default=nodos_disponibles
-                )
-    
-                # Asegurar la zona horaria UTC para la comparación
-                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-    
-                df_filtrado = df[
-                    (df['_time'] >= fecha_inicio) &
-                    (df['_time'] <= fecha_fin) &
-                    (df['nodo'].isin(nodos_seleccionados))
-                ]
+                # Asegurarse de que las fechas sean válidas antes de usarlas
+                if pd.isna(tiempo_min) or pd.isna(tiempo_max):
+                    st.error("Rango de tiempo no válido en los datos.")
+                    df_filtrado = pd.DataFrame()
+                else:
+                    # Rango de selección
+                    fecha = st.date_input("Fecha", value=tiempo_min.date(),
+                                          min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+        
+                    nodos_disponibles = sorted(df["nodo"].unique())
+                    nodos_seleccionados = st.multiselect(
+                        "Selecciona los nodos:",
+                        options=nodos_disponibles,
+                        default=nodos_disponibles
+                    )
+        
+                    # Asegurar la zona horaria UTC para la comparación
+                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+        
+                    df_filtrado = df[
+                        (df['_time'] >= fecha_inicio) &
+                        (df['_time'] <= fecha_fin) &
+                        (df['nodo'].isin(nodos_seleccionados))
+                    ]
         except Exception as e:
-            st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
+            st.error(f"Error al cargar el archivo desde Google Sheets: {e}. Por favor, revise el formato de los datos en la hoja.")
             df_filtrado = pd.DataFrame() 
 
     # -------------------------------------------------------------
     # --- HERRAMIENTAS DE DEPURACIÓN PARA VERIFICAR CARGA ---
     # -------------------------------------------------------------
-    # ... (el resto del código de diagnóstico, tabs y gráficas permanece igual) ...
+    if 'fecha_inicio' in locals() and 'fecha_fin' in locals():
+         rango_seleccionado = f"{fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}"
+    else:
+        rango_seleccionado = "No definido debido a un error de carga."
 
-    # -------------------------------------------------------------
-    # --- HERRAMIENTAS DE DEPURACIÓN PARA VERIFICAR CARGA ---
-    # -------------------------------------------------------------
     if st.checkbox("🐞 Mostrar Diagnóstico de Datos (Chequear si df_filtrado está vacío)"):
         st.header("🐞 Diagnóstico de DataFrame Filtrado")
         if df_filtrado.empty:
             st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
-            st.write(f"Rango de Tiempo Seleccionado: {fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}")
+            st.write(f"Rango de Tiempo Seleccionado: {rango_seleccionado}")
         else:
             st.success(f"✅ Filas disponibles para graficar: {len(df_filtrado)}")
             st.write("Primeras 5 filas (Datos Filtrados):")
@@ -404,6 +421,7 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
+            st.markdown("Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.")
             
             # Selector de paleta de colores encima del mapa
             col1, col2, col3 = st.columns([1, 2, 1])
@@ -415,58 +433,63 @@ elif seccion_activa == "Resultados":
                     key="palette_selector"
                 )
             
-            # Procesamiento de datos
+            # Procesamiento de datos para el mapa de calor
             try:
+                # Se espera que 'nodo' ahora sea una cadena limpia y que pueda convertirse a int sin errores.
                 X = df_filtrado['nodo'].astype(int).values
                 fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                 tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
                 Z = df_filtrado['_value'].astype(float).values
             
-                # Crear la rejilla de interpolación
+                # Creación de la rejilla
                 x_unique = np.unique(X)
                 y_unique = np.unique(tiempos_segundos) 
-                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                 
-                # Interpolación
-                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-                
-                # Rellenar NaNs 
-                min_val = np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0
-                Z_grid = np.nan_to_num(Z_grid, nan=min_val)
-            
-                # Configuración del gráfico
-                fig, ax = plt.subplots(figsize=(10, 6))
-                
-                # Generar etiquetas del eje Y (tiempo)
-                if len(y_unique) > 10:
-                    yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+                # Necesitamos al menos dos puntos únicos en cada eje para griddata
+                if len(x_unique) < 2 or len(y_unique) < 2:
+                    st.warning("⚠️ El Mapa de Calor necesita al menos dos nodos seleccionados y lecturas en al menos dos momentos diferentes para interpolar los datos.")
                 else:
-                    yticks = np.arange(len(y_unique))
+                    X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                     
-                yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-            
-                # Heatmap
-                sb.heatmap(
-                    Z_grid, 
-                    cmap=palette, 
-                    xticklabels=x_unique, 
-                    yticklabels=False, 
-                    ax=ax
-                )
+                    # Interpolación 
+                    Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+                    
+                    # Rellenar NaNs 
+                    min_val = np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0
+                    Z_grid = np.nan_to_num(Z_grid, nan=min_val)
                 
-                ax.invert_yaxis()
-                ax.set_yticks(yticks)
-                ax.set_yticklabels(yticklabels, rotation=0)
-                ax.set_xlabel("Nodos")
-                ax.set_ylabel("Hora (HH:MM)")
+                    # Configuración del gráfico
+                    fig, ax = plt.subplots(figsize=(10, 6))
+                    
+                    # Generar etiquetas del eje Y (tiempo)
+                    if len(y_unique) > 10:
+                        yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+                    else:
+                        yticks = np.arange(len(y_unique))
+                        
+                    yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
                 
-                # Añadir barra de color con etiqueta
-                cbar = ax.collections[0].colorbar
-                cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
-                
-                st.pyplot(fig)
+                    # Heatmap
+                    sb.heatmap(
+                        Z_grid, 
+                        cmap=palette, 
+                        xticklabels=x_unique, 
+                        yticklabels=False, 
+                        ax=ax
+                    )
+                    
+                    ax.invert_yaxis()
+                    ax.set_yticks(yticks)
+                    ax.set_yticklabels(yticklabels, rotation=0)
+                    ax.set_xlabel("Nodos")
+                    ax.set_ylabel("Hora (HH:MM)")
+                    
+                    cbar = ax.collections[0].colorbar
+                    cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+                    
+                    st.pyplot(fig)
             except ValueError as ve:
-                 st.warning(f"No se pudo generar el Mapa de Calor (Griddata): {ve}. Esto puede ocurrir si solo hay un nodo seleccionado o muy pocos puntos de datos.")
+                 st.warning(f"No se pudo generar el Mapa de Calor (Griddata): {ve}. Asegúrese de seleccionar múltiples nodos y suficientes puntos de datos para la interpolación.")
                             
                    
 
@@ -492,8 +515,18 @@ elif seccion_activa == "Resultados":
             st.bar_chart(resumen_estadistico["Maximo"])
             
         with tab5:
-            # ... (el resto del código de la tab5, que es extenso pero no requiere cambios aquí)
-            
+            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
+            st.markdown("""
+            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
+            |----------------|-------------------------------------|--------------------------------------------------------|
+            | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
+            | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
+            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
+            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
+            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
+            """)
+            st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
+        
             # Clasificación personalizada
             def clasificar_rango(db):
                 if db < 30: return "0–30 dB: Sin riesgo"
@@ -506,8 +539,14 @@ elif seccion_activa == "Resultados":
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
             horas_disponibles = sorted(df_filtrado["hora"].unique())
             
+            # Selector de una sola hora 
             if horas_disponibles:
-                hora_seleccionada = st.selectbox("Selecciona la hora que deseas visualizar (formato 24h):", options=horas_disponibles, index=0 )
+                hora_seleccionada = st.selectbox(
+                    "Selecciona la hora que deseas visualizar (formato 24h):",
+                    options=horas_disponibles,
+                    index=0 
+                )
+                
                 df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
                 conteo = df_hora["rango"].value_counts().sort_index()
                 
@@ -526,4 +565,3 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados. **Active el diagnóstico para verificar la carga.**")
-
