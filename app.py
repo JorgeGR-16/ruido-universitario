@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from scipy.interpolate import griddata
 
+
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
 # --- ESTILO PERSONALIZADO ---
@@ -293,57 +294,38 @@ elif seccion_activa == "Resultados":
     # --- Sidebar ---
     with st.sidebar:
         st.header("Parámetros de entrada")
-        fuente_datos = st.radio(
-            "Selecciona la fuente de datos:",
-            ("Google Sheets", "Archivo subido (.csv)")
-        )
 
-    import pandas as pd
-    import numpy as np
-    import seaborn as sb
-    import matplotlib.pyplot as plt
-    from scipy.interpolate import griddata
-    import streamlit as st
 
-    # --- Función: Cargar desde Google Sheets ---
+
     @st.cache_data
-    def load_data_from_sheets():
+    def load_data():
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/edit?usp=sharing"
         csv_url = sheet_url.replace("/edit?usp=sharing", "/export?format=csv")
         return pd.read_csv(csv_url)
 
-    # --- Función: Cargar archivo subido ---
-    def load_data_from_upload(uploaded_file):
-        return pd.read_csv(uploaded_file, skiprows=3)
-
-    # --- Cargar datos según selección ---
-    df = pd.DataFrame()
-    df_filtrado = pd.DataFrame()
-
-    if fuente_datos == "Google Sheets":
-        df = load_data_from_sheets()
+    try:
+        df = load_data()
         st.success("✅ Datos cargados exitosamente desde Google Sheets")
+    except Exception as e:
+        st.error(f"❌ Error al cargar datos desde Google Sheets: {e}")
+        df = pd.DataFrame()
 
-    elif fuente_datos == "Archivo subido (.csv)":
-        uploaded_file = st.file_uploader("Sube un archivo CSV", type=["csv"])
-        if uploaded_file is not None:
-            try:
-                df = load_data_from_upload(uploaded_file)
-                st.success("✅ Archivo cargado exitosamente")
-            except Exception as e:
-                st.error(f"⚠️ Error al leer el archivo: {e}")
-
-    # --- Procesamiento de datos ---
     if not df.empty:
+        # Validar columnas requeridas
         columnas_requeridas = ['_time', 'nodo', '_value']
         if not all(col in df.columns for col in columnas_requeridas):
             st.error("El archivo no contiene las columnas necesarias.")
+            df_filtrado = pd.DataFrame()
         else:
+            # Convertir tipos de datos
             df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+            df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
+            df = df.dropna(subset=['_time', '_value'])
+
             if df['_time'].isna().all():
-                st.error("No se pudieron interpretar las fechas.")
+                st.error("No se pudieron interpretar las fechas correctamente.")
+                df_filtrado = pd.DataFrame()
             else:
-                # Filtros de fecha, hora y nodos
                 tiempo_min = df['_time'].min()
                 tiempo_max = df['_time'].max()
 
@@ -367,137 +349,166 @@ elif seccion_activa == "Resultados":
                     (df['nodo'].isin(nodos_seleccionados))
                 ]
 
-    # --- Análisis y visualización ---
-    if not df_filtrado.empty:
-        df_filtrado = df_filtrado.copy()
+        if not df_filtrado.empty:
+            df_filtrado = df_filtrado.copy()
 
-        # Clasificar riesgo
-        def clasificar_riesgo(db):
-            if db < 85:
-                return "Seguro"
-            elif db < 100:
-                return "Riesgo moderado"
-            else:
-                return "Peligroso"
+            # --- Clasificar riesgo ---
+            def clasificar_riesgo(db):
+                if db < 85:
+                    return "Seguro"
+                elif db < 100:
+                    return "Riesgo moderado"
+                else:
+                    return "Peligroso"
 
-        df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
-        df_filtrado["hora"] = df_filtrado["_time"].dt.hour
-
-        # Tabs principales
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "📊 Mapa de Sonido", 
-            "📈 Gráficos por nodo", 
-            "🧩 Comparación general", 
-            "📊 Análisis estadístico",
-            "🧨 Riesgo por hora"
-        ])
-
-        # === TAB 1 ===
-        with tab1:
-            st.markdown("### Mapa de niveles de sonido")
-            st.markdown("""
-            Este mapa de calor representa la intensidad del ruido registrado por cada nodo a lo largo del tiempo.
-            """)
-
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                palette = st.selectbox(
-                    "Seleccione la paleta de colores:",
-                    options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
-                    index=0,
-                    key="palette_selector"
-                )
-
-            X = df_filtrado['nodo'].astype(int).values
-            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-            Z = df_filtrado['_value'].astype(float).values
-
-            x_unique = np.unique(X)
-            y_unique = np.unique(tiempos_segundos)
-            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
-
-            fig, ax = plt.subplots(figsize=(10, 6))
-            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
-            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-
-            sb.heatmap(Z_grid, cmap=palette, xticklabels=x_unique, yticklabels=False, ax=ax)
-            ax.invert_yaxis()
-            ax.set_yticks(yticks)
-            ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos")
-            ax.set_ylabel("Hora (HH:MM)")
-
-            cbar = ax.collections[0].colorbar
-            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
-            st.pyplot(fig)
-
-        # === TAB 2 ===
-        with tab2:
-            st.markdown("#### Evolución temporal por nodo")
-            for nodo in sorted(df_filtrado["nodo"].unique()):
-                st.subheader(f"Nodo {nodo}")
-                datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
-                st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
-
-        # === TAB 3 ===
-        with tab3:
-            st.markdown("### Comparación general de nodos")
-            df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
-            st.line_chart(df_pivot, height=300, use_container_width=True)
-
-        # === TAB 4 ===
-        with tab4:
-            st.markdown("### Análisis estadístico básico por nodo")
-            resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
-                Minimo="min",
-                Maximo="max",
-                Media="mean",
-                Mediana="median",
-                Conteo="count"
-            ).round(2)
-            st.dataframe(resumen_estadistico, use_container_width=True)
-            st.bar_chart(resumen_estadistico["Maximo"])
-
-        # === TAB 5 ===
-        with tab5:
-            st.markdown("### Distribución de niveles de sonido por hora")
-            def clasificar_rango(db):
-                if db < 30: return "0–30 dB: Sin riesgo"
-                elif db < 60: return "30–60 dB: Sin riesgo"
-                elif db < 85: return "60–85 dB: Riesgo leve"
-                elif db < 100: return "85–100 dB: Riesgo moderado"
-                else: return "100–120+ dB: Peligroso"
-
-            df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
+            df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
 
-            horas_disponibles = sorted(df_filtrado["hora"].unique())
-            hora_seleccionada = st.selectbox("Selecciona la hora:", options=horas_disponibles)
+            # --- Pestañas ---
+            tab1, tab2, tab3, tab4, tab5 = st.tabs([
+                "📊 Mapa de Sonido", 
+                "📈 Gráficos por nodo", 
+                "🧩 Comparación general", 
+                "📊 Análisis estadístico",
+                "🧨 Riesgo por hora"
+            ])
 
-            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-            conteo = df_hora["rango"].value_counts().sort_index()
+            # --- TAB 1: Mapa de calor ---
+            with tab1:
+                st.markdown("### Mapa de niveles de sonido")
+                st.markdown("""
+                Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
+                - **Eje horizontal:** nodos o sensores distribuidos.
+                - **Eje vertical:** hora del día (HH:MM).
+                - **Colores:** indican nivel de sonido (dB).
+                """)
 
-            colores = {
-                "0–30 dB: Sin riesgo": "#b3d9ff",
-                "30–60 dB: Sin riesgo": "#80bfff",
-                "60–85 dB: Riesgo leve": "#ffcc80",
-                "85–100 dB: Riesgo moderado": "#ff9966",
-                "100–120+ dB: Peligroso": "#ff4d4d"
-            }
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    palette = st.selectbox(
+                        "Seleccione la paleta de colores:",
+                        options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
+                        index=0,
+                        key="palette_selector"
+                    )
 
-            fig, ax = plt.subplots()
-            ax.pie(
-                conteo,
-                labels=conteo.index,
-                autopct="%1.1f%%",
-                startangle=90,
-                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
-            )
-            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-            st.pyplot(fig)
+                X = df_filtrado['nodo'].astype(int).values
+                fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+                tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+                Z = df_filtrado['_value'].astype(float).values
 
+                x_unique = np.unique(X)
+                y_unique = np.unique(tiempos_segundos)
+                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+                Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+
+                fig, ax = plt.subplots(figsize=(10, 6))
+                yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+                yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+
+                sb.heatmap(Z_grid, cmap=palette, xticklabels=x_unique, yticklabels=False, ax=ax)
+                ax.invert_yaxis()
+                ax.set_yticks(yticks)
+                ax.set_yticklabels(yticklabels, rotation=0)
+                ax.set_xlabel("Nodos")
+                ax.set_ylabel("Hora (HH:MM)")
+
+                cbar = ax.collections[0].colorbar
+                cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+                st.pyplot(fig)
+
+            # --- TAB 2: Gráficos individuales ---
+            with tab2:
+                st.markdown("#### Evolución temporal por nodo")
+                for nodo in sorted(df_filtrado["nodo"].unique()):
+                    st.subheader(f"Nodo {nodo}")
+                    datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
+                    st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
+
+            # --- TAB 3: Comparación general ---
+            with tab3:
+                st.markdown("### Comparación general de nodos")
+                df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
+                st.line_chart(df_pivot, height=300, use_container_width=True)
+
+            # --- TAB 4: Estadísticas ---
+            with tab4:
+                st.markdown("### Análisis estadístico básico por nodo")
+                resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
+                    Minimo="min",
+                    Maximo="max",
+                    Media="mean",
+                    Mediana="median",
+                    Conteo="count"
+                ).round(2)
+                st.dataframe(resumen_estadistico, use_container_width=True)
+                st.markdown("### Gráfico de valores máximos por nodo")
+                st.bar_chart(resumen_estadistico["Maximo"])
+
+            # --- TAB 5: Riesgo auditivo ---
+            with tab5:
+                st.markdown("### **Efectos del ruido en la audición**")
+                st.markdown("""
+                La sensibilidad al ruido varía entre personas, pero cualquier sonido fuerte y prolongado puede dañar la audición.
+                """)
+                st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
+                st.markdown("""
+                | Nivel (dB) | Ejemplo | Efecto sobre la salud |
+                |-------------|----------|------------------------|
+                | 0–30 | Biblioteca | Sin riesgo |
+                | 30–60 | Conversación | Sin riesgo |
+                | 60–85 | Tráfico, aspiradora | Riesgo leve si prolongado |
+                | 85–100 | Moto, concierto | Daño si exposición prolongada |
+                | 100–120 | Sirena, martillo neumático | Daño auditivo posible |
+                """)
+
+                # Clasificar rangos
+                def clasificar_rango(db):
+                    if db < 30:
+                        return "0–30 dB: Sin riesgo"
+                    elif db < 60:
+                        return "30–60 dB: Sin riesgo"
+                    elif db < 85:
+                        return "60–85 dB: Riesgo leve"
+                    elif db < 100:
+                        return "85–100 dB: Riesgo moderado"
+                    else:
+                        return "100–120+ dB: Peligroso"
+
+                df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
+                df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+                horas_disponibles = sorted(df_filtrado["hora"].unique())
+
+                hora_seleccionada = st.selectbox(
+                    "Selecciona la hora (formato 24h):",
+                    options=horas_disponibles,
+                    index=0
+                )
+
+                df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+                conteo = df_hora["rango"].value_counts().sort_index()
+
+                colores = {
+                    "0–30 dB: Sin riesgo": "#b3d9ff",
+                    "30–60 dB: Sin riesgo": "#80bfff",
+                    "60–85 dB: Riesgo leve": "#ffcc80",
+                    "85–100 dB: Riesgo moderado": "#ff9966",
+                    "100–120+ dB: Peligroso": "#ff4d4d"
+                }
+
+                fig, ax = plt.subplots()
+                ax.pie(
+                    conteo,
+                    labels=conteo.index,
+                    autopct="%1.1f%%",
+                    startangle=90,
+                    colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+                )
+                ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
+                st.pyplot(fig)
+
+        else:
+            st.warning("⚠️ No hay datos para los parámetros seleccionados.")
     else:
-        st.warning("⚠️ No hay datos disponibles o no se seleccionaron parámetros válidos.")
+        st.warning("⚠️ No se pudieron cargar los datos correctamente.")
