@@ -60,7 +60,9 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    st.image("UAMAZC.jpg", use_container_width=True) # 
+    # 
+    # NOTA: Asegúrate de que las imágenes ("UAMAZC.jpg", etc.) estén en la carpeta de la aplicación
+    st.image("UAMAZC.jpg", use_container_width=True) 
 
 # --- MENÚ DE NAVEGACIÓN ---
 if "seccion" not in st.session_state:
@@ -83,9 +85,7 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# ----------------------------------------------------------------------
-# --- SECCIONES DE INTRODUCCIÓN, OBJETIVO, DESARROLLO (sin cambios) ---
-# ----------------------------------------------------------------------
+# --- SECCIONES DE INTRODUCCIÓN, OBJETIVO, DESARROLLO (Mantenidas sin cambios) ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
@@ -94,7 +94,6 @@ if seccion_activa == "Introducción":
     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
     </div>
     """, unsafe_allow_html=True)
-
     st.markdown("""
     <div style='text-align: justify;'><br>
     El sonómetro es un instrumento de lectura directa del nivel global de presión sonora. Sirve para medir la intensidad del sonido, expresada en decibeles (dB) y se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
@@ -103,7 +102,6 @@ if seccion_activa == "Introducción":
     El ruido no controlado no solo afecta la calidad de vida de las personas, sino que también puede tener efectos negativos sobre la salud, como estrés, alteraciones del sueño y problemas auditivos.
     </div>
     """, unsafe_allow_html=True)
-
     st.markdown("""
     <div style='text-align: justify;'><br>
     El ruido excesivo es una forma de contaminación ambiental que puede tener efectos perjudiciales sobre la salud humana, tanto a corto como a largo plazo. Los sonómetros son instrumentos clave para medir, controlar y prevenir estos riesgos.
@@ -173,10 +171,11 @@ if seccion_activa == "Introducción":
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("Niveles_de_ruido.jpg", use_container_width=True) # 
+        # 
 
 [Image of noise levels table]
 
+        st.image("Niveles_de_ruido.jpg", use_container_width=True) 
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -199,7 +198,8 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("Diagrama.png", use_container_width=True) # 
+        # 
+        st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
@@ -243,7 +243,8 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image("ESP32.jpg", use_container_width=True) # 
+        # 
+        st.image("ESP32.jpg", use_container_width=True) 
         
     st.markdown("### 3.2 Construcción del sonómetro")
     st.markdown("### 3.2.1 Materiales necesarios")
@@ -292,7 +293,7 @@ elif seccion_activa == "Desarrollo":
     
     
 # -------------------------------------------------------------
-# --- SECCIÓN DE RESULTADOS (CORREGIDA) -----------------------
+# --- SECCIÓN DE RESULTADOS (FINALMENTE CORREGIDA Y ROBUSTA)---
 # -------------------------------------------------------------
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
@@ -307,7 +308,7 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            # CORRECCIÓN CRÍTICA 1: Usar skiprows=7 para evitar la fila de metadatos problemática.
+            # CORRECTO: Usar skiprows=7 para evitar la fila de metadatos problemática.
             df = pd.read_csv(sheet_url, skiprows=7, header=None) 
             
             # Renombrar columnas manualmente
@@ -319,7 +320,7 @@ elif seccion_activa == "Resultados":
             # Conservar solo las columnas que interesan 
             df = df[['_time', '_value', 'nodo']] 
             
-            # === CORRECCIÓN CRÍTICA 2: LIMPIEZA RIGUROSA Y CONVERSIÓN ===
+            # === LIMPIEZA RIGUROSA Y CONVERSIÓN ===
             
             # 1. Limpiar _value: Forzar a numérico y eliminar NaNs
             df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
@@ -331,7 +332,7 @@ elif seccion_activa == "Resultados":
             # 3. Convertir tiempo (después de la limpieza)
             df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
             df.dropna(subset=['_time'], inplace=True)
-            # =============================================================
+            # ======================================
 
             # --- Validación ---
             if df.empty:
@@ -347,7 +348,7 @@ elif seccion_activa == "Resultados":
                 hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
                 hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
     
-                # Asegurar que 'nodo' es string para el multiselect, pero contiene solo números limpios
+                # Asegurar que 'nodo' es string para el multiselect
                 df['nodo'] = df['nodo'].astype(str) 
                 nodos_disponibles = sorted(df["nodo"].unique())
                 
@@ -372,14 +373,14 @@ elif seccion_activa == "Resultados":
 
 
     # -------------------------------------------------------------
-    # --- Diagnóstico (Ayuda a depurar en el despliegue) ---
+    # --- Diagnóstico (Debug) ---
     # -------------------------------------------------------------
     if 'fecha_inicio' in locals() and 'fecha_fin' in locals():
          rango_seleccionado = f"{fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}"
     else:
         rango_seleccionado = "No definido debido a un error de carga."
 
-    if st.checkbox("🐞 Mostrar Diagnóstico de Datos (Debug)"):
+    if st.checkbox("🐞 Mostrar Diagnóstico de Datos"):
         st.header("🐞 Diagnóstico de DataFrame Filtrado")
         if df_filtrado.empty:
             st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
@@ -429,14 +430,14 @@ elif seccion_activa == "Resultados":
             
             # Procesamiento de datos para el mapa de calor
             try:
-                # CONVERSIÓN ROBUSTA FINAL PARA griddata:
+                # CREACIÓN DE COPIA LIMPIA DE DATOS PARA GRIDDATA
                 df_mapa = df_filtrado.copy()
                 
-                # Asegurar la conversión a int después de haber limpiado y filtrado los NaNs
+                # REFUERZO DE ROBUSTEZ: Asegurar que 'nodo' es numérico (entero) y eliminar los fallos
                 df_mapa['nodo'] = pd.to_numeric(df_mapa['nodo'], errors='coerce')
-                df_mapa.dropna(subset=['nodo'], inplace=True) # Eliminar filas donde el nodo falló la conversión
-                df_mapa['nodo'] = df_mapa['nodo'].astype(int)
-
+                df_mapa.dropna(subset=['nodo'], inplace=True) 
+                df_mapa['nodo'] = df_mapa['nodo'].astype(int) # Finalmente a int
+                
                 X = df_mapa['nodo'].values
                 fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                 tiempos_segundos = (df_mapa['_time'] - fecha_base).dt.total_seconds().values
@@ -468,8 +469,12 @@ elif seccion_activa == "Resultados":
                     else:
                         yticks = np.arange(len(y_unique))
                         
-                    yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-                
+                    # Asegurar que yticks no esté vacío antes de indexar y_unique
+                    if len(yticks) > 0:
+                        yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+                    else:
+                         yticklabels = []
+
                     # Heatmap
                     sb.heatmap(Z_grid, cmap=palette, xticklabels=x_unique, yticklabels=False, ax=ax)
                     
@@ -484,7 +489,7 @@ elif seccion_activa == "Resultados":
                     
                     st.pyplot(fig)
             except Exception as e:
-                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que los datos de 'nodo' y '_value' son válidos.")
+                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que todos los nodos seleccionados tienen valores numéricos.")
                             
                    
 
