@@ -60,8 +60,7 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    # Asegúrate de que esta imagen ("UAMAZC.jpg") esté disponible si la aplicación se ejecuta localmente
-    st.image("UAMAZC.jpg", use_container_width=True)
+    st.image("UAMAZC.jpg", use_container_width=True) # 
 
 # --- MENÚ DE NAVEGACIÓN ---
 if "seccion" not in st.session_state:
@@ -84,13 +83,15 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
+# ----------------------------------------------------------------------
 # --- SECCIONES DE INTRODUCCIÓN, OBJETIVO, DESARROLLO (sin cambios) ---
+# ----------------------------------------------------------------------
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
     <div style='text-align: justify;'>
-     El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
+    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+    El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
     </div>
     """, unsafe_allow_html=True)
 
@@ -172,8 +173,10 @@ if seccion_activa == "Introducción":
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Asegúrate de que esta imagen ("Niveles_de_ruido.jpg") esté disponible
-        st.image("Niveles_de_ruido.jpg", use_container_width=True)
+        st.image("Niveles_de_ruido.jpg", use_container_width=True) # 
+
+[Image of noise levels table]
+
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -196,8 +199,7 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Asegúrate de que esta imagen ("Diagrama.png") esté disponible
-        st.image("Diagrama.png", use_container_width=True)
+        st.image("Diagrama.png", use_container_width=True) # 
 
 elif seccion_activa == "Objetivo":
     st.markdown("### Objetivo")
@@ -224,7 +226,7 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
     A continuación, se explican en detalle los elementos que componen un sonómetro:
-     
+    
     - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
     - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
@@ -233,7 +235,7 @@ elif seccion_activa == "Desarrollo":
     - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
     - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
 
-     Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
+    Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
     </div>
     """, unsafe_allow_html=True)
     
@@ -241,41 +243,40 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Asegúrate de que esta imagen ("ESP32.jpg") esté disponible
-        st.image("ESP32.jpg", use_container_width=True)
+        st.image("ESP32.jpg", use_container_width=True) # 
         
     st.markdown("### 3.2 Construcción del sonómetro")
     st.markdown("### 3.2.1 Materiales necesarios")
     st.markdown("""
-            | Componente     | Descripción                            
-            |----------------|-------------------------------------|
-            | ESP32 T3 V1.6.1        | Microcontrolador                | 
-            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
-            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
-            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
-            | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
-            | Caja impresa en 3D | Para encapsular el dispositivo |
-            | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+        | Componente     | Descripción                                         |
+        |----------------|-----------------------------------------------------|
+        | ESP32 T3 V1.6.1       | Microcontrolador                                    | 
+        | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica           | 
+        | Pantalla OLED        | Muestra el nivel de decibeles en tiempo real        | 
+        | Jumpers hembra-hembra/ macho-hembra | Para las conexiones entre módulos                   | 
+        | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
+        | Caja impresa en 3D | Para encapsular el dispositivo |
+        | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
     """)
     st.markdown("### 3.2.2 Procedimiento de armado")
     st.markdown("""
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-        | Sensor     | ESP32 T3 V1.6.1                            
+        | Sensor     | ESP32 T3 V1.6.1                                         |
         |----------------|-------------------------------------|
-        | VCC        | 3.3V                | 
-        | GND      | GND                 | 
-        | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
+        | VCC        | 3.3V                                | 
+        | GND      | GND                                 | 
+        | A0 (salida analógica)        | GPIO 34 (u otro pin analógico)      |
         
     2. **Conexión de la pantalla OLED**
-        | OLED SSD1306     | ESP32 T3 V1.6.1                            
+        | OLED SSD1306     | ESP32 T3 V1.6.1                                         |
         |----------------|-------------------------------------|
-        | VCC        | 3.3V                | 
-        | GND      | GND                 | 
-        | SDA       | GPIO 21          |
-        | SCL       | GPIO 22          |
-    
+        | VCC        | 3.3V                                | 
+        | GND      | GND                                 | 
+        | SDA        | GPIO 21                           |
+        | SCL        | GPIO 22                           |
+        
     3. **Botón de control**
     - Conectar un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones
     
@@ -287,10 +288,12 @@ elif seccion_activa == "Desarrollo":
     - Dejar espacio para los conectores, pantalla visible y ventilación del micrófono
     - Cerrar el circuito y conectar la alimentación
     </div>
-     """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
     
     
-# --- SECCIÓN DE RESULTADOS (Con la corrección crítica) ---
+# -------------------------------------------------------------
+# --- SECCIÓN DE RESULTADOS (CORREGIDA) -----------------------
+# -------------------------------------------------------------
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
@@ -332,7 +335,7 @@ elif seccion_activa == "Resultados":
 
             # --- Validación ---
             if df.empty:
-                st.error("No se pudieron interpretar los datos o el DataFrame está vacío después de la limpieza.")
+                st.error("No se pudieron interpretar los datos o el DataFrame está vacío después de la limpieza. Revise la hoja de cálculo.")
                 df_filtrado = pd.DataFrame()
             else:
                 tiempo_min = df['_time'].min()
@@ -344,7 +347,10 @@ elif seccion_activa == "Resultados":
                 hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
                 hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
     
+                # Asegurar que 'nodo' es string para el multiselect, pero contiene solo números limpios
+                df['nodo'] = df['nodo'].astype(str) 
                 nodos_disponibles = sorted(df["nodo"].unique())
+                
                 nodos_seleccionados = st.multiselect(
                     "Selecciona los nodos:",
                     options=nodos_disponibles,
@@ -366,14 +372,14 @@ elif seccion_activa == "Resultados":
 
 
     # -------------------------------------------------------------
-    # --- Diagnóstico (Asegúrate de desactivarlo en producción) ---
+    # --- Diagnóstico (Ayuda a depurar en el despliegue) ---
     # -------------------------------------------------------------
     if 'fecha_inicio' in locals() and 'fecha_fin' in locals():
          rango_seleccionado = f"{fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}"
     else:
         rango_seleccionado = "No definido debido a un error de carga."
 
-    if st.checkbox("🐞 Mostrar Diagnóstico de Datos"):
+    if st.checkbox("🐞 Mostrar Diagnóstico de Datos (Debug)"):
         st.header("🐞 Diagnóstico de DataFrame Filtrado")
         if df_filtrado.empty:
             st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
@@ -425,8 +431,12 @@ elif seccion_activa == "Resultados":
             try:
                 # CONVERSIÓN ROBUSTA FINAL PARA griddata:
                 df_mapa = df_filtrado.copy()
-                df_mapa['nodo'] = pd.to_numeric(df_mapa['nodo'], errors='coerce').astype(int)
                 
+                # Asegurar la conversión a int después de haber limpiado y filtrado los NaNs
+                df_mapa['nodo'] = pd.to_numeric(df_mapa['nodo'], errors='coerce')
+                df_mapa.dropna(subset=['nodo'], inplace=True) # Eliminar filas donde el nodo falló la conversión
+                df_mapa['nodo'] = df_mapa['nodo'].astype(int)
+
                 X = df_mapa['nodo'].values
                 fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                 tiempos_segundos = (df_mapa['_time'] - fecha_base).dt.total_seconds().values
@@ -474,7 +484,7 @@ elif seccion_activa == "Resultados":
                     
                     st.pyplot(fig)
             except Exception as e:
-                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que todos los nodos seleccionados tienen valores numéricos.")
+                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que los datos de 'nodo' y '_value' son válidos.")
                             
                    
 
