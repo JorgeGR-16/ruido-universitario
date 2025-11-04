@@ -293,41 +293,51 @@ elif seccion_activa == "Resultados":
     
     # Inicialización segura
     df_filtrado = pd.DataFrame()
-
     with st.sidebar:
         st.header("Parámetros de entrada")
     
         # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
-        try:
-            # CORRECCIÓN: Usar 'df' en lugar de 'f' y luego 'df' nuevamente
-            df = pd.read_csv(sheet_url, skiprows=6, header=None) 
-            
-            # Renombrar columnas manualmente según su posición 
-            df = df.rename(columns={ 
-                4: '_time', # Columna E → tiempo 
-                5: '_value', # Columna F → nivel de sonido (Leq) 
-                8: 'nodo' # Columna I → número de nodo 
-            }) 
-            # Conservar solo las columnas que interesan 
-            df = df[['_time', '_value', 'nodo']] 
-            # Convertir tipos de datos 
-            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
-            df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
-            df['nodo'] = df['nodo'].astype(str)
-
+        import traceback
     
-            # --- Validación ---
-            if df.empty or df['_time'].isna().all():
-                st.error("No se pudieron interpretar los datos de tiempo o el DataFrame está vacío.")
-                df_filtrado = pd.DataFrame()
-            else:
+        try:
+            # 🔹 Leer CSV completo (sin saltar filas)
+            df = pd.read_csv(sheet_url, header=None, decimal=',', on_bad_lines='skip')
+    
+            # 🔹 Eliminar filas vacías o incompletas
+            df = df.dropna(subset=[4, 5, 8], how='any')
+    
+            # 🔹 Renombrar columnas relevantes según tu hoja
+            df = df.rename(columns={
+                4: '_time',    # Columna E → tiempo
+                5: '_value',   # Columna F → nivel Leq
+                8: 'nodo'      # Columna I → número de nodo
+            })[['_time', '_value', 'nodo']]
+    
+            # 🔹 Convertir tipos de datos
+            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+            df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
+            df['nodo'] = df['nodo'].astype(str)
+    
+            # 🔹 Eliminar registros vacíos
+            df = df.dropna(subset=['_time', '_value'])
+    
+            # 🔹 Vista previa rápida
+            st.write("✅ **Datos cargados desde Google Sheets:**")
+            st.dataframe(df.head())
+    
+            # 🔹 Rango de fechas
+            if not df.empty:
                 tiempo_min = df['_time'].min()
                 tiempo_max = df['_time'].max()
     
-                fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                fecha = st.date_input(
+                    "Fecha",
+                    value=tiempo_min.date(),
+                    min_value=tiempo_min.date(),
+                    max_value=tiempo_max.date()
+                )
                 hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
                 hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
     
@@ -338,7 +348,7 @@ elif seccion_activa == "Resultados":
                     default=nodos_disponibles
                 )
     
-                # Asegurar la zona horaria UTC para la comparación
+                # 🔹 Filtrado por fecha, hora y nodo
                 fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
                 fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
     
@@ -347,10 +357,17 @@ elif seccion_activa == "Resultados":
                     (df['_time'] <= fecha_fin) &
                     (df['nodo'].isin(nodos_seleccionados))
                 ]
+    
+                st.write(f"📈 {len(df_filtrado)} registros después del filtrado.")
+    
+            else:
+                st.warning("⚠️ No hay datos válidos en la hoja seleccionada.")
+                df_filtrado = pd.DataFrame()
+    
         except Exception as e:
-            st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
-            df_filtrado = pd.DataFrame() # Asegurar que es un DataFrame vacío en caso de error
-
+            st.error("❌ Error al ejecutar la app:")
+            st.code(traceback.format_exc())
+            df_filtrado = pd.DataFrame()
 
 
 
@@ -564,3 +581,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados o la carga inicial falló.")
+
