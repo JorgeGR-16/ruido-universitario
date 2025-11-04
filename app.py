@@ -60,6 +60,7 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
+    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -204,7 +205,7 @@ elif seccion_activa == "Objetivo":
     st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
     
     st.markdown("### 2.2 Objetivos específicos")
-    st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
+    st.markdown("* Seleccionar y calibrar un sensor de sonido compatible con microcontroladores.")
     st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
     st.markdown("* Integrar un sistema de visualización en pantalla.")
     st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
@@ -289,53 +290,72 @@ elif seccion_activa == "Desarrollo":
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
+    
+    # Inicialización segura
+    df_filtrado = pd.DataFrame()
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-        uploaded_file = "40nodos.csv"  # Ruta fija
-
+    
+        # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
+    
         try:
-            df = pd.read_csv(uploaded_file, skiprows=3)
-            columnas_requeridas = ['_time', 'nodo', '_value']
+            # CORRECCIÓN: Usar 'df' en lugar de 'f' y luego 'df' nuevamente
+            df = pd.read_csv(sheet_url, skiprows=6, header=None) 
+            
+            # Renombrar columnas manualmente según su posición 
+            df = df.rename(columns={ 
+                4: '_time', # Columna E → tiempo 
+                5: '_value', # Columna F → nivel de sonido (Leq) 
+                8: 'nodo' # Columna I → número de nodo 
+            }) 
+            # Conservar solo las columnas que interesan 
+            df = df[['_time', '_value', 'nodo']] 
+            # Convertir tipos de datos 
+            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
+            df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
+            df['nodo'] = df['nodo'].astype(str)
 
-            if not all(col in df.columns for col in columnas_requeridas):
-                st.error("El archivo no contiene las columnas necesarias.")
+    
+            # --- Validación ---
+            if df.empty or df['_time'].isna().all():
+                st.error("No se pudieron interpretar los datos de tiempo o el DataFrame está vacío.")
                 df_filtrado = pd.DataFrame()
             else:
-                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-
-                if df['_time'].isna().all():
-                    st.error("No se pudieron interpretar las fechas.")
-                    df_filtrado = pd.DataFrame()
-                else:
-                    tiempo_min = df['_time'].min()
-                    tiempo_max = df['_time'].max()
-
-                    fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-
-                    nodos_disponibles = sorted(df["nodo"].unique())
-                    nodos_seleccionados = st.multiselect(
-                        "Selecciona los nodos:",
-                        options=nodos_disponibles,
-                        default=nodos_disponibles
-                    )
-
-                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-
-                    df_filtrado = df[
-                        (df['_time'] >= fecha_inicio) &
-                        (df['_time'] <= fecha_fin) &
-                        (df['nodo'].isin(nodos_seleccionados))
-                    ]
-
+                tiempo_min = df['_time'].min()
+                tiempo_max = df['_time'].max()
+    
+                fecha = st.date_input("Fecha", value=tiempo_min.date(),
+                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+    
+                nodos_disponibles = sorted(df["nodo"].unique())
+                nodos_seleccionados = st.multiselect(
+                    "Selecciona los nodos:",
+                    options=nodos_disponibles,
+                    default=nodos_disponibles
+                )
+    
+                # Asegurar la zona horaria UTC para la comparación
+                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+    
+                df_filtrado = df[
+                    (df['_time'] >= fecha_inicio) &
+                    (df['_time'] <= fecha_fin) &
+                    (df['nodo'].isin(nodos_seleccionados))
+                ]
         except Exception as e:
-            st.error(f"Error al cargar el archivo: {e}")
-            df_filtrado = pd.DataFrame()
+            st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
+            df_filtrado = pd.DataFrame() # Asegurar que es un DataFrame vacío en caso de error
+
+
+
 
     if not df_filtrado.empty:
+        # Usar .copy() para evitar SettingWithCopyWarning en cadenas de operaciones
         df_filtrado = df_filtrado.copy()
 
         # Clasificar riesgo
@@ -383,20 +403,37 @@ elif seccion_activa == "Resultados":
                 )
             
             # Procesamiento de datos (manteniendo tu estructura original)
+            # Asegurarse de que X es una lista de enteros únicos (para el grid)
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
         
+            # Crear la rejilla de interpolación
             x_unique = np.unique(X)
-            y_unique = np.unique(tiempos_segundos)
+            # Para el eje Y, usamos los segundos únicos (o un linspace si hay demasiados puntos)
+            # Aquí se simplifica usando los tiempos únicos registrados
+            y_unique = np.unique(tiempos_segundos) 
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            
+            # Interpolación
+            # Los puntos para la interpolación son (X, tiempos_segundos)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+            
+            # Rellenar NaNs (áreas no interpoladas) con el valor mínimo para visualización
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0)
         
             # Configuración del gráfico
             fig, ax = plt.subplots(figsize=(10, 6))
-            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            
+            # Generar etiquetas del eje Y (tiempo)
+            if len(y_unique) > 10:
+                # Seleccionar 10 ticks espaciados
+                yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            else:
+                # Usar todos los ticks si son pocos
+                yticks = np.arange(len(y_unique))
+                
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
         
             # Heatmap con paleta seleccionada
@@ -526,4 +563,4 @@ elif seccion_activa == "Resultados":
             st.pyplot(fig)     
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados.")
+        st.warning("No hay datos para los parámetros seleccionados o la carga inicial falló.")
