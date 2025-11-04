@@ -56,13 +56,11 @@ st.markdown("""
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
     st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-    
+
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    # 
-    # NOTA: Asegúrate de que las imágenes ("UAMAZC.jpg", etc.) estén en la carpeta de la aplicación
-    st.image("UAMAZC.jpg", use_container_width=True) 
+    st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
 if "seccion" not in st.session_state:
@@ -85,15 +83,16 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# --- SECCIONES DE INTRODUCCIÓN, OBJETIVO, DESARROLLO (Mantenidas sin cambios) ---
+# --- SECCIONES ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
     <div style='text-align: justify;'>
-    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-    El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
+     El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
     </div>
     """, unsafe_allow_html=True)
+
     st.markdown("""
     <div style='text-align: justify;'><br>
     El sonómetro es un instrumento de lectura directa del nivel global de presión sonora. Sirve para medir la intensidad del sonido, expresada en decibeles (dB) y se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
@@ -102,6 +101,7 @@ if seccion_activa == "Introducción":
     El ruido no controlado no solo afecta la calidad de vida de las personas, sino que también puede tener efectos negativos sobre la salud, como estrés, alteraciones del sueño y problemas auditivos.
     </div>
     """, unsafe_allow_html=True)
+
     st.markdown("""
     <div style='text-align: justify;'><br>
     El ruido excesivo es una forma de contaminación ambiental que puede tener efectos perjudiciales sobre la salud humana, tanto a corto como a largo plazo. Los sonómetros son instrumentos clave para medir, controlar y prevenir estos riesgos.
@@ -171,11 +171,7 @@ if seccion_activa == "Introducción":
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # 
-
-[Image of noise levels table]
-
-        st.image("Niveles_de_ruido.jpg", use_container_width=True) 
+        st.image("Niveles_de_ruido.jpg", use_container_width=True)
     
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
@@ -198,7 +194,6 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # 
         st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
@@ -209,7 +204,7 @@ elif seccion_activa == "Objetivo":
     st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
     
     st.markdown("### 2.2 Objetivos específicos")
-    st.markdown("* Seleccionar y calibrar un sensor de sonido compatible con microcontroladores.")
+    st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
     st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
     st.markdown("* Integrar un sistema de visualización en pantalla.")
     st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
@@ -226,7 +221,7 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
     A continuación, se explican en detalle los elementos que componen un sonómetro:
-    
+     
     - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
     - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
@@ -235,7 +230,7 @@ elif seccion_activa == "Desarrollo":
     - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
     - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
 
-    Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
+     Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
     </div>
     """, unsafe_allow_html=True)
     
@@ -243,41 +238,40 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # 
-        st.image("ESP32.jpg", use_container_width=True) 
+        st.image("ESP32.jpg", use_container_width=True)
         
     st.markdown("### 3.2 Construcción del sonómetro")
     st.markdown("### 3.2.1 Materiales necesarios")
     st.markdown("""
-        | Componente     | Descripción                                         |
-        |----------------|-----------------------------------------------------|
-        | ESP32 T3 V1.6.1       | Microcontrolador                                    | 
-        | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica           | 
-        | Pantalla OLED        | Muestra el nivel de decibeles en tiempo real        | 
-        | Jumpers hembra-hembra/ macho-hembra | Para las conexiones entre módulos                   | 
-        | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
-        | Caja impresa en 3D | Para encapsular el dispositivo |
-        | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+            | Componente     | Descripción                            
+            |----------------|-------------------------------------|
+            | ESP32 T3 V1.6.1        | Microcontrolador                | 
+            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
+            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
+            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
+            | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
+            | Caja impresa en 3D | Para encapsular el dispositivo |
+            | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
     """)
     st.markdown("### 3.2.2 Procedimiento de armado")
     st.markdown("""
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-        | Sensor     | ESP32 T3 V1.6.1                                         |
+        | Sensor     | ESP32 T3 V1.6.1                            
         |----------------|-------------------------------------|
-        | VCC        | 3.3V                                | 
-        | GND      | GND                                 | 
-        | A0 (salida analógica)        | GPIO 34 (u otro pin analógico)      |
+        | VCC        | 3.3V                | 
+        | GND      | GND                 | 
+        | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
         
     2. **Conexión de la pantalla OLED**
-        | OLED SSD1306     | ESP32 T3 V1.6.1                                         |
+        | OLED SSD1306     | ESP32 T3 V1.6.1                            
         |----------------|-------------------------------------|
-        | VCC        | 3.3V                                | 
-        | GND      | GND                                 | 
-        | SDA        | GPIO 21                           |
-        | SCL        | GPIO 22                           |
-        
+        | VCC        | 3.3V                | 
+        | GND      | GND                 | 
+        | SDA       | GPIO 21          |
+        | SCL       | GPIO 22          |
+    
     3. **Botón de control**
     - Conectar un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones
     
@@ -289,119 +283,69 @@ elif seccion_activa == "Desarrollo":
     - Dejar espacio para los conectores, pantalla visible y ventilación del micrófono
     - Cerrar el circuito y conectar la alimentación
     </div>
-    """, unsafe_allow_html=True)
+     """, unsafe_allow_html=True)
     
     
-# -------------------------------------------------------------
-# --- SECCIÓN DE RESULTADOS (FINALMENTE CORREGIDA Y ROBUSTA)---
-# -------------------------------------------------------------
+
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
-    
-    # Inicialización segura
-    df_filtrado = pd.DataFrame()
 
     with st.sidebar:
         st.header("Parámetros de entrada")
-    
-        # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
-        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
-    
-        try:
-            # CORRECTO: Usar skiprows=7 para evitar la fila de metadatos problemática.
-            df = pd.read_csv(sheet_url, skiprows=7, header=None) 
-            
-            # Renombrar columnas manualmente
-            df = df.rename(columns={ 
-                4: '_time', # Columna E 
-                5: '_value', # Columna F
-                8: 'nodo' # Columna I
-            }) 
-            # Conservar solo las columnas que interesan 
-            df = df[['_time', '_value', 'nodo']] 
-            
-            # === LIMPIEZA RIGUROSA Y CONVERSIÓN ===
-            
-            # 1. Limpiar _value: Forzar a numérico y eliminar NaNs
-            df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
-            df.dropna(subset=['_value'], inplace=True)
-            
-            # 2. Limpiar 'nodo': Quitar espacios, reemplazar vacíos con NaN y eliminar
-            df['nodo'] = df['nodo'].astype(str).str.strip().replace('', np.nan)
-            df.dropna(subset=['nodo'], inplace=True) 
-            # 3. Convertir tiempo (después de la limpieza)
-            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
-            df.dropna(subset=['_time'], inplace=True)
-            # ======================================
+        uploaded_file = "40nodos.csv"  # Ruta fija
 
-            # --- Validación ---
-            if df.empty:
-                st.error("No se pudieron interpretar los datos o el DataFrame está vacío después de la limpieza. Revise la hoja de cálculo.")
+        try:
+            df = pd.read_csv(uploaded_file, skiprows=3)
+            columnas_requeridas = ['_time', 'nodo', '_value']
+
+            if not all(col in df.columns for col in columnas_requeridas):
+                st.error("El archivo no contiene las columnas necesarias.")
                 df_filtrado = pd.DataFrame()
             else:
-                tiempo_min = df['_time'].min()
-                tiempo_max = df['_time'].max()
-    
-                # Rango de selección
-                fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-    
-                # Asegurar que 'nodo' es string para el multiselect
-                df['nodo'] = df['nodo'].astype(str) 
-                nodos_disponibles = sorted(df["nodo"].unique())
-                
-                nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos:",
-                    options=nodos_disponibles,
-                    default=nodos_disponibles
-                )
-    
-                # Asegurar la zona horaria UTC para la comparación
-                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-    
-                df_filtrado = df[
-                    (df['_time'] >= fecha_inicio) &
-                    (df['_time'] <= fecha_fin) &
-                    (df['nodo'].isin(nodos_seleccionados))
-                ]
+                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+
+                if df['_time'].isna().all():
+                    st.error("No se pudieron interpretar las fechas.")
+                    df_filtrado = pd.DataFrame()
+                else:
+                    tiempo_min = df['_time'].min()
+                    tiempo_max = df['_time'].max()
+
+                    fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+
+                    nodos_disponibles = sorted(df["nodo"].unique())
+                    nodos_seleccionados = st.multiselect(
+                        "Selecciona los nodos:",
+                        options=nodos_disponibles,
+                        default=nodos_disponibles
+                    )
+
+                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+                    df_filtrado = df[
+                        (df['_time'] >= fecha_inicio) &
+                        (df['_time'] <= fecha_fin) &
+                        (df['nodo'].isin(nodos_seleccionados))
+                    ]
+
         except Exception as e:
-            st.error(f"Error al cargar el archivo desde Google Sheets: {e}. Por favor, revise el formato de los datos en la hoja.")
-            df_filtrado = pd.DataFrame() 
-
-
-    # -------------------------------------------------------------
-    # --- Diagnóstico (Debug) ---
-    # -------------------------------------------------------------
-    if 'fecha_inicio' in locals() and 'fecha_fin' in locals():
-         rango_seleccionado = f"{fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}"
-    else:
-        rango_seleccionado = "No definido debido a un error de carga."
-
-    if st.checkbox("🐞 Mostrar Diagnóstico de Datos"):
-        st.header("🐞 Diagnóstico de DataFrame Filtrado")
-        if df_filtrado.empty:
-            st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
-            st.write(f"Rango de Tiempo Seleccionado: {rango_seleccionado}")
-        else:
-            st.success(f"✅ Filas disponibles para graficar: {len(df_filtrado)}")
-            st.write("Primeras 5 filas (Datos Filtrados):")
-            st.dataframe(df_filtrado.head())
-            st.write("Tipos de datos (dtypes):")
-            st.write(df_filtrado.dtypes)
-    # -------------------------------------------------------------
-
+            st.error(f"Error al cargar el archivo: {e}")
+            df_filtrado = pd.DataFrame()
 
     if not df_filtrado.empty:
         df_filtrado = df_filtrado.copy()
 
         # Clasificar riesgo
         def clasificar_riesgo(db):
-            if db < 85: return "Seguro"
-            elif db < 100: return "Riesgo moderado"
-            else: return "Peligroso"
+            if db < 85:
+                return "Seguro"
+            elif db < 100:
+                return "Riesgo moderado"
+            else:
+                return "Peligroso"
 
         df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
         df_filtrado["hora"] = df_filtrado["_time"].dt.hour
@@ -418,7 +362,17 @@ elif seccion_activa == "Resultados":
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
             
-            # Selector de paleta de colores
+            st.markdown("""
+            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
+            
+            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
+            - **Eje vertical:** representa la hora del día (formato HH:MM).
+            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
+            
+            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
+            """)
+            
+            # Selector de paleta de colores encima del mapa
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
@@ -428,72 +382,51 @@ elif seccion_activa == "Resultados":
                     key="palette_selector"
                 )
             
-            # Procesamiento de datos para el mapa de calor
-            try:
-                # CREACIÓN DE COPIA LIMPIA DE DATOS PARA GRIDDATA
-                df_mapa = df_filtrado.copy()
-                
-                # REFUERZO DE ROBUSTEZ: Asegurar que 'nodo' es numérico (entero) y eliminar los fallos
-                df_mapa['nodo'] = pd.to_numeric(df_mapa['nodo'], errors='coerce')
-                df_mapa.dropna(subset=['nodo'], inplace=True) 
-                df_mapa['nodo'] = df_mapa['nodo'].astype(int) # Finalmente a int
-                
-                X = df_mapa['nodo'].values
-                fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-                tiempos_segundos = (df_mapa['_time'] - fecha_base).dt.total_seconds().values
-                Z = df_mapa['_value'].astype(float).values
+            # Procesamiento de datos (manteniendo tu estructura original)
+            X = df_filtrado['nodo'].astype(int).values
+            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+            Z = df_filtrado['_value'].astype(float).values
+        
+            x_unique = np.unique(X)
+            y_unique = np.unique(tiempos_segundos)
+            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+        
+            # Configuración del gráfico
+            fig, ax = plt.subplots(figsize=(10, 6))
+            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+        
+            # Heatmap con paleta seleccionada
+            sb.heatmap(
+                Z_grid, 
+                cmap=palette,  # Usando la paleta seleccionada
+                xticklabels=x_unique, 
+                yticklabels=False, 
+                ax=ax
+            )
             
-                # Creación de la rejilla
-                x_unique = np.unique(X)
-                y_unique = np.unique(tiempos_segundos) 
-                
-                # Necesitamos al menos dos puntos únicos en cada eje para griddata
-                if len(x_unique) < 2 or len(y_unique) < 2:
-                    st.warning("⚠️ El Mapa de Calor necesita al menos dos nodos seleccionados y lecturas en al menos dos momentos diferentes para interpolar los datos.")
-                else:
-                    X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-                    
-                    # Interpolación 
-                    Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-                    
-                    # Rellenar NaNs 
-                    min_val = np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0
-                    Z_grid = np.nan_to_num(Z_grid, nan=min_val)
-                
-                    # Configuración del gráfico
-                    fig, ax = plt.subplots(figsize=(10, 6))
-                    
-                    # Generar etiquetas del eje Y (tiempo)
-                    if len(y_unique) > 10:
-                        yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
-                    else:
-                        yticks = np.arange(len(y_unique))
-                        
-                    # Asegurar que yticks no esté vacío antes de indexar y_unique
-                    if len(yticks) > 0:
-                        yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-                    else:
-                         yticklabels = []
-
-                    # Heatmap
-                    sb.heatmap(Z_grid, cmap=palette, xticklabels=x_unique, yticklabels=False, ax=ax)
-                    
-                    ax.invert_yaxis()
-                    ax.set_yticks(yticks)
-                    ax.set_yticklabels(yticklabels, rotation=0)
-                    ax.set_xlabel("Nodos")
-                    ax.set_ylabel("Hora (HH:MM)")
-                    
-                    cbar = ax.collections[0].colorbar
-                    cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
-                    
-                    st.pyplot(fig)
-            except Exception as e:
-                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que todos los nodos seleccionados tienen valores numéricos.")
+            ax.invert_yaxis()
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(yticklabels, rotation=0)
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Hora (HH:MM)")
+            
+            # Añadir barra de color con etiqueta
+            cbar = ax.collections[0].colorbar
+            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+            
+            st.pyplot(fig)
                             
                    
 
         with tab2:
+            st.markdown("""
+            En esta sección se muestra la evolución del nivel de ruido a lo largo del tiempo para cada nodo seleccionado.
+            Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
+            """)
             st.markdown("#### Evolución temporal por nodo")
             for nodo in sorted(df_filtrado["nodo"].unique()):
                 st.subheader(f"Nodo {nodo}")
@@ -501,6 +434,10 @@ elif seccion_activa == "Resultados":
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
         with tab3:
+            st.markdown("""
+            Aquí se visualizan todos los nodos juntos para comparar sus niveles de ruido en el tiempo.
+            Esto facilita detectar diferencias o similitudes en el comportamiento acústico entre distintas áreas.
+            """)
             st.markdown("### Comparación general de nodos en un solo gráfico")
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
             st.line_chart(df_pivot, height=300, use_container_width=True)
@@ -508,14 +445,26 @@ elif seccion_activa == "Resultados":
         with tab4:
             st.markdown("### Análisis estadístico básico por nodo")
             resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
-                Minimo="min", Maximo="max", Media="mean", Mediana="median", Conteo="count"
+                Minimo="min",
+                Maximo="max",
+                Media="mean",
+                Mediana="median",
+                Conteo="count"
             ).round(2)
             st.dataframe(resumen_estadistico, use_container_width=True)
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
-            
         with tab5:
+            st.markdown("### **Efectos del ruido en la audición**")
+            st.markdown("""
+                <div style='text-align: justify;'>
+                La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
+                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
+                </div>
+            """, unsafe_allow_html=True)
+            
             st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
+
             st.markdown("""
             | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
             |----------------|-------------------------------------|--------------------------------------------------------|
@@ -529,39 +478,52 @@ elif seccion_activa == "Resultados":
         
             # Clasificación personalizada
             def clasificar_rango(db):
-                if db < 30: return "0–30 dB: Sin riesgo"
-                elif db < 60: return "30–60 dB: Sin riesgo"
-                elif db < 85: return "60–85 dB: Riesgo leve"
-                elif db < 100: return "85–100 dB: Riesgo moderado"
-                else: return "100–120+ dB: Peligroso"
+                if db < 30:
+                    return "0–30 dB: Sin riesgo"
+                elif db < 60:
+                    return "30–60 dB: Sin riesgo"
+                elif db < 85:
+                    return "60–85 dB: Riesgo leve"
+                elif db < 100:
+                    return "85–100 dB: Riesgo moderado"
+                else:
+                    return "100–120+ dB: Peligroso"
         
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
             df_filtrado["hora"] = df_filtrado["_time"].dt.hour
             horas_disponibles = sorted(df_filtrado["hora"].unique())
             
-            # Selector de una sola hora 
-            if horas_disponibles:
-                hora_seleccionada = st.selectbox(
-                    "Selecciona la hora que deseas visualizar (formato 24h):",
-                    options=horas_disponibles,
-                    index=0 
-                )
-                
-                df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-                conteo = df_hora["rango"].value_counts().sort_index()
-                
-                colores = {
-                    "0–30 dB: Sin riesgo": "#b3d9ff", "30–60 dB: Sin riesgo": "#80bfff", 
-                    "60–85 dB: Riesgo leve": "#ffcc80", "85–100 dB: Riesgo moderado": "#ff9966", 
-                    "100–120+ dB: Peligroso": "#ff4d4d"
-                }
-                
-                fig, ax = plt.subplots()
-                ax.pie(conteo, labels=conteo.index, autopct="%1.1f%%", startangle=90, colors=[colores.get(cat, "#cccccc") for cat in conteo.index])
-                ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-                st.pyplot(fig)
-            else:
-                 st.warning("No hay datos en el rango seleccionado para calcular la distribución por hora.")     
+            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
+            hora_seleccionada = st.selectbox(
+                "Selecciona la hora que deseas visualizar (formato 24h):",
+                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
+                index=0  # opcional, elige cuál aparece por defecto
+            )
+            
+            # Filtrar datos por la hora seleccionada
+            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+            conteo = df_hora["rango"].value_counts().sort_index()
+            
+            # Colores personalizados por rango de riesgo
+            colores = {
+                "0–30 dB: Sin riesgo": "#b3d9ff",
+                "30–60 dB: Sin riesgo": "#80bfff",
+                "60–85 dB: Riesgo leve": "#ffcc80",
+                "85–100 dB: Riesgo moderado": "#ff9966",
+                "100–120+ dB: Peligroso": "#ff4d4d"
+            }
+            
+            # Crear gráfico de pastel
+            fig, ax = plt.subplots()
+            ax.pie(
+                conteo,
+                labels=conteo.index,
+                autopct="%1.1f%%",
+                startangle=90,
+                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+            )
+            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
+            st.pyplot(fig)     
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados. **Active el diagnóstico para verificar la carga.**")
+        st.warning("No hay datos para los parámetros seleccionados.")
