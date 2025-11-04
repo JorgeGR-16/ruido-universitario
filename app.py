@@ -1,584 +1,164 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sb
-from scipy.interpolate import griddata
+import seaborn as sns
+import traceback
 
-st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
+# ==========================
+# CONFIGURACIÓN DE PÁGINA
+# ==========================
+st.set_page_config(
+    page_title="Análisis del Comportamiento del Ruido en el Ambiente Universitario",
+    layout="wide"
+)
 
-# --- ESTILO PERSONALIZADO ---
-st.markdown("""
-    <style>
-        .stApp {
-            padding-top: 0rem !important;
-            margin-top: 0rem !important;
-        }
-        header { 
-            visibility: hidden;
-        }
-        .block-container {
-            padding-top: 1rem;
-        }
-        h1 {
-            margin-top: -2rem;
-        }
-        h2 {
-            font-size: 16px !important;
-            color: red !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-        }
-        h3, h4, h5, h6 {
-            color: black;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-        }
-        .subheader {
-            color: #333;
-        }
-        .menu-button {
-            background-color: #004080;
-            color: white;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            border: none;
-        }
-        .menu-button:hover {
-            background-color: #0059b3;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# ==========================
+# NAVEGACIÓN PRINCIPAL
+# ==========================
+menu = st.sidebar.radio(
+    "Navegación",
+    ["Introducción", "Objetivo", "Desarrollo", "Resultados"]
+)
 
-# --- TÍTULO GENERAL ---
-col1, col2, col3 = st.columns([1, 4, 1])
-with col2:
-    st.title("**Investigación del comportamiento del ruido en un ambiente universitario**")
-
-# --- IMAGEN PRINCIPAL ---
-col1, col2, col3 = st.columns([1, 4, 1])
-with col2:
-    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
-    st.image("UAMAZC.jpg", use_container_width=True)
-
-# --- MENÚ DE NAVEGACIÓN ---
-if "seccion" not in st.session_state:
-    st.session_state.seccion = "Introducción"
-    
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    if st.button("Introducción", use_container_width=True):
-        st.session_state.seccion = "Introducción"
-with col2:
-    if st.button("Objetivo", use_container_width=True):
-        st.session_state.seccion = "Objetivo"
-with col3:
-    if st.button("Desarrollo", use_container_width=True):
-        st.session_state.seccion = "Desarrollo"
-with col4:
-    if st.button("Resultados", use_container_width=True):
-        st.session_state.seccion = "Resultados"
-
-seccion_activa = st.session_state.seccion
-st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
-
-# --- SECCIONES ---
-if seccion_activa == "Introducción":
-    st.markdown("### Introducción")
+# ==========================
+# SECCIÓN: INTRODUCCIÓN
+# ==========================
+if menu == "Introducción":
+    st.title("Análisis del Comportamiento del Ruido en el Ambiente Universitario")
     st.markdown("""
-    <div style='text-align: justify;'>
-     El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style='text-align: justify;'><br>
-    El sonómetro es un instrumento de lectura directa del nivel global de presión sonora. Sirve para medir la intensidad del sonido, expresada en decibeles (dB) y se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
-    Su importancia radica en que permite cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
-    Los niveles elevados de ruido pueden interferir en actividades cotidianas, como el trabajo o el descanso, y tienen un impacto directo en la salud pública.
-    El ruido no controlado no solo afecta la calidad de vida de las personas, sino que también puede tener efectos negativos sobre la salud, como estrés, alteraciones del sueño y problemas auditivos.
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style='text-align: justify;'><br>
-    El ruido excesivo es una forma de contaminación ambiental que puede tener efectos perjudiciales sobre la salud humana, tanto a corto como a largo plazo. Los sonómetros son instrumentos clave para medir, controlar y prevenir estos riesgos.
-    A continuación, se explican diferentes riesgos contra la salud humana:
-
-    - **Pérdida auditiva inducida por ruido** - **Estrés, irritabilidad y fatiga mental** - **Aumento del riesgo cardiovascular**
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style='text-align: justify;'><br>
-    Los sonómetros tienen aplicaciones en diversas áreas, como:
-    
-    - **Salud pública:** se utilizan para medir los niveles de ruido en hospitales, escuelas y vecindarios.
-    - **Industria y construcción:** para monitorear el ruido en fábricas y sitios de construcción, asegurando la seguridad de los trabajadores y el cumplimiento de las regulaciones.
-    - **Transporte:** se emplean en la medición del ruido de tráfico, ferroviario y aéreo, con el fin de minimizar su impacto en las comunidades cercanas.
-    - **Investigación acústica:** en estudios científicos y de ingeniería, se utilizan para evaluar la propagación del sonido y el diseño de soluciones para reducir el ruido.
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style='text-align: justify;'><br>
-    En el ruido hay diferentes objetos y lugares que causan volumen excesivo con 2 fuentes que pueden proporcionar el sonido: fuentes fijas y móviles.
-    Las fuentes fijas se encuentran en espacios públicos en sitios de construcción, manufactura industrial y empresa de servicios. Las fuentes móviles se ecuentran por medios de transporte.
-    La norma ambiental tiene límites máximos en decibeles que debemos seguir en las fuentes fijas por niveles de emisiones sonoras.
-    El punto de emisión nos permite calibrar el ruido para supervisar la vibración, pero se excluyen las normas móviles. La Organización Mundial de la salud dicen que modifican la intensidad del sonido al oír ruidos excesivos subiéndolos.
-    La afectación por el ruido se divide en primarios y secundarios. Los primarios se pueden percibir al revelar el ruido alterando al ser humano por 8 horas
-    y los secundarios tienen gran alcance que pueden ocasionar en enfermedades psicosomáticas.
-    <br><br>
-    La exposición constante al ruido puede tener serias consecuencias tanto físicas como psicológicas. A nivel emocional, puede generar inensibilidad que sucede a nuestro alrededor,
-    promover el aislamiento social e incrementar el estrés, lo que deriva en conductas agresivas o intolerantes. En el plano físico, el ruido interfiere con el descanso adecuado,
-    afectando la recuperación del cuerpo, incluso cuando es de baja intensidad. También puede provocar transtornos relacionados con la tensión nerviosa como
-    problemas circulatorios, presión arterial alta y alteraciones digestivas.
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style='text-align: justify;'><br>
-    Las siguientes leyes se deben cumplir y seguir para los ciudadanos:
-
-    - El artículo 4° establece varios derechos fundamentales para todos los mexicanos.
-    - La Ley Ambiental de Protección a la Tierra permite que todos los ciudadanos deben concluir el límite máximo de emisiones sonoras.
-    - Los límites se deben continuar de acuerdo a la norma ambiental para que los sonómetros guarden los sonidos producidos.
-
-    En la Ciudad de México, la Ley de Establecimientos Mercantiles obliga a los negocios a evitar la emisión de ruido al exterior e instalar aislamiento acústico, además de
-    cumplir con límites de sonido en su interior. La norma NADF-005-AMBT-2013 regula el ruido en el exterior. También se prohibe el uso de bocinas o música en zonas de enseres.
-    Por su parte, la Ley de Cultura Cívica considera infracción generar ruidos que afecten la tranquilidad o salud.
-    Las sanciones por incumplimiento van desde multas, clausuras, arrestos administrativos y otras medidas legales.
-    También deben escuchar y responder las denuncias de los ciudadanos sobre las emisiones sonoras que generan en sus domicilios si sobrepasan los Límites Máximos Permisibles
-    por la norma ambiental NADF-005-AMBT-2013 porque si omiten las quejas de los ciudadanos están desobedeciendo las precauciones que pueden suspender sus actividades
-    y recibir informes por la Secretaría de Medio Ambiente de la Ciudad de México (SEDEMA).
-    <br><br>
-    Tienen campañas de difusión para la denuncia del ruido que deben decir los ressponables para inspeccionar la contaminación acústica.
-    En 2019, PAOT realizó más de 50 precauciones en los comerciales que cada acción se resuelve los encargados en reformar las emisiones sonoras y que sigan el límite mínimos por la norma ambiental NADF-005.
-    En la guía del PAOT brinda propietarios, administradores y responsables de comercios especialmente restaurantes y bares, una herramienta práctica para controlar y mitigar las emisiones sonoras, 
-    facilitando el cumplimiento de la normativa ambiental vigente en la Ciudad de México (NADF‑005‑AMBT‑2013).
-    Hay diferentes contenidos que se deben solucionar para el ruido:
-
-    - Vías de transmisión
-    - Mejora de aislamiento en los edificios
-    - Instalación y ubicación en máquinas ruidosas, sistemas de audio y ruidos de impacto
-
-    La Procuraduría Ambiental y del Ordenamiento Territorial de la Ciudad de México (PAOT) examina de que todo sea legal y que podemos denunciar por
-    internet, teléfono y hablar de forma presencial en la dirección indicada y horario.
-    </div>
-    """, unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image("Niveles_de_ruido.jpg", use_container_width=True)
-    
-    st.markdown("### 1.1 Principio de funcionamiento")
-    st.markdown("""
-    <div style='text-align: justify;'>
-    
-    1. **Captación del sonido:** El sonido ambiente es captado por un micrófono de condensador...
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.latex(r'''
-        \text{Nivel de presión sonora (dB)} = 20 \cdot \log_{10} \left(\frac{P}{P_0}\right)
-    ''')
-
-    st.markdown("""
-        Donde:  
-        - \( P \): presión sonora medida  
-        - \( P_0 = 20\,\mu\text{Pa} \): presión sonora de referencia
-    """, unsafe_allow_html=True)
-
-    st.markdown("### 1.2 Diagrama del dispositivo.")
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image("Diagrama.png", use_container_width=True)
-
-elif seccion_activa == "Objetivo":
-    st.markdown("### Objetivo")
-    st.markdown("* Visualizar el comportamiento del sonido en una área específica...")
-
-    st.markdown("### 2.1 Objetivo General")
-    st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
-    
-    st.markdown("### 2.2 Objetivos específicos")
-    st.markdown("* Seleccionar y calibrar un sensor de sonido compatible con microcontroladores.")
-    st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
-    st.markdown("* Integrar un sistema de visualización en pantalla.")
-    st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
-    st.markdown("* Medir los niveles de ruido en diferentes puntos del área usando un sonómetro de clase adecuada.")
-    st.markdown("* Registrar y analizar los datos obtenidos para identificar zonas con niveles de ruido.")
-    st.markdown("* Comparar los resultados con los límites establecidos en las normas oficiales.")
-    st.markdown("* Fomentar la concientización sobre la importancia del control del ruido en espacios públicos, escolares o laborales.")
-
-elif seccion_activa == "Desarrollo":
-    st.markdown("### Desarrollo del prototipo")
-    st.header("*En esta parte veremos el desarrollo del prototipo y su construcción.*")
-
-    st.markdown("""
-    <div style='text-align: justify;'>
-    La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
-    A continuación, se explican en detalle los elementos que componen un sonómetro:
-     
-    - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
-    - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
-    - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
-    - **Circuito de procesamiento de señales:** cuando la señal ha sido amplificada y filtrada, pasa al circuito de procesamiento que se encarga de convertir la señal analógica en digital y realizar los cálculos necesarios para determinar el nivel de presión sonora.
-    - **Pantalla de visualización:** es el componente que permite visualizar los resultados de las mediciones. Dependiendo del modelo del sonómetro, puede ser una pantalla LCD o LED.
-    - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
-    - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
-
-     Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
-    </div>
-    """, unsafe_allow_html=True)
-    
-    
-    st.markdown("### 3.1 Diseño del modelo ESP32")
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image("ESP32.jpg", use_container_width=True)
-        
-    st.markdown("### 3.2 Construcción del sonómetro")
-    st.markdown("### 3.2.1 Materiales necesarios")
-    st.markdown("""
-            | Componente     | Descripción                            
-            |----------------|-------------------------------------|
-            | ESP32 T3 V1.6.1        | Microcontrolador                | 
-            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
-            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
-            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
-            | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
-            | Caja impresa en 3D | Para encapsular el dispositivo |
-            | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
+    Este proyecto analiza los niveles de ruido registrados en diferentes puntos del entorno universitario,
+    utilizando una red de sensores conectados mediante tecnología **LoRa32** y micrófonos **INMP441**.
     """)
-    st.markdown("### 3.2.2 Procedimiento de armado")
-    st.markdown("""
-    <div style='text-align: justify;'>
-    
-    1. **Conexión del sensor de sonido**
-        | Sensor     | ESP32 T3 V1.6.1                            
-        |----------------|-------------------------------------|
-        | VCC        | 3.3V                | 
-        | GND      | GND                 | 
-        | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
-        
-    2. **Conexión de la pantalla OLED**
-        | OLED SSD1306     | ESP32 T3 V1.6.1                            
-        |----------------|-------------------------------------|
-        | VCC        | 3.3V                | 
-        | GND      | GND                 | 
-        | SDA       | GPIO 21          |
-        | SCL       | GPIO 22          |
-    
-    3. **Botón de control**
-    - Conectar un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones
-    
-    4. **Código en Arduino**
-    
-    5. **Montaje físico y carcasa**
-    - Usa una impresora 3D para crear la carcasa
-    - Inserta los módulos asegurándolos con presión
-    - Dejar espacio para los conectores, pantalla visible y ventilación del micrófono
-    - Cerrar el circuito y conectar la alimentación
-    </div>
-     """, unsafe_allow_html=True)
-    
-    
 
-elif seccion_activa == "Resultados":
-    st.markdown("### Resultados")
-    
-    # Inicialización segura
-    df_filtrado = pd.DataFrame()
+# ==========================
+# SECCIÓN: OBJETIVO
+# ==========================
+elif menu == "Objetivo":
+    st.header("Objetivo General")
+    st.markdown("""
+    Analizar el comportamiento del ruido ambiental en un entorno universitario,
+    identificando patrones horarios y zonas con niveles potencialmente dañinos para la salud auditiva.
+    """)
+
+# ==========================
+# SECCIÓN: DESARROLLO TEÓRICO
+# ==========================
+elif menu == "Desarrollo":
+    st.header("Desarrollo Teórico")
+    st.markdown("""
+    Los niveles de ruido son medidos en decibelios (dB) y se expresan comúnmente mediante el nivel **Leq**,
+    que representa el nivel equivalente de sonido continuo durante un intervalo de tiempo determinado.
+    """)
+
+# ==========================
+# SECCIÓN: RESULTADOS
+# ==========================
+elif menu == "Resultados":
+    st.header("Resultados del Monitoreo")
+
+    # -----------------------------------
+    # PANEL LATERAL DE PARÁMETROS
+    # -----------------------------------
     with st.sidebar:
         st.header("Parámetros de entrada")
-    
-        # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
-        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
-    
-        import traceback
-    
+
         try:
-            # 🔹 Leer CSV completo (sin saltar filas)
-            df = pd.read_csv(sheet_url, header=None, decimal=',', on_bad_lines='skip')
-    
-            # 🔹 Eliminar filas vacías o incompletas
-            df = df.dropna(subset=[4, 5, 8], how='any')
-    
-            # 🔹 Renombrar columnas relevantes según tu hoja
-            df = df.rename(columns={
-                4: '_time',    # Columna E → tiempo
-                5: '_value',   # Columna F → nivel Leq
-                8: 'nodo'      # Columna I → número de nodo
-            })[['_time', '_value', 'nodo']]
-    
-            # 🔹 Convertir tipos de datos
-            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+            # ✅ URL pública de tu hoja de Google Sheets
+            sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/export?format=csv&gid=0"
+
+            # ✅ Leer el CSV directamente desde Google Sheets
+            df = pd.read_csv(sheet_url, encoding='utf-8', on_bad_lines='skip')
+
+            # ✅ Renombrar columnas clave según su posición
+            if len(df.columns) > 8:
+                df = df.rename(columns={
+                    df.columns[4]: '_time',    # Columna 5
+                    df.columns[5]: '_value',   # Columna 6
+                    df.columns[8]: 'nodo'      # Columna 9
+                })[['_time', '_value', 'nodo']]
+            else:
+                st.error("❌ La hoja de cálculo no contiene las columnas necesarias.")
+                st.stop()
+
+            # ✅ Conversión de tipos de datos
+            df['_time'] = pd.to_datetime(df['_time'], errors='coerce', utc=True)
             df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
             df['nodo'] = df['nodo'].astype(str)
-    
-            # 🔹 Eliminar registros vacíos
-            df = df.dropna(subset=['_time', '_value'])
-    
-            # 🔹 Vista previa rápida
-            st.write("✅ **Datos cargados desde Google Sheets:**")
+
+            # ✅ Limpieza de datos nulos
+            df = df.dropna(subset=['_time', '_value', 'nodo'])
+            df = df.sort_values('_time')
+
+            # ✅ Mostrar vista previa
+            st.success(f"Datos cargados correctamente: {len(df)} registros")
             st.dataframe(df.head())
-    
-            # 🔹 Rango de fechas
-            if not df.empty:
-                tiempo_min = df['_time'].min()
-                tiempo_max = df['_time'].max()
-    
-                fecha = st.date_input(
-                    "Fecha",
-                    value=tiempo_min.date(),
-                    min_value=tiempo_min.date(),
-                    max_value=tiempo_max.date()
-                )
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-    
-                nodos_disponibles = sorted(df["nodo"].unique())
-                nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos:",
-                    options=nodos_disponibles,
-                    default=nodos_disponibles
-                )
-    
-                # 🔹 Filtrado por fecha, hora y nodo
-                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-    
-                df_filtrado = df[
-                    (df['_time'] >= fecha_inicio) &
-                    (df['_time'] <= fecha_fin) &
-                    (df['nodo'].isin(nodos_seleccionados))
-                ]
-    
-                st.write(f"📈 {len(df_filtrado)} registros después del filtrado.")
-    
-            else:
-                st.warning("⚠️ No hay datos válidos en la hoja seleccionada.")
-                df_filtrado = pd.DataFrame()
-    
+
+            # --- FILTROS DE FECHA / HORA / NODOS ---
+            tiempo_min, tiempo_max = df['_time'].min(), df['_time'].max()
+
+            fecha = st.date_input(
+                "Selecciona fecha:",
+                value=tiempo_min.date(),
+                min_value=tiempo_min.date(),
+                max_value=tiempo_max.date()
+            )
+            hora_inicio = st.time_input("Hora de inicio", pd.to_datetime("00:00").time())
+            hora_fin = st.time_input("Hora de fin", pd.to_datetime("23:59").time())
+
+            nodos_disponibles = sorted(df["nodo"].unique())
+            nodos_seleccionados = st.multiselect(
+                "Selecciona nodos:",
+                options=nodos_disponibles,
+                default=nodos_disponibles
+            )
+
+            # --- FILTRADO DE DATOS ---
+            inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+            fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+            df_filtrado = df[
+                (df['_time'] >= inicio) &
+                (df['_time'] <= fin) &
+                (df['nodo'].isin(nodos_seleccionados))
+            ]
+
+            st.write(f"📊 Registros filtrados: {len(df_filtrado)}")
+
         except Exception as e:
-            st.error("❌ Error al ejecutar la app:")
+            st.error("❌ Error al cargar o procesar los datos:")
             st.code(traceback.format_exc())
             df_filtrado = pd.DataFrame()
 
-
-
+    # -----------------------------------
+    # VISUALIZACIÓN DE RESULTADOS
+    # -----------------------------------
     if not df_filtrado.empty:
-        # Usar .copy() para evitar SettingWithCopyWarning en cadenas de operaciones
-        df_filtrado = df_filtrado.copy()
+        st.subheader("Evolución del Nivel de Ruido (Leq)")
 
-        # Clasificar riesgo
-        def clasificar_riesgo(db):
-            if db < 85:
-                return "Seguro"
-            elif db < 100:
-                return "Riesgo moderado"
-            else:
-                return "Peligroso"
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.lineplot(data=df_filtrado, x="_time", y="_value", hue="nodo", ax=ax)
+        ax.set_title("Niveles de Ruido por Nodo")
+        ax.set_xlabel("Tiempo")
+        ax.set_ylabel("Nivel de Ruido (dB)")
+        ax.legend(title="Nodo")
+        st.pyplot(fig)
 
-        df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
-        df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+        # --- ESTADÍSTICAS ---
+        st.subheader("Estadísticas por Nodo")
+        stats = df_filtrado.groupby('nodo')['_value'].describe()[['mean', 'min', 'max']]
+        st.dataframe(stats)
 
-        # Tabs
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "📊 Mapa de Sonido", 
-            "📈 Gráficos por nodo", 
-            "🧩 Comparación general", 
-            "📊 Análisis estadístico",
-            "🧨 Riesgo por hora"
-        ])
+        # --- ANÁLISIS DE RIESGO AUDITIVO ---
+        st.subheader("Distribución de Niveles de Ruido Peligrosos")
+        bins = [0, 55, 70, 85, 100, 120]
+        labels = ['Bajo', 'Moderado', 'Alto', 'Muy Alto', 'Peligroso']
+        df_filtrado['Nivel'] = pd.cut(df_filtrado['_value'], bins=bins, labels=labels, right=False)
+        nivel_counts = df_filtrado['Nivel'].value_counts().sort_index()
 
-        with tab1:
-            st.markdown("### Mapa de niveles de sonido")
-            
-            st.markdown("""
-            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
-            
-            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
-            - **Eje vertical:** representa la hora del día (formato HH:MM).
-            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
-            
-            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
-            """)
-            
-            # Selector de paleta de colores encima del mapa
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                palette = st.selectbox(
-                    "Seleccione la paleta de colores:",
-                    options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
-                    index=0,
-                    key="palette_selector"
-                )
-            
-            # Procesamiento de datos (manteniendo tu estructura original)
-            # Asegurarse de que X es una lista de enteros únicos (para el grid)
-            X = df_filtrado['nodo'].astype(int).values
-            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-            Z = df_filtrado['_value'].astype(float).values
-        
-            # Crear la rejilla de interpolación
-            x_unique = np.unique(X)
-            # Para el eje Y, usamos los segundos únicos (o un linspace si hay demasiados puntos)
-            # Aquí se simplifica usando los tiempos únicos registrados
-            y_unique = np.unique(tiempos_segundos) 
-            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-            
-            # Interpolación
-            # Los puntos para la interpolación son (X, tiempos_segundos)
-            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            
-            # Rellenar NaNs (áreas no interpoladas) con el valor mínimo para visualización
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(Z_grid).all() else 0)
-        
-            # Configuración del gráfico
-            fig, ax = plt.subplots(figsize=(10, 6))
-            
-            # Generar etiquetas del eje Y (tiempo)
-            if len(y_unique) > 10:
-                # Seleccionar 10 ticks espaciados
-                yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
-            else:
-                # Usar todos los ticks si son pocos
-                yticks = np.arange(len(y_unique))
-                
-            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-        
-            # Heatmap con paleta seleccionada
-            sb.heatmap(
-                Z_grid, 
-                cmap=palette,  # Usando la paleta seleccionada
-                xticklabels=x_unique, 
-                yticklabels=False, 
-                ax=ax
-            )
-            
-            ax.invert_yaxis()
-            ax.set_yticks(yticks)
-            ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos")
-            ax.set_ylabel("Hora (HH:MM)")
-            
-            # Añadir barra de color con etiqueta
-            cbar = ax.collections[0].colorbar
-            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
-            
-            st.pyplot(fig)
-                            
-                   
-
-        with tab2:
-            st.markdown("""
-            En esta sección se muestra la evolución del nivel de ruido a lo largo del tiempo para cada nodo seleccionado.
-            Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
-            """)
-            st.markdown("#### Evolución temporal por nodo")
-            for nodo in sorted(df_filtrado["nodo"].unique()):
-                st.subheader(f"Nodo {nodo}")
-                datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
-                st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
-
-        with tab3:
-            st.markdown("""
-            Aquí se visualizan todos los nodos juntos para comparar sus niveles de ruido en el tiempo.
-            Esto facilita detectar diferencias o similitudes en el comportamiento acústico entre distintas áreas.
-            """)
-            st.markdown("### Comparación general de nodos en un solo gráfico")
-            df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
-            st.line_chart(df_pivot, height=300, use_container_width=True)
-
-        with tab4:
-            st.markdown("### Análisis estadístico básico por nodo")
-            resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
-                Minimo="min",
-                Maximo="max",
-                Media="mean",
-                Mediana="median",
-                Conteo="count"
-            ).round(2)
-            st.dataframe(resumen_estadistico, use_container_width=True)
-            st.markdown("### Gráfico de valores máximos por nodo")
-            st.bar_chart(resumen_estadistico["Maximo"])
-        with tab5:
-            st.markdown("### **Efectos del ruido en la audición**")
-            st.markdown("""
-                <div style='text-align: justify;'>
-                La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
-                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
-
-            st.markdown("""
-            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
-            |----------------|-------------------------------------|--------------------------------------------------------|
-            | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
-            | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
-            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
-            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
-            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
-            """)
-            st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
-        
-            # Clasificación personalizada
-            def clasificar_rango(db):
-                if db < 30:
-                    return "0–30 dB: Sin riesgo"
-                elif db < 60:
-                    return "30–60 dB: Sin riesgo"
-                elif db < 85:
-                    return "60–85 dB: Riesgo leve"
-                elif db < 100:
-                    return "85–100 dB: Riesgo moderado"
-                else:
-                    return "100–120+ dB: Peligroso"
-        
-            df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
-            df_filtrado["hora"] = df_filtrado["_time"].dt.hour
-            horas_disponibles = sorted(df_filtrado["hora"].unique())
-            
-            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
-            hora_seleccionada = st.selectbox(
-                "Selecciona la hora que deseas visualizar (formato 24h):",
-                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
-                index=0  # opcional, elige cuál aparece por defecto
-            )
-            
-            # Filtrar datos por la hora seleccionada
-            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-            conteo = df_hora["rango"].value_counts().sort_index()
-            
-            # Colores personalizados por rango de riesgo
-            colores = {
-                "0–30 dB: Sin riesgo": "#b3d9ff",
-                "30–60 dB: Sin riesgo": "#80bfff",
-                "60–85 dB: Riesgo leve": "#ffcc80",
-                "85–100 dB: Riesgo moderado": "#ff9966",
-                "100–120+ dB: Peligroso": "#ff4d4d"
-            }
-            
-            # Crear gráfico de pastel
-            fig, ax = plt.subplots()
-            ax.pie(
-                conteo,
-                labels=conteo.index,
-                autopct="%1.1f%%",
-                startangle=90,
-                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
-            )
-            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-            st.pyplot(fig)     
+        fig2, ax2 = plt.subplots()
+        ax2.pie(nivel_counts, labels=nivel_counts.index, autopct='%1.1f%%')
+        ax2.set_title("Porcentaje de Niveles de Ruido por Categoría")
+        st.pyplot(fig2)
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados o la carga inicial falló.")
-
+        st.warning("⚠️ No hay datos disponibles para los filtros seleccionados.")
