@@ -304,8 +304,8 @@ elif seccion_activa == "Resultados":
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
         try:
-            # Corrección: skiprows=6 (basado en la estructura típica de exportación CSV de Google Sheets con metadatos)
-            df = pd.read_csv(sheet_url, skiprows=6, header=None) 
+            # CORRECCIÓN CRÍTICA 1: Usar skiprows=7 para evitar la fila de metadatos problemática.
+            df = pd.read_csv(sheet_url, skiprows=7, header=None) 
             
             # Renombrar columnas manualmente
             df = df.rename(columns={ 
@@ -316,68 +316,64 @@ elif seccion_activa == "Resultados":
             # Conservar solo las columnas que interesan 
             df = df[['_time', '_value', 'nodo']] 
             
-            # === MODIFICACIÓN CLAVE DE LIMPIEZA DE DATOS BRUTA ===
+            # === CORRECCIÓN CRÍTICA 2: LIMPIEZA RIGUROSA Y CONVERSIÓN ===
+            
             # 1. Limpiar _value: Forzar a numérico y eliminar NaNs
             df['_value'] = pd.to_numeric(df['_value'], errors='coerce') 
             df.dropna(subset=['_value'], inplace=True)
             
-            # 2. Limpiar 'nodo' de espacios en blanco y NaNs ANTES de la conversión
+            # 2. Limpiar 'nodo': Quitar espacios, reemplazar vacíos con NaN y eliminar
             df['nodo'] = df['nodo'].astype(str).str.strip().replace('', np.nan)
             df.dropna(subset=['nodo'], inplace=True) 
-            # El tipo final de 'nodo' se mantiene como string ('object') aquí, se convierte a int más tarde
-            # =====================================================
-
-            # Convertir tipos de datos 
+            # 3. Convertir tiempo (después de la limpieza)
             df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce') 
+            df.dropna(subset=['_time'], inplace=True)
+            # =============================================================
 
             # --- Validación ---
-            if df.empty or df['_time'].isna().all():
-                st.error("No se pudieron interpretar los datos de tiempo/valor o el DataFrame está vacío.")
+            if df.empty:
+                st.error("No se pudieron interpretar los datos o el DataFrame está vacío después de la limpieza.")
                 df_filtrado = pd.DataFrame()
             else:
                 tiempo_min = df['_time'].min()
                 tiempo_max = df['_time'].max()
     
-                # Asegurarse de que las fechas sean válidas antes de usarlas
-                if pd.isna(tiempo_min) or pd.isna(tiempo_max):
-                    st.error("Rango de tiempo no válido en los datos.")
-                    df_filtrado = pd.DataFrame()
-                else:
-                    # Rango de selección
-                    fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                          min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-        
-                    nodos_disponibles = sorted(df["nodo"].unique())
-                    nodos_seleccionados = st.multiselect(
-                        "Selecciona los nodos:",
-                        options=nodos_disponibles,
-                        default=nodos_disponibles
-                    )
-        
-                    # Asegurar la zona horaria UTC para la comparación
-                    fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                    fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-        
-                    df_filtrado = df[
-                        (df['_time'] >= fecha_inicio) &
-                        (df['_time'] <= fecha_fin) &
-                        (df['nodo'].isin(nodos_seleccionados))
-                    ]
+                # Rango de selección
+                fecha = st.date_input("Fecha", value=tiempo_min.date(),
+                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+    
+                nodos_disponibles = sorted(df["nodo"].unique())
+                nodos_seleccionados = st.multiselect(
+                    "Selecciona los nodos:",
+                    options=nodos_disponibles,
+                    default=nodos_disponibles
+                )
+    
+                # Asegurar la zona horaria UTC para la comparación
+                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+    
+                df_filtrado = df[
+                    (df['_time'] >= fecha_inicio) &
+                    (df['_time'] <= fecha_fin) &
+                    (df['nodo'].isin(nodos_seleccionados))
+                ]
         except Exception as e:
             st.error(f"Error al cargar el archivo desde Google Sheets: {e}. Por favor, revise el formato de los datos en la hoja.")
             df_filtrado = pd.DataFrame() 
 
+
     # -------------------------------------------------------------
-    # --- HERRAMIENTAS DE DEPURACIÓN PARA VERIFICAR CARGA ---
+    # --- Diagnóstico (Asegúrate de desactivarlo en producción) ---
     # -------------------------------------------------------------
     if 'fecha_inicio' in locals() and 'fecha_fin' in locals():
          rango_seleccionado = f"{fecha_inicio.strftime('%Y-%m-%d %H:%M')} a {fecha_fin.strftime('%Y-%m-%d %H:%M')}"
     else:
         rango_seleccionado = "No definido debido a un error de carga."
 
-    if st.checkbox("🐞 Mostrar Diagnóstico de Datos (Chequear si df_filtrado está vacío)"):
+    if st.checkbox("🐞 Mostrar Diagnóstico de Datos"):
         st.header("🐞 Diagnóstico de DataFrame Filtrado")
         if df_filtrado.empty:
             st.error("❌ El DataFrame filtrado está vacío. Las gráficas no se mostrarán.")
@@ -390,18 +386,15 @@ elif seccion_activa == "Resultados":
             st.write(df_filtrado.dtypes)
     # -------------------------------------------------------------
 
+
     if not df_filtrado.empty:
-        # Usar .copy() para evitar SettingWithCopyWarning en cadenas de operaciones
         df_filtrado = df_filtrado.copy()
 
         # Clasificar riesgo
         def clasificar_riesgo(db):
-            if db < 85:
-                return "Seguro"
-            elif db < 100:
-                return "Riesgo moderado"
-            else:
-                return "Peligroso"
+            if db < 85: return "Seguro"
+            elif db < 100: return "Riesgo moderado"
+            else: return "Peligroso"
 
         df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
         df_filtrado["hora"] = df_filtrado["_time"].dt.hour
@@ -417,9 +410,8 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
-            st.markdown("Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.")
             
-            # Selector de paleta de colores encima del mapa
+            # Selector de paleta de colores
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
@@ -431,16 +423,10 @@ elif seccion_activa == "Resultados":
             
             # Procesamiento de datos para el mapa de calor
             try:
-                # === CORRECCIÓN CRÍTICA DE CONVERSIÓN ===
-                # 1. Forzar 'nodo' a numérico (float), los errores (si quedan) serán NaN
-                # 2. Eliminar NaNs resultantes (si los hay)
-                # 3. Convertir a entero (int)
+                # CONVERSIÓN ROBUSTA FINAL PARA griddata:
                 df_mapa = df_filtrado.copy()
-                df_mapa['nodo'] = pd.to_numeric(df_mapa['nodo'], errors='coerce')
-                df_mapa.dropna(subset=['nodo'], inplace=True)
-                df_mapa['nodo'] = df_mapa['nodo'].astype(int)
+                df_mapa['nodo'] = pd.to_numeric(df_mapa['nodo'], errors='coerce').astype(int)
                 
-                # Continuar con el mapa de calor usando el DataFrame limpio
                 X = df_mapa['nodo'].values
                 fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
                 tiempos_segundos = (df_mapa['_time'] - fecha_base).dt.total_seconds().values
@@ -475,13 +461,7 @@ elif seccion_activa == "Resultados":
                     yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
                 
                     # Heatmap
-                    sb.heatmap(
-                        Z_grid, 
-                        cmap=palette, 
-                        xticklabels=x_unique, 
-                        yticklabels=False, 
-                        ax=ax
-                    )
+                    sb.heatmap(Z_grid, cmap=palette, xticklabels=x_unique, yticklabels=False, ax=ax)
                     
                     ax.invert_yaxis()
                     ax.set_yticks(yticks)
@@ -494,7 +474,7 @@ elif seccion_activa == "Resultados":
                     
                     st.pyplot(fig)
             except Exception as e:
-                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que los datos de 'nodo' se pueden convertir a números enteros.")
+                 st.error(f"Error al generar el Mapa de Calor (Griddata): {e}. Asegúrese de que todos los nodos seleccionados tienen valores numéricos.")
                             
                    
 
