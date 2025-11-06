@@ -374,7 +374,7 @@ elif seccion_activa == "Resultados":
         # --- TAB 1: Mapa de sonido ---
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
-
+        
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
@@ -383,40 +383,36 @@ elif seccion_activa == "Resultados":
                     index=0,
                     key="palette_selector"
                 )
-
-            # --- Crear grilla completa de nodos ---
-            nodos_total = sorted(df["nodo"].astype(int).unique())
-            X = df_filtrado['nodo'].astype(int).values
-            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-            Z = df_filtrado['_value'].astype(float).values
-
-            # Crear grilla incluyendo TODOS los nodos detectados
-            x_unique = np.array(nodos_total)
-            y_unique = np.unique(tiempos_segundos)
-            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z))
-
+        
+            # --- Estructurar datos ---
+            df_filtrado["_minuto"] = df_filtrado["_time"].dt.floor("min")
+            pivot = df_filtrado.pivot_table(
+                index="_minuto", columns="nodo", values="_value", aggfunc="mean"
+            ).sort_index()
+        
+            # --- Asegurar que todos los nodos aparezcan ---
+            todos_nodos = sorted(df["nodo"].astype(int).unique())
+            pivot = pivot.reindex(columns=todos_nodos)
+        
+            # --- Convertir a matriz ---
+            data_matrix = pivot.to_numpy()
+        
+            # --- Generar gráfico ---
             fig, ax = plt.subplots(figsize=(12, 6))
-            yticks = np.linspace(0, len(y_unique)-1, num=10, dtype=int)
-            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-
             sb.heatmap(
-                Z_grid,
+                data_matrix.T,
                 cmap=palette,
-                xticklabels=x_unique,
-                yticklabels=False,
+                cbar_kws={'label': 'Nivel de sonido (dB)'},
+                xticklabels=False,
+                yticklabels=todos_nodos,
                 ax=ax
             )
-            ax.invert_yaxis()
-            ax.set_yticks(yticks)
-            ax.set_yticklabels(yticklabels, rotation=0)
-            ax.set_xlabel("Nodos")
-            ax.set_ylabel("Hora (HH:MM)")
-            cbar = ax.collections[0].colorbar
-            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+        
+            ax.set_xlabel("Tiempo (minutos)")
+            ax.set_ylabel("Nodos")
+            ax.set_title("Mapa de niveles de sonido (todos los nodos detectados)")
             st.pyplot(fig)
+
 
         # --- TAB 2: Evolución temporal por nodo ---
         with tab2:
@@ -478,3 +474,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
