@@ -371,6 +371,7 @@ elif seccion_activa == "Resultados":
             "🧨 Riesgo por hora"
         ])
 
+     
         # --- TAB 1: Mapa de sonido ---
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
@@ -391,7 +392,7 @@ elif seccion_activa == "Resultados":
             ).sort_index()
         
             # --- Asegurar que todos los nodos aparezcan ---
-            todos_nodos = sorted(df["nodo"].astype(int).unique())
+            todos_nodos = sorted(df["nodo"].astype(str).unique(), key=lambda x: int(x))
             pivot = pivot.reindex(columns=todos_nodos)
         
             # --- Convertir a matriz ---
@@ -412,6 +413,7 @@ elif seccion_activa == "Resultados":
             ax.set_ylabel("Nodos")
             ax.set_title("Mapa de niveles de sonido (todos los nodos detectados)")
             st.pyplot(fig)
+
 
 
         # --- TAB 2: Evolución temporal por nodo ---
@@ -474,4 +476,5 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
