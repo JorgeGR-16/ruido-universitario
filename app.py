@@ -286,7 +286,7 @@ elif seccion_activa == "Desarrollo":
     </div>
      """, unsafe_allow_html=True)
     
- elif seccion_activa == "Resultados":
+elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     # --- Sidebar ---
@@ -475,4 +475,4 @@ elif seccion_activa == "Desarrollo":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
-   
+
