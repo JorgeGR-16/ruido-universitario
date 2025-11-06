@@ -305,6 +305,23 @@ elif seccion_activa == "Resultados":
         csv_url = sheet_url.replace("/edit?usp=sharing", "/export?format=csv")
         df = pd.read_csv(csv_url)
         return df
+    # --- MOSTRAR NODOS DISPONIBLES ---
+    columna_nodo = "Nodo"  # 👈 cambia esto si tu columna tiene otro nombre
+    
+    if columna_nodo in df.columns:
+        nodos_unicos = sorted(df[columna_nodo].dropna().unique())
+        st.subheader("🔹 Nodos disponibles en el archivo")
+        st.write(f"Se encontraron **{len(nodos_unicos)}** nodos:")
+    
+        # Mostrar lista de nodos
+        st.dataframe(pd.DataFrame(nodos_unicos, columns=["Nodos"]))
+    
+        # (opcional) permitir seleccionar uno
+        nodo_seleccionado = st.selectbox("Selecciona un nodo para filtrar datos:", nodos_unicos)
+        df_filtrado = df[df[columna_nodo] == nodo_seleccionado]
+    else:
+        st.warning(f"⚠️ No se encontró una columna llamada '{columna_nodo}' en el archivo Excel.")
+    
 
     df = load_data()
     st.success("✅ Datos cargados exitosamente desde Google Sheets")
@@ -475,5 +492,6 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
