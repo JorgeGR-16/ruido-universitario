@@ -307,7 +307,7 @@ elif seccion_activa == "Resultados":
         return df
 
     df = load_data()
-    st.success(f"✅ Datos cargados exitosamente. Se detectaron {df['nodo'].nunique()} nodos.")
+    st.success("✅ Datos cargados exitosamente desde Google Sheets")
 
     # --- Limpieza de datos ---
     df["_value"] = pd.to_numeric(df["_value"], errors="coerce")
@@ -327,7 +327,7 @@ elif seccion_activa == "Resultados":
         hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
         hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
-        nodos_disponibles = sorted(df["nodo"].unique(), key=lambda x: int(x))
+        nodos_disponibles = sorted(df["nodo"].unique())
         nodos_seleccionados = st.multiselect(
             "Selecciona los nodos:",
             options=nodos_disponibles,
@@ -371,11 +371,10 @@ elif seccion_activa == "Resultados":
             "🧨 Riesgo por hora"
         ])
 
-     
         # --- TAB 1: Mapa de sonido ---
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
-        
+            
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
@@ -384,42 +383,42 @@ elif seccion_activa == "Resultados":
                     index=0,
                     key="palette_selector"
                 )
+            
+            X = df_filtrado['nodo'].astype(int).values
+            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+            Z = df_filtrado['_value'].astype(float).values
         
-            # --- Estructurar datos ---
-            df_filtrado["_minuto"] = df_filtrado["_time"].dt.floor("min")
-            pivot = df_filtrado.pivot_table(
-                index="_minuto", columns="nodo", values="_value", aggfunc="mean"
-            ).sort_index()
+            x_unique = np.unique(X)
+            y_unique = np.unique(tiempos_segundos)
+            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
         
-            # --- Asegurar que todos los nodos aparezcan ---
-            todos_nodos = sorted(df["nodo"].astype(str).unique(), key=lambda x: int(x))
-            pivot = pivot.reindex(columns=todos_nodos)
-        
-            # --- Convertir a matriz ---
-            data_matrix = pivot.to_numpy()
-        
-            # --- Generar gráfico ---
             fig, ax = plt.subplots(figsize=(12, 6))
+            yticks = np.linspace(0, len(y_unique)-1, num=10, dtype=int)
+            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+        
             sb.heatmap(
-                data_matrix.T,
+                Z_grid, 
                 cmap=palette,
-                cbar_kws={'label': 'Nivel de sonido (dB)'},
-                xticklabels=False,
-                yticklabels=todos_nodos,
+                xticklabels=x_unique, 
+                yticklabels=False, 
                 ax=ax
             )
-        
-            ax.set_xlabel("Tiempo (minutos)")
-            ax.set_ylabel("Nodos")
-            ax.set_title("Mapa de niveles de sonido (todos los nodos detectados)")
+            ax.invert_yaxis()
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(yticklabels, rotation=0)
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Hora (HH:MM)")
+            cbar = ax.collections[0].colorbar
+            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
             st.pyplot(fig)
-
-
 
         # --- TAB 2: Evolución temporal por nodo ---
         with tab2:
             st.markdown("### Evolución temporal por nodo")
-            for nodo in sorted(df_filtrado["nodo"].unique(), key=lambda x: int(x)):
+            for nodo in sorted(df_filtrado["nodo"].unique()):
                 st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
@@ -476,5 +475,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
-
 
