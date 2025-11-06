@@ -301,13 +301,13 @@ elif seccion_activa == "Resultados":
 
     @st.cache_data
     def load_data():
-        sheet_url = "https://docs.google.com/spreadsheets/d/1BV6aWwsUusOez2hGOlpiPsEJhs3GYrvlSseBcCmdR4M/edit?usp=sharing"
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/edit?usp=sharing"
         csv_url = sheet_url.replace("/edit?usp=sharing", "/export?format=csv")
         df = pd.read_csv(csv_url)
         return df
 
     df = load_data()
-    st.success("✅ Datos cargados exitosamente desde Google Sheets")
+    st.success(f"✅ Datos cargados exitosamente. Se detectaron {df['nodo'].nunique()} nodos.")
 
     # --- Limpieza de datos ---
     df["_value"] = pd.to_numeric(df["_value"], errors="coerce")
@@ -327,7 +327,7 @@ elif seccion_activa == "Resultados":
         hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
         hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
-        nodos_disponibles = sorted(df["nodo"].unique())
+        nodos_disponibles = sorted(df["nodo"].unique(), key=lambda x: int(x))
         nodos_seleccionados = st.multiselect(
             "Selecciona los nodos:",
             options=nodos_disponibles,
@@ -374,7 +374,7 @@ elif seccion_activa == "Resultados":
         # --- TAB 1: Mapa de sonido ---
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
-            
+
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
@@ -383,27 +383,30 @@ elif seccion_activa == "Resultados":
                     index=0,
                     key="palette_selector"
                 )
-            
+
+            # --- Crear grilla completa de nodos ---
+            nodos_total = sorted(df["nodo"].astype(int).unique())
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
-        
-            x_unique = np.unique(X)
+
+            # Crear grilla incluyendo TODOS los nodos detectados
+            x_unique = np.array(nodos_total)
             y_unique = np.unique(tiempos_segundos)
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
             Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
-        
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z))
+
             fig, ax = plt.subplots(figsize=(12, 6))
             yticks = np.linspace(0, len(y_unique)-1, num=10, dtype=int)
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
-        
+
             sb.heatmap(
-                Z_grid, 
+                Z_grid,
                 cmap=palette,
-                xticklabels=x_unique, 
-                yticklabels=False, 
+                xticklabels=x_unique,
+                yticklabels=False,
                 ax=ax
             )
             ax.invert_yaxis()
@@ -418,7 +421,7 @@ elif seccion_activa == "Resultados":
         # --- TAB 2: Evolución temporal por nodo ---
         with tab2:
             st.markdown("### Evolución temporal por nodo")
-            for nodo in sorted(df_filtrado["nodo"].unique()):
+            for nodo in sorted(df_filtrado["nodo"].unique(), key=lambda x: int(x)):
                 st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
@@ -475,5 +478,3 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
-
-
