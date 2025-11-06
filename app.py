@@ -287,7 +287,6 @@ elif seccion_activa == "Desarrollo":
      """, unsafe_allow_html=True)
     
     
-
 elif seccion_activa == "Resultados":
     import pandas as pd
     import numpy as np
@@ -295,7 +294,7 @@ elif seccion_activa == "Resultados":
     import seaborn as sns
     import streamlit as st
 
-    st.markdown("## 📊 Resultados del monitoreo de ruido")
+    st.markdown("## 📊 Resultados")
 
     # --- SIDEBAR ---
     with st.sidebar:
@@ -319,11 +318,8 @@ elif seccion_activa == "Resultados":
     df["_value"] = pd.to_numeric(df["_value"], errors="coerce")
     df = df.dropna(subset=["_value", "nodo", "_time"])
 
-    # Mantener el nodo exactamente como número entero
+    # Asegurar que los nodos sean enteros
     df["nodo"] = df["nodo"].astype(int)
-
-    # Asegurar que los nodos estén en orden ascendente natural
-    df = df.sort_values(by="nodo")
 
     # Convertir tiempos
     df["_time"] = pd.to_datetime(df["_time"])
@@ -340,14 +336,19 @@ elif seccion_activa == "Resultados":
     df["riesgo"] = df["_value"].apply(clasificar_riesgo)
 
     # --- ASEGURAR QUE SE MUESTREN LOS 39 NODOS ---
-    nodos_totales = list(range(1, 40))  # nodos 1 al 39
+    nodos_totales = list(range(1, 40))  # nodos del 1 al 39
+
+    # Crear un DataFrame con todos los nodos posibles
     df_base = pd.DataFrame({"nodo": nodos_totales})
 
-    # Unir para garantizar todos los nodos
-    df_merge = df_base.merge(df, on="nodo", how="left")
+    # Asegurar que todos los nodos aparezcan aunque no tengan datos
+    df_merge = df.merge(df_base, on="nodo", how="right")
+
+    # Rellenar valores faltantes
+    df_merge["_value"].fillna(np.nan, inplace=True)
 
     # --- HEATMAP ---
-    st.markdown("### 🔥 Mapa de calor del nivel de ruido por hora y nodo")
+    st.markdown("### 🔥 Mapa de calor del nivel de ruido")
 
     try:
         pivot = df_merge.pivot_table(
@@ -356,14 +357,11 @@ elif seccion_activa == "Resultados":
             values="_value"
         )
 
-        # Ordenar las columnas según el número de nodo
-        pivot = pivot[sorted(pivot.columns)]
-
         plt.figure(figsize=(14, 8))
         sns.heatmap(pivot.T, cmap="jet", cbar_kws={"label": "Nivel de sonido (dB)"})
         plt.xlabel("Hora (HH:MM)")
-        plt.ylabel("Nodo")
-        plt.title("Mapa de calor de niveles de ruido (1–39)")
+        plt.ylabel("Nodos")
+        plt.title("Mapa de calor de niveles de ruido por nodo y hora")
         st.pyplot(plt)
 
     except Exception as e:
@@ -374,9 +372,6 @@ elif seccion_activa == "Resultados":
 
     resumen = df_merge.groupby("nodo")["_value"].agg(["mean", "max", "min"]).reset_index()
     resumen.columns = ["Nodo", "Promedio (dB)", "Máximo (dB)", "Mínimo (dB)"]
-
-    # Mantener nodos del 1 al 39 aunque no tengan datos
-    resumen = resumen.set_index("Nodo").reindex(nodos_totales).reset_index()
 
     st.dataframe(resumen.style.format({
         "Promedio (dB)": "{:.2f}",
@@ -395,6 +390,4 @@ elif seccion_activa == "Resultados":
     plt.title("Distribución de niveles de riesgo")
     st.pyplot(fig)
 
-    st.success("✅ Se muestran correctamente los 39 nodos, conservando sus números originales.")
-
-
+    st.markdown("✅ Todos los nodos (1–39) se muestran, aunque algunos no tengan datos.")
