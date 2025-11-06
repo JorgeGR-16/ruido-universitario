@@ -360,6 +360,11 @@ elif seccion_activa == "Resultados":
             (df['nodo'].isin(nodos_seleccionados))
         ]
 
+    st.write("📊 Nodos detectados en total:", len(df["nodo"].unique()))
+    st.write("📈 Nodos con datos en el rango seleccionado:", len(df_filtrado["nodo"].unique()))
+    st.write("🧩 Nodos con datos en el rango:", sorted(df_filtrado["nodo"].unique()))
+
+
     if not df_filtrado.empty:
         df_filtrado = df_filtrado.copy()
 
@@ -492,6 +497,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
