@@ -318,10 +318,6 @@ elif seccion_activa == "Resultados":
     
         # Mostrar lista de nodos
         st.dataframe(pd.DataFrame(nodos_unicos, columns=["Nodos"]))
-    
-        # (opcional) permitir seleccionar uno
-        nodo_seleccionado = st.selectbox("Selecciona un nodo para filtrar datos:", nodos_unicos)
-        df_filtrado = df[df[columna_nodo] == nodo_seleccionado]
     else:
         st.warning(f"⚠️ No se encontró una columna llamada '{columna_nodo}' en los datos.")
 
@@ -497,6 +493,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
