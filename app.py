@@ -295,7 +295,7 @@ elif seccion_activa == "Resultados":
 
     @st.cache_data
     def load_data():
-        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/edit?usp=sharing"
+        sheet_url = "https://docs.google.com/spreadsheets/d/1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha/edit?usp=sharing&ouid=110966602645817106416&rtpof=true&sd=true"
         csv_url = sheet_url.replace("/edit?usp=sharing", "/export?format=csv")
         df = pd.read_csv(csv_url)
         return df
@@ -487,6 +487,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
