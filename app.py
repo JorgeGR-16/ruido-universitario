@@ -217,10 +217,25 @@ elif seccion_activa == "Resultados":
     
     # --- PROCESAMIENTO DE DATOS ---
     with st.sidebar:
-        st.header("⚙️ Parámetros de entrada")
-        # Asumiendo la ruta fija para el archivo de datos
-        uploaded_file = "40nodos.csv" 
-        df_filtrado = pd.DataFrame()
+        st.header("Parámetros de entrada")
+        
+        # 🟢 Opción de URL de GitHub (reemplaza la URL)
+        GITHUB_RAW_URL = "LA_URL_RAW_DE_TU_CSV.GZ_EN_GITHUB" 
+        
+        # Intenta cargar directamente desde la URL
+        try:
+            st.info("Cargando datos desde GitHub...")
+            
+            # Lee directamente el CSV.GZ con los parámetros correctos
+            df = pd.read_csv(GITHUB_RAW_URL, decimal=',', compression='gzip')
+            
+            # El resto del código de procesamiento y filtrado...
+            # ... (El código para fechas, multiselect, y df_filtrado continúa aquí) ...
+            # ...
+        
+        except Exception as e:
+            st.error(f"Error al cargar el archivo desde GitHub. Revise la URL o el formato: {e}")
+            df_filtrado = pd.DataFrame()
 
         try:
             # La función 'skiprows=3' es crucial para leer el archivo InfluxDB CSV
@@ -468,3 +483,4 @@ elif seccion_activa == "Resultados":
         st.warning("No hay datos para visualizar. Por favor, verifica el archivo de datos o ajusta los parámetros de filtro en la barra lateral.")
 
 # -----------------------------------------------------------------------------
+
