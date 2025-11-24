@@ -388,12 +388,13 @@ elif seccion_activa == "Desarrollo":
     """, unsafe_allow_html=True)
     
     
+
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
     if not df_filtrado.empty:
-        # ⚠️ PASO CRUCIAL: Agregar coordenadas reales para la visualización del mapa
-        df_filtrado = agregar_coordenadas(df_filtrado)
+        # ⚠️ PASO CRUCIAL: Asignar la posición lineal a cada nodo
+        df_filtrado = asignar_posicion_lineal(df_filtrado)
         
         # --- 1. PREPARACIÓN DE DATOS ---
         
@@ -413,7 +414,7 @@ elif seccion_activa == "Resultados":
 
         # --- 2. DEFINICIÓN DE PESTAÑAS (TABS) ---
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "📊 Mapa de Sonido", 
+            "📊 Distribución Lineal",  # Nombre cambiado
             "📈 Análisis Temporal (Nodos)", 
             "📈 Análisis Temporal (Horas)",
             "📊 Histograma de Amplitudes", 
@@ -423,28 +424,31 @@ elif seccion_activa == "Resultados":
         # --- 3. CONTENIDO DE LAS PESTAÑAS ---
 
         with tab1:
-            st.markdown("#### Distribución espacial del nivel de sonido promedio")
+            st.markdown("#### Nivel de sonido promedio a lo largo de la pared")
             
-            # Agrupamos los datos para obtener el promedio por nodo y usarlo en el mapa
-            df_mapa = df_filtrado.groupby(['nodo', 'Latitud', 'Longitud'])['_value'].mean().reset_index()
-            df_mapa.rename(columns={'_value': 'Nivel Promedio (dB)'}, inplace=True)
-
-            # Usamos Plotly Express para el mapa de densidad/calor
-            fig = px.density_mapbox(
-                df_mapa,
-                lat='Latitud',
-                lon='Longitud',
-                z='Nivel Promedio (dB)', # Valor que determina el calor
-                radius=15, # Radio de influencia de los puntos
-                center=dict(lat=19.503056, lon=-99.186944), # Centro UAM Azcapotzalco
-                zoom=14,
-                mapbox_style="open-street-map", # Estilo de mapa base sin token
-                color_continuous_scale=px.colors.sequential.Plasma, # Escala de color
-                hover_data={'nodo': True, 'Nivel Promedio (dB)': ':.1f'}
+            # Agrupamos los datos para obtener el promedio por posición
+            df_lineal = df_filtrado.groupby('Posicion_X')['_value'].mean().reset_index()
+            df_lineal.rename(columns={'_value': 'Nivel Promedio (dB)'}, inplace=True)
+            
+            # Creamos un gráfico de dispersión simple para la distribución lineal
+            fig = px.scatter(
+                df_lineal,
+                x='Posicion_X',
+                y='Nivel Promedio (dB)',
+                size='Nivel Promedio (dB)', # El tamaño del punto refleja el nivel de ruido
+                color='Nivel Promedio (dB)', # El color refleja el nivel de ruido
+                color_continuous_scale=px.colors.sequential.Inferno,
+                labels={
+                    "Posicion_X": "Posición del Sensor (1 = inicio, 39 = final)",
+                    "Nivel Promedio (dB)": "Nivel Promedio (dB)"
+                },
+                title="Distribución del Nivel de Sonido a lo Largo de la Pared"
             )
             
-            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+            # Ajuste de ejes para claridad
+            fig.update_xaxes(tick0=1, dtick=1)
             st.plotly_chart(fig, use_container_width=True)
+
 
         with tab2:
             st.markdown("#### Evolución temporal del sonido por nodo")
@@ -472,8 +476,6 @@ elif seccion_activa == "Resultados":
         with tab5:
             st.markdown("#### Resumen Estadístico de los Datos Filtrados")
             st.dataframe(df_filtrado.describe())
-            st.warning("⚠️ Puedes mejorar esta pestaña mostrando más detalles.")
             
     else:
         st.error("No hay datos para los parámetros seleccionados. Por favor, ajusta la **Fecha** o el **rango de Horas** en la barra lateral izquierda.")
-
