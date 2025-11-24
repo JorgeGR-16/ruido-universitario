@@ -299,7 +299,7 @@ elif seccion_activa == "Resultados":
     df_filtrado = pd.DataFrame()
     
     # URL del Google Sheet (mantener la URL original)
-    sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
+    sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTQKOrkLvhvYM8wSl5TUCDSB-RioUR28159Cb0qqJzEoTOEJCoQC_xuy8-vdW_Yw/pub?output=csv"
 
     with st.sidebar:
         st.header("Parámetros de entrada")
@@ -560,3 +560,4 @@ elif seccion_activa == "Resultados":
                 st.warning("No hay datos en el rango de horas seleccionado para mostrar la distribución por riesgo.")
     else:
         st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
+
