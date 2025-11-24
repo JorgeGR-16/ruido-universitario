@@ -3,9 +3,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
+import altair as alt # Necesario para el gráfico de análisis por hora
 from scipy.interpolate import griddata
 import traceback
 
+# --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
 # --- ESTILO PERSONALIZADO ---
@@ -61,7 +63,6 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -85,13 +86,110 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
+# ---------------------------------------------------------------------
+# BLOQUE GLOBAL: CARGA DE DATOS Y BARRA LATERAL (Soluciona el NameError)
+# ---------------------------------------------------------------------
+
+# 💡 INICIALIZACIÓN GLOBAL: df y df_filtrado siempre existen para evitar NameError
+df_filtrado = pd.DataFrame() 
+df = pd.DataFrame()
+sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTQKOrkLvhvYM8wSl5TUCDSB-RioUR28159Cb0qqJzEoTOEJCoQC_xuy8-vdW_Yw/pub?output=csv"
+
+# --- 1. FUNCIÓN DE CARGA DE DATOS ---
+@st.cache_data(ttl=600)
+def load_data(url):
+    try:
+        # Tu lógica para leer y limpiar el CSV
+        df_raw = pd.read_csv(url, header=None, on_bad_lines='skip')
+        required_cols = [4, 5, 8]
+        if not all(col in df_raw.columns for col in required_cols):
+            df_raw = pd.read_csv(url, header=None, on_bad_lines='skip', skiprows=6)
+            if not all(col in df_raw.columns for col in [0, 1, 4]):
+                return pd.DataFrame()
+            df = df_raw.rename(columns={
+                0: '_time', 1: '_value', 4: 'nodo'
+            })[['_time', '_value', 'nodo']]
+        else:
+            df = df_raw.rename(columns={
+                4: '_time', 5: '_value', 8: 'nodo'
+            })[['_time', '_value', 'nodo']]
+        
+        df = df.dropna(subset=['_time', '_value', 'nodo'], how='any')
+        df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+        df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
+        df['nodo'] = df['nodo'].astype(str)
+        df = df.dropna(subset=['_time', '_value'])
+        return df
+    except Exception as e:
+        # st.error(f"Error en load_data: {e}") # Descomentar para depuración
+        return pd.DataFrame()
+
+df = load_data(sheet_url)
+
+# --- 2. BARRA LATERAL CON FILTROS ---
+if not df.empty:
+    with st.sidebar:
+        st.header("Parámetros de entrada")
+        
+        # Manejo de fechas mínimas/máximas con seguridad
+        tiempo_min = df['_time'].min().normalize()
+        tiempo_max = df['_time'].max().normalize()
+        
+        if pd.isna(tiempo_min) or pd.isna(tiempo_max):
+             st.warning("No se pudieron determinar las fechas mínima y máxima de los datos.")
+             # Usar fecha actual como fallback si los datos están vacíos o corruptos
+             tiempo_min = pd.Timestamp.now().normalize()
+             tiempo_max = pd.Timestamp.now().normalize()
+        
+        fecha = st.date_input(
+            "Fecha",
+            value=tiempo_min.date(),
+            min_value=tiempo_min.date(),
+            max_value=tiempo_max.date()
+        )
+        # Filtros de HORA
+        hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+        hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+
+        nodos_disponibles = sorted(df["nodo"].unique())
+        nodos_seleccionados = st.multiselect(
+            "Selecciona los nodos:",
+            options=nodos_disponibles,
+            default=nodos_disponibles
+        )
+
+        # 🔹 Filtrado por fecha, hora y nodo
+        fecha_inicio_ts = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+        fecha_fin_ts = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+        df_filtrado = df[
+            (df['_time'] >= fecha_inicio_ts) &
+            (df['_time'] <= fecha_fin_ts) &
+            (df['nodo'].isin(nodos_seleccionados))
+        ].copy() 
+        
+        # Verificación del filtro (Ayuda a diagnosticar el problema de los 20 nodos)
+        nodos_en_filtro = df_filtrado["nodo"].nunique()
+        st.write(f"📈 **{len(df_filtrado)}** registros después del filtrado.")
+        st.info(f"Nodos únicos en el filtro: **{nodos_en_filtro}**.")
+
+else:
+    # Si la carga inicial falla, la barra lateral se muestra con una advertencia
+    with st.sidebar:
+        st.error("⚠️ No se pudieron cargar los datos iniciales desde Google Sheets. Verifique el enlace.")
+        
+# ---------------------------------------------------------------------
+# FIN DEL BLOQUE GLOBAL
+# ---------------------------------------------------------------------
+
+
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
     <div style='text-align: justify;'>
-     El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
+    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+    El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
     </div>
     """, unsafe_allow_html=True)
 
@@ -141,7 +239,7 @@ if seccion_activa == "Introducción":
     problemas circulatorios, presión arterial alta y alteraciones digestivas.
     </div>
     """, unsafe_allow_html=True)
-
+    
     st.markdown("""
     <div style='text-align: justify;'><br>
     Las siguientes leyes se deben cumplir y seguir para los ciudadanos:
@@ -176,7 +274,7 @@ if seccion_activa == "Introducción":
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image("Niveles_de_ruido.jpg", use_container_width=True)
-    
+
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
@@ -225,7 +323,7 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
     A continuación, se explican en detalle los elementos que componen un sonómetro:
-     
+    
     - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
     - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
@@ -234,7 +332,7 @@ elif seccion_activa == "Desarrollo":
     - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
     - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
 
-     Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
+    Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
     </div>
     """, unsafe_allow_html=True)
     
@@ -247,12 +345,12 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.2 Construcción del sonómetro")
     st.markdown("### 3.2.1 Materiales necesarios")
     st.markdown("""
-            | Componente     | Descripción                            
+            | Componente      | Descripción                                     |
             |----------------|-------------------------------------|
-            | ESP32 T3 V1.6.1        | Microcontrolador                | 
-            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
-            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
-            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
+            | ESP32 T3 V1.6.1 | Microcontrolador                    | 
+            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica      | 
+            | Pantalla OLED  | Muestra el nivel de decibeles en tiempo real    | 
+            | Jumpers hembra-hembra/ macho-hembra | Para las conexiones entre módulos                       | 
             | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
             | Caja impresa en 3D | Para encapsular el dispositivo |
             | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
@@ -262,20 +360,20 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-        | Sensor     | ESP32 T3 V1.6.1                            
+        | Sensor     | ESP32 T3 V1.6.1                                 |
         |----------------|-------------------------------------|
-        | VCC        | 3.3V                | 
+        | VCC      | 3.3V                | 
         | GND      | GND                 | 
-        | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
+        | A0 (salida analógica)        | GPIO 34 (u otro pin analógico)      |
         
     2. **Conexión de la pantalla OLED**
-        | OLED SSD1306     | ESP32 T3 V1.6.1                            
+        | OLED SSD1306     | ESP32 T3 V1.6.1                                 |
         |----------------|-------------------------------------|
-        | VCC        | 3.3V                | 
+        | VCC      | 3.3V                | 
         | GND      | GND                 | 
-        | SDA       | GPIO 21          |
-        | SCL       | GPIO 22          |
-    
+        | SDA     | GPIO 21           |
+        | SCL     | GPIO 22           |
+        
     3. **Botón de control**
     - Conectar un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones
     
@@ -287,15 +385,14 @@ elif seccion_activa == "Desarrollo":
     - Dejar espacio para los conectores, pantalla visible y ventilación del micrófono
     - Cerrar el circuito y conectar la alimentación
     </div>
-     """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
     
     
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
-    # Nota: La variable 'df_filtrado' ya contiene los datos filtrados
-    # por fecha, hora de inicio, hora de fin y nodos, gracias a la barra lateral (sidebar)
+    # df_filtrado ahora está disponible globalmente, incluso si está vacío.
     
     if not df_filtrado.empty:
         # --- 1. PREPARACIÓN DE DATOS ---
@@ -312,7 +409,6 @@ elif seccion_activa == "Resultados":
         df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
         
         # 1.2 Agregamos la columna 'hora' para análisis
-        # Esta línea es la que te permite analizar y graficar por hora.
         df_filtrado["hora"] = df_filtrado["_time"].dt.hour 
 
         # --- 2. DEFINICIÓN DE PESTAÑAS (TABS) ---
@@ -328,13 +424,11 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("#### Distribución espacial de los niveles de sonido")
-            # ... (Aquí iría tu código del mapa) ...
-            st.success("Mapa de Sonido (Ejemplo)")
+            st.warning("⚠️ Aquí va el código de tu mapa de calor/sonido usando `df_filtrado`")
             
         with tab2:
             st.markdown("#### Evolución temporal del sonido por nodo")
-            # ... (Aquí iría tu código del gráfico de nodos vs tiempo) ...
-            st.success("Gráfico Temporal (Nodos) (Ejemplo)")
+            st.warning("⚠️ Aquí va tu código del gráfico de nodos vs tiempo usando `df_filtrado`")
 
         with tab3:
             st.markdown("#### Niveles de sonido promedio por hora del día")
@@ -343,9 +437,10 @@ elif seccion_activa == "Resultados":
             df_hora = df_filtrado.groupby("hora")["_value"].mean().reset_index()
             df_hora.columns = ["Hora del Día", "Nivel Promedio (dB)"]
             
+            # Creamos el gráfico Altair
             chart_hora = alt.Chart(df_hora).mark_line(point=True).encode(
-                x=alt.X("Hora del Día", bin=True),
-                y="Nivel Promedio (dB)",
+                x=alt.X("Hora del Día", bin=True, title="Hora del Día"),
+                y=alt.Y("Nivel Promedio (dB)", title="Nivel Promedio (dB)"),
                 tooltip=["Hora del Día", "Nivel Promedio (dB)"]
             ).properties(
                 title="Nivel de Sonido Promedio por Hora"
@@ -354,14 +449,13 @@ elif seccion_activa == "Resultados":
 
         with tab4:
             st.markdown("#### Distribución de Amplitudes")
-            # ... (Aquí iría tu código del histograma) ...
-            st.success("Histograma (Ejemplo)")
+            st.warning("⚠️ Aquí va tu código del histograma usando `df_filtrado`")
 
         with tab5:
             st.markdown("#### Resumen Estadístico de los Datos Filtrados")
-            # ... (Aquí iría tu código del resumen estadístico) ...
-            st.success("Descripción de Datos (Ejemplo)")
+            st.dataframe(df_filtrado.describe())
+            st.warning("⚠️ Puedes mejorar esta pestaña mostrando más detalles.")
             
     else:
         # Se muestra este error si el filtro de hora/fecha/nodo no encuentra datos
-        st.error("No hay datos para el día, hora o nodos seleccionados. Por favor, ajusta los parámetros de entrada en la barra lateral.")
+        st.error("No hay datos para los parámetros seleccionados. Por favor, ajusta la **Fecha** o el **rango de Horas** en la barra lateral izquierda.")
