@@ -276,22 +276,77 @@ elif seccion_activa == "Resultados":
         if not os.path.exists(uploaded_file):
             st.error(f"El archivo de datos '{uploaded_file}' no fue encontrado.")
         else:
-            df = pd.read_csv(uploaded_file, skiprows=3)
-            columnas_requeridas = ['_time', 'nodo', '_value']
+            # Intentos de lectura: primero sin skiprows, si no encuentra columnas requeridas,
+            # intentar con skiprows=3 (por si el CSV tiene 3 líneas de metadatos)
+            def clean_cols(cols):
+                # quitar espacios, eliminar BOM y pasar a texto normal
+                return [str(c).strip().replace('\ufeff', '') for c in cols]
+
+            df_try = pd.read_csv(uploaded_file, dtype=str)  # leer como texto inicialmente
+            df_try.columns = clean_cols(df_try.columns)
             
+            # Si no encontramos las columnas esperadas, intentar nuevamente con skiprows=3
+            columnas_requeridas = ['_time', 'nodo', '_value']
+            if not all(any(req == c.lower() for c in df_try.columns) for req in columnas_requeridas):
+                # Intentar leer con skiprows=3 y sin forzar tipos
+                df_try = pd.read_csv(uploaded_file, skiprows=3)
+                df_try.columns = clean_cols(df_try.columns)
+            
+            # Mostrar columnas detectadas (útil para depuración en la UI)
+            st.write("Columnas detectadas en el CSV:", list(df_try.columns))
+
+            # Normalizar nombres: mapear posibles variantes a los nombres que usa la app
+            cols_lower = {c.lower().strip().replace('\ufeff',''): c for c in df_try.columns}
+            mapping = {}
+            if '_time' in cols_lower:
+                mapping[cols_lower['_time']] = '_time'
+            if 'time' in cols_lower and '_time' not in cols_lower:
+                mapping[cols_lower['time']] = '_time'
+            if '_value' in cols_lower:
+                mapping[cols_lower['_value']] = '_value'
+            elif 'value' in cols_lower:
+                mapping[cols_lower['value']] = '_value'
+            if 'nodo' in cols_lower:
+                mapping[cols_lower['nodo']] = 'nodo'
+            elif 'node' in cols_lower:
+                mapping[cols_lower['node']] = 'nodo'
+
+            # Renombrar columnas en el DataFrame
+            df = df_try.rename(columns=mapping)
+
+            # Verificar una vez más que ahora existan las columnas requeridas
             if not all(col in df.columns for col in columnas_requeridas):
-                st.error("El archivo no contiene las columnas necesarias (_time, nodo, _value).")
+                st.error("El archivo no contiene las columnas necesarias (_time, nodo, _value)."
+                         " Revisa las columnas que aparecen arriba. Si el encabezado está en una fila diferente, "
+                         "ajusta o elimina skiprows.")
             else:
-                # Conversión de tiempo y manejo de errores
-                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-                
+                # Convertir tipos y limpiar filas sin valor
+                # A veces los valores vienen como strings, forzamos conversión segura
+                df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
+                df = df.dropna(subset=['_time', '_value', 'nodo']).copy()
+
+                # Convertir fecha de forma segura
+                df['_time'] = pd.to_datetime(df['_time'], errors='coerce')
+
+                # Si las fechas son naive (sin tz), asumimos UTC y localizamos; si ya tienen tz, las convertimos
+                if df['_time'].dt.tz is None:
+                    # localizar como UTC
+                    df['_time'] = df['_time'].dt.tz_localize('UTC', ambiguous='NaT', nonexistent='shift_forward')
+                else:
+                    # convertir a UTC (por si vienen en otra tz)
+                    try:
+                        df['_time'] = df['_time'].dt.tz_convert('UTC')
+                    except Exception:
+                        pass
+
                 if df['_time'].isna().all():
                     st.error("No se pudieron interpretar las fechas en la columna '_time'.")
                 else:
                     # --- SIDEBAR DE FILTROS ---
                     with st.sidebar:
                         st.header("Parámetros de entrada")
-                        tiempo_min = df['_time'].min().tz_convert('America/Mexico_City') # Convertir a zona horaria local si es necesario para el UI
+                        # Convertimos a zona local solo para mostrar al usuario (no modificamos la columna original)
+                        tiempo_min = df['_time'].min().tz_convert('America/Mexico_City')
                         tiempo_max = df['_time'].max().tz_convert('America/Mexico_City')
 
                         # Manejo de la fecha
@@ -309,27 +364,24 @@ elif seccion_activa == "Resultados":
                             options=nodos_disponibles,
                             default=nodos_disponibles
                         )
-                        
-                        # Reconstruir las fechas con la zona horaria UTC (como está el DF)
-                        fecha_inicio_str = f"{fecha} {hora_inicio}"
-                        fecha_fin_str = f"{fecha} {hora_fin}"
-                        
-                        # Usamos .tz_localize(None) para manejar el caso de que la columna _time no tenga tz (aunque arriba usamos utc=True)
-                        # Pero el código original usaba .tz_localize('UTC')
-                        fecha_inicio = pd.to_datetime(fecha_inicio_str).tz_localize('UTC')
-                        fecha_fin = pd.to_datetime(fecha_fin_str).tz_localize('UTC')
-                        
-                        # Filtrado final
-                        df_filtrado = df[
-                            (df['_time'] >= fecha_inicio) & 
-                            (df['_time'] <= fecha_fin) & 
-                            (df['nodo'].astype(str).isin(nodos_seleccionados))
-                        ].copy() # Usar .copy() para evitar SettingWithCopyWarning
-                        
-                    # --- FIN SIDEBAR ---
 
+                        # Reconstruir las fechas con la zona horaria local (usuario selecciona en local)
+                        fecha_inicio_local = pd.to_datetime(f"{fecha} {hora_inicio}")
+                        fecha_fin_local = pd.to_datetime(f"{fecha} {hora_fin}")
+                        # Localizar a 'America/Mexico_City' y convertir a UTC para filtrar contra df._time (que está en UTC)
+                        fecha_inicio = fecha_inicio_local.tz_localize('America/Mexico_City').tz_convert('UTC')
+                        fecha_fin   = fecha_fin_local.tz_localize('America/Mexico_City').tz_convert('UTC')
+
+                        # Filtrado final (aseguramos tipos)
+                        df_filtrado = df[
+                            (df['_time'] >= fecha_inicio) &
+                            (df['_time'] <= fecha_fin) &
+                            (df['nodo'].astype(str).isin(nodos_seleccionados))
+                        ].copy()
+                    # --- FIN SIDEBAR ---
     except Exception as e:
         st.error(f"Error al cargar o procesar el archivo: {e}")
+ 
 
     
     if not df_filtrado.empty:
@@ -570,4 +622,5 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados o el archivo no se cargó correctamente.")
+
 
