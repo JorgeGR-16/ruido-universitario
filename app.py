@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
 import altair as alt # Necesario para el gráfico de análisis por hora
+import plotly.express as px # Necesario para el gráfico de Distribución Lineal
 from scipy.interpolate import griddata
 import traceback
 
@@ -87,7 +88,7 @@ seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------
-# BLOQUE GLOBAL: CARGA DE DATOS Y BARRA LATERAL (Soluciona el NameError)
+# BLOQUE GLOBAL: CARGA DE DATOS Y BARRA LATERAL 
 # ---------------------------------------------------------------------
 
 # 💡 INICIALIZACIÓN GLOBAL: df y df_filtrado siempre existen para evitar NameError
@@ -125,6 +126,28 @@ def load_data(url):
         return pd.DataFrame()
 
 df = load_data(sheet_url)
+
+# -------------------------------------------------------------
+# 🟢 DEFINICIÓN DE LA FUNCIÓN DE POSICIÓN LINEAL (SOLUCIÓN DEL ERROR)
+# -------------------------------------------------------------
+def asignar_posicion_lineal(df):
+    """
+    Asigna una posición numérica (Posicion_X) a cada nodo basada en su ID, 
+    asumiendo que están colocados linealmente del 1 al 39.
+    """
+    if df.empty:
+        return df
+        
+    try:
+        # Extraer solo dígitos del 'nodo' y convertir a entero (ej: 'nodo 1' -> 1)
+        df['Posicion_X'] = df['nodo'].astype(str).str.replace(r'[^\d]', '', regex=True).astype(int)
+    except Exception as e:
+        # Fallback si los IDs no son numéricos
+        st.error(f"Error al asignar Posicion_X. Asegúrate que los IDs de nodo sean números. Error: {e}")
+        df['Posicion_X'] = 0
+        
+    return df
+# -------------------------------------------------------------
 
 # --- 2. BARRA LATERAL CON FILTROS ---
 if not df.empty:
@@ -431,12 +454,13 @@ elif seccion_activa == "Resultados":
             df_lineal.rename(columns={'_value': 'Nivel Promedio (dB)'}, inplace=True)
             
             # Creamos un gráfico de dispersión simple para la distribución lineal
+            # El color y tamaño varían según el nivel de ruido, mostrando el "calor" lineal.
             fig = px.scatter(
                 df_lineal,
                 x='Posicion_X',
                 y='Nivel Promedio (dB)',
-                size='Nivel Promedio (dB)', # El tamaño del punto refleja el nivel de ruido
-                color='Nivel Promedio (dB)', # El color refleja el nivel de ruido
+                size='Nivel Promedio (dB)', 
+                color='Nivel Promedio (dB)', 
                 color_continuous_scale=px.colors.sequential.Inferno,
                 labels={
                     "Posicion_X": "Posición del Sensor (1 = inicio, 39 = final)",
@@ -452,6 +476,7 @@ elif seccion_activa == "Resultados":
 
         with tab2:
             st.markdown("#### Evolución temporal del sonido por nodo")
+            # 💡 Puedes agregar aquí un gráfico de línea (ej: Plotly o Altair) mostrando _value vs _time, coloreado por 'nodo'
             st.warning("⚠️ Aquí va tu código del gráfico de nodos vs tiempo usando `df_filtrado`")
 
         with tab3:
@@ -471,6 +496,7 @@ elif seccion_activa == "Resultados":
 
         with tab4:
             st.markdown("#### Distribución de Amplitudes")
+            # 💡 Puedes agregar aquí un histograma simple (ej: Plotly o Matplotlib) de la columna '_value'
             st.warning("⚠️ Aquí va tu código del histograma usando `df_filtrado`")
 
         with tab5:
