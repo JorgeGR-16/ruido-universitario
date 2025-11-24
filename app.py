@@ -8,6 +8,17 @@ import os
 
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
+# --- CONFIGURACIÓN DE ACCESO AL ARCHIVO ---
+# ⚠️ AJUSTA ESTE NÚMERO SEGÚN LA VERIFICACIÓN DE LA FILA DE ENCABEZADOS ⚠️
+# Si los encabezados están en la Fila 4, usa 3.
+# Si los encabezados están en la Fila 1, usa 0.
+NUM_SKIP_ROWS = 3 
+# ------------------------------------------
+
+SHEET_ID = "1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha"
+GID = 0 
+data_source = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID}"
+
 # --- ESTILO PERSONALIZADO ---
 st.markdown("""
 <style>
@@ -64,7 +75,6 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    # Usar try-except para manejar archivos de imagen que podrían faltar
     try:
         st.image("UAMAZC.jpg", use_container_width=True)
     except FileNotFoundError:
@@ -265,19 +275,9 @@ elif seccion_activa == "Desarrollo":
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
-
-    # --- INICIO MODIFICACIÓN PARA GOOGLE DRIVE/SHEETS ---
-    # ID del Google Sheet extraído del enlace: 
-    # https://docs.google.com/spreadsheets/d/1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha/edit
-    SHEET_ID = "1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha"
     
-    # GID = 0 representa la primera hoja/pestaña del archivo. 
-    # Si la data está en otra pestaña, cambia este número.
-    GID = 0 
-    
-    # URL de exportación directa a CSV. Asegúrate de que el archivo esté compartido públicamente.
-    data_source = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID}"
-    # --- FIN MODIFICACIÓN PARA GOOGLE DRIVE/SHEETS ---
+    # --- CONFIGURACIÓN DE LECTURA (USANDO LAS VARIABLES GLOBALES) ---
+    # data_source y NUM_SKIP_ROWS se definen al inicio del script.
     
     # Inicializar df_filtrado como DataFrame vacío para el scope general
     df_filtrado = pd.DataFrame()
@@ -287,13 +287,14 @@ elif seccion_activa == "Resultados":
         
         try:
             # Leer directamente desde la URL de Google Sheets
-            # El parámetro skiprows=3 se mantiene para coincidir con la estructura de la data original
-            df = pd.read_csv(data_source, skiprows=3)
+            # Usando NUM_SKIP_ROWS para flexibilidad
+            df = pd.read_csv(data_source, skiprows=NUM_SKIP_ROWS)
             
             columnas_requeridas = ['_time', 'nodo', '_value']
             
             if not all(col in df.columns for col in columnas_requeridas):
                 st.error("El archivo no contiene las columnas necesarias (_time, nodo, _value).")
+                st.info(f"Columnas encontradas después de saltar {NUM_SKIP_ROWS} filas: {df.columns.tolist()}")
             else:
                 # Conversión de tiempo y manejo de errores
                 df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
@@ -331,11 +332,11 @@ elif seccion_activa == "Resultados":
                         (df['_time'] >= fecha_inicio) & 
                         (df['_time'] <= fecha_fin) & 
                         (df['nodo'].astype(str).isin(nodos_seleccionados))
-                    ].copy() # Usar .copy() para evitar SettingWithCopyWarning
+                    ].copy() 
                         
         except Exception as e:
             st.error(f"Error al cargar o procesar el archivo: {e}")
-            st.info(f"Asegúrate de que la hoja de Google esté compartida públicamente y que la estructura de columnas sea correcta (Error detallado: {e}).")
+            st.info(f"**Verifica:** 1. Permisos públicos de la hoja. 2. La variable `NUM_SKIP_ROWS` ({NUM_SKIP_ROWS}) debe ser la Fila de encabezados menos 1.")
 
     
     if not df_filtrado.empty:
