@@ -435,7 +435,7 @@ elif seccion_activa == "Resultados":
             
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
-            Z = df_filtrado['_value'].astype(float).values
+            Z = df_filtrado['_value'].astype(int).values
 
             # Preparar la rejilla de interpolación
             x_unique = np.unique(X)
@@ -621,6 +621,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados o el archivo no se cargó correctamente.")
+
 
 
 
