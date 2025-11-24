@@ -298,7 +298,9 @@ elif seccion_activa == "Resultados":
     # Inicialización segura
     df_filtrado = pd.DataFrame()
     
-    # URL del Google Sheet (mantener la URL original)
+    # URL del Google Sheet (Nueva URL tipo /pub?output=csv)
+    # ⚠️ ¡IMPORTANTE! VERIFICA QUE LAS COLUMNAS EN TU HOJA SE LLAMEN 
+    # EXACTAMENTE: 'T_stamp', 'value', 'node'
     sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTQKOrkLvhvYM8wSl5TUCDSB-RioUR28159Cb0qqJzEoTOEJCoQC_xuy8-vdW_Yw/pub?output=csv"
 
     with st.sidebar:
@@ -307,18 +309,32 @@ elif seccion_activa == "Resultados":
         @st.cache_data(ttl=600) # Almacenar en caché por 10 minutos
         def load_data(url):
             try:
-                # Cargar el archivo sin encabezado (header=None) y manejar la estructura de GS
-                df_raw = pd.read_csv(url, header=None, on_bad_lines='skip', encoding='utf-8')
+                # 1. Leer el CSV asumiendo que la PRIMERA FILA CONTIENE ENCABEZADOS (header=0)
+                df_raw = pd.read_csv(url, header=0, on_bad_lines='skip', encoding='utf-8')
                 
-                # Asumir que las columnas relevantes son 4 (E), 5 (F) y 8 (I) - índice 0-based
-                df = df_raw.iloc[:, [4, 5, 8]].copy()
-                df.columns = ['_time', '_value', 'nodo']
-                
-                df = df.dropna(subset=['_time', '_value', 'nodo'], how='any')
+                # 2. Renombrar las columnas. 
+                # Se asume T_stamp, value, y node son los encabezados.
+                df = df_raw.rename(columns={
+                    'T_stamp': '_time',  
+                    'value': '_value',   
+                    'node': 'nodo'       
+                }, errors='ignore').copy()
 
-                # Conversión de tipos de datos
-                # Uso de format='%Y-%m-%d %H:%M:%S' para manejar el formato de tiempo de GS
-                df['_time'] = pd.to_datetime(df['_time'], format='%Y-%m-%d %H:%M:%S', errors='coerce').dt.tz_localize('UTC', nonexistent='NaT', ambiguous='NaT')
+                # 3. Seleccionar solo las columnas necesarias y verificar su existencia
+                columnas_requeridas = ['_time', '_value', 'nodo']
+                
+                # Si los nombres reales de las columnas no son 'T_stamp', 'value' y 'node'
+                # esta verificación ayudará a detectarlo.
+                if not all(col in df.columns for col in columnas_requeridas):
+                    st.sidebar.error("Error: No se encontraron todas las columnas requeridas (deben ser: _time, _value, nodo).")
+                    st.sidebar.caption(f"Columnas detectadas: {df.columns.tolist()}")
+                    return pd.DataFrame()
+
+                df = df[columnas_requeridas]
+                df = df.dropna(subset=columnas_requeridas, how='any')
+
+                # 4. Conversión de tipos de datos (Pandas infiere el formato de tiempo automáticamente)
+                df['_time'] = pd.to_datetime(df['_time'], errors='coerce').dt.tz_localize('UTC', nonexistent='NaT', ambiguous='NaT')
                 df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
                 df['nodo'] = df['nodo'].astype(str)
                 
@@ -326,14 +342,15 @@ elif seccion_activa == "Resultados":
                 return df
                 
             except Exception as e:
-                st.error(f"Error al cargar/procesar los datos: {e}")
-                st.code(traceback.format_exc()) # Mostrar el error detallado
+                st.error("Error al cargar o procesar los datos desde Google Sheets.")
+                st.code(traceback.format_exc())
                 return pd.DataFrame()
 
         df = load_data(sheet_url)
 
         if not df.empty:
-            tiempo_min = df['_time'].min().tz_convert(None) # Quitar timezone para el selector
+            # Eliminar la información de zona horaria para los selectores de Streamlit
+            tiempo_min = df['_time'].min().tz_convert(None) 
             tiempo_max = df['_time'].max().tz_convert(None)
 
             fecha = st.date_input(
@@ -362,11 +379,12 @@ elif seccion_activa == "Resultados":
                 (df['_time'] >= fecha_inicio) &
                 (df['_time'] <= fecha_fin) &
                 (df['nodo'].isin(nodos_seleccionados))
-            ].copy() 
+            ].copy()  
             
             st.write(f"📈 **{len(df_filtrado)}** registros después del filtrado.")
         else:
             st.warning("⚠️ No se pudieron cargar los datos iniciales desde Google Sheets.")
+            # st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
 
 
     if not df_filtrado.empty:
@@ -417,7 +435,7 @@ elif seccion_activa == "Resultados":
             # --- CÓDIGO DE HEATMAP REVISADO (Usando agregación en lugar de interpolación) ---
             
             # Agrupar por hora (0-23) y nodo, calculando la media
-            # Convertir 'nodo' a entero para el orden en el gráfico
+            # Convertir 'nodo' a numérico para asegurar el orden
             df_heatmap = df_filtrado.copy()
             df_heatmap['nodo'] = pd.to_numeric(df_heatmap['nodo'], errors='coerce')
             df_heatmap.dropna(subset=['nodo'], inplace=True)
@@ -457,7 +475,7 @@ elif seccion_activa == "Resultados":
             Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
             """)
             for nodo in sorted(df_filtrado["nodo"].unique()):
-                st.markdown(f"**Nodo {nodo}**") # Uso de negritas en lugar de st.subheader
+                st.markdown(f"**Nodo {nodo}**")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
@@ -485,7 +503,6 @@ elif seccion_activa == "Resultados":
             
         with tab5:
             st.markdown("### **Efectos del ruido en la audición**")
-            # ... (Resto del contenido de tab5 sin cambios)
             st.markdown("""
                 <div style='text-align: justify;'>
                 La sensibilidad al ruido varía de persona a persona. Cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición. Proteger tus oídos es clave para mantener una buena salud auditiva.
@@ -517,7 +534,7 @@ elif seccion_activa == "Resultados":
                     return "85–100 dB: Riesgo moderado"
                 else:
                     return "100–120+ dB: Peligroso"
-        
+            
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
             
             horas_disponibles = sorted(df_filtrado["hora"].unique())
@@ -542,7 +559,7 @@ elif seccion_activa == "Resultados":
                     "100–120+ dB: Peligroso": "#ff4d4d"
                 }
                 
-                # Crear gráfico de pastel
+                # Crear gráfico de pastel 
                 fig, ax = plt.subplots()
                 # Filtrar colores para solo aquellos presentes en el conteo
                 pie_colors = [colores.get(cat, "#cccccc") for cat in conteo.index]
@@ -560,4 +577,3 @@ elif seccion_activa == "Resultados":
                 st.warning("No hay datos en el rango de horas seleccionado para mostrar la distribución por riesgo.")
     else:
         st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
-
