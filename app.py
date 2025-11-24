@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
 from scipy.interpolate import griddata
+import traceback
 
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
@@ -60,7 +61,7 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
-    # Reemplaza 'UAMAZC.jpg' con la ruta a tu imagen o asegúrate de que esté en el mismo directorio.
+    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -96,7 +97,7 @@ if seccion_activa == "Introducción":
 
     st.markdown("""
     <div style='text-align: justify;'><br>
-    El sonómetro es un instrumento de lectura directa del nivel global de presión sonora. Sirve para medir la intensidad del sonido, expresada en decibeles (dB) y se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
+    El **sonómetro** es un instrumento de lectura directa del nivel global de presión sonora. Sirve para medir la intensidad del sonido, expresada en **decibeles (dB)** y se utiliza para cuantificar el nivel de ruido en un lugar determinado, ya sea en control de ruido ambiental o laboral, o para evaluar la exposición sonora a la que están sometidas las personas.
     Su importancia radica en que permite cuantificar el ruido ambiental, evaluar el cumplimiento de normativas acústicas, diseñar políticas de control y mitigación del ruido, y proteger la salud pública y el bienestar social.
     Los niveles elevados de ruido pueden interferir en actividades cotidianas, como el trabajo o el descanso, y tienen un impacto directo en la salud pública.
     El ruido no controlado no solo afecta la calidad de vida de las personas, sino que también puede tener efectos negativos sobre la salud, como estrés, alteraciones del sueño y problemas auditivos.
@@ -108,7 +109,9 @@ if seccion_activa == "Introducción":
     El ruido excesivo es una forma de contaminación ambiental que puede tener efectos perjudiciales sobre la salud humana, tanto a corto como a largo plazo. Los sonómetros son instrumentos clave para medir, controlar y prevenir estos riesgos.
     A continuación, se explican diferentes riesgos contra la salud humana:
 
-    - **Pérdida auditiva inducida por ruido** - **Estrés, irritabilidad y fatiga mental** - **Aumento del riesgo cardiovascular**
+    - **Pérdida auditiva inducida por ruido**
+    - **Estrés, irritabilidad y fatiga mental**
+    - **Aumento del riesgo cardiovascular**
     </div>
     """, unsafe_allow_html=True)
     
@@ -172,7 +175,6 @@ if seccion_activa == "Introducción":
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Reemplaza 'Niveles_de_ruido.jpg' con la ruta a tu imagen
         st.image("Niveles_de_ruido.jpg", use_container_width=True)
     
     st.markdown("### 1.1 Principio de funcionamiento")
@@ -196,7 +198,6 @@ if seccion_activa == "Introducción":
     st.markdown("### 1.2 Diagrama del dispositivo.")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Reemplaza 'Diagrama.png' con la ruta a tu imagen
         st.image("Diagrama.png", use_container_width=True)
 
 elif seccion_activa == "Objetivo":
@@ -207,7 +208,7 @@ elif seccion_activa == "Objetivo":
     st.markdown("Diseñar y construir un sonómetro digital que permita medir niveles de presión sonora en tiempo real, facilitando el monitoreo del ruido ambiental con precisión.")
     
     st.markdown("### 2.2 Objetivos específicos")
-    st.markdown("* Seleccionar y calibrar un sensor  de sonido compatible con microcontroladores.")
+    st.markdown("* Seleccionar y calibrar un sensor de sonido compatible con microcontroladores.")
     st.markdown("* Programar el microcontrolador para interpretar los datos de decibeles(dB) y mostrarlos en una interfaz digital.")
     st.markdown("* Integrar un sistema de visualización en pantalla.")
     st.markdown("* Evaluar el desempeño del prototipo frente a un sonómetro comercial.")
@@ -241,7 +242,6 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.1 Diseño del modelo ESP32")
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        # Reemplaza 'ESP32.jpg' con la ruta a tu imagen
         st.image("ESP32.jpg", use_container_width=True)
         
     st.markdown("### 3.2 Construcción del sonómetro")
@@ -293,70 +293,97 @@ elif seccion_activa == "Desarrollo":
 
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
-
+    
+    # Inicialización segura
+    df_filtrado = pd.DataFrame()
     with st.sidebar:
         st.header("Parámetros de entrada")
     
         # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
+        # Asegúrate de que esta URL sea pública y accesible como CSV
         sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
     
-        try:
-            # Saltar las 6 primeras filas porque tus datos empiezan en la fila 7
-            df = pd.read_csv(sheet_url, skiprows=6, header=None)
-    
-            # Renombrar columnas manualmente según su posición
-            df = df.rename(columns={
-                4: '_time',   # Columna E → tiempo
-                5: '_value',  # Columna F → nivel de sonido (Leq)
-                8: 'nodo'     # Columna I → número de nodo
-            })
-    
-            # Conservar solo las columnas que interesan
-            df = df[['_time', '_value', 'nodo']]
-    
-            # Convertir tipos de datos
-            df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-            df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
-            df['nodo'] = df['nodo'].astype(str)
-    
-            # --- Validación ---
-            if df.empty or df['_time'].isna().all():
-                st.error("No se pudieron interpretar los datos de tiempo.")
-                df_filtrado = pd.DataFrame()
-            else:
-                tiempo_min = df['_time'].min()
-                tiempo_max = df['_time'].max()
-    
-                fecha = st.date_input("Fecha", value=tiempo_min.date(),
-                                      min_value=tiempo_min.date(), max_value=tiempo_max.date())
-                hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-    
-                nodos_disponibles = sorted(df["nodo"].unique())
-                nodos_seleccionados = st.multiselect(
-                    "Selecciona los nodos:",
-                    options=nodos_disponibles,
-                    default=nodos_disponibles
-                )
-    
-                fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-                fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-    
-                df_filtrado = df[
-                    (df['_time'] >= fecha_inicio) &
-                    (df['_time'] <= fecha_fin) &
-                    (df['nodo'].isin(nodos_seleccionados))
-                ]
-        except Exception as e:
-            st.error(f"Error al cargar el archivo desde Google Sheets: {e}")
-            df_filtrado = pd.DataFrame()
+        @st.cache_data(ttl=600) # Almacenar en caché por 10 minutos
+        def load_data(url):
+            try:
+                # Intento de leer con delimitador de coma y manejo de errores en formato
+                df_raw = pd.read_csv(url, header=None, on_bad_lines='skip')
+                
+                # Suponiendo que el encabezado está en las primeras filas, se procede a la limpieza
+                # La lógica de mapeo de columnas es: Columna E (4), F (5), I (8)
+                
+                # Intentar limpiar y renombrar, asegurando que las columnas existen
+                required_cols = [4, 5, 8]
+                if not all(col in df_raw.columns for col in required_cols):
+                    # Si las columnas no son como se esperan, intentar forzar la limpieza si hay encabezados
+                    df_raw = pd.read_csv(url, header=None, on_bad_lines='skip', skiprows=6)
+                    if not all(col in df_raw.columns for col in [0, 1, 4]): # Ajuste de índice después de skiprows
+                         return pd.DataFrame() # Fallo si no se ajusta
+                         
+                    df = df_raw.rename(columns={
+                        0: '_time',   # Columna E original, ahora 0
+                        1: '_value',  # Columna F original, ahora 1
+                        4: 'nodo'     # Columna I original, ahora 4
+                    })[['_time', '_value', 'nodo']]
+                else:
+                    df = df_raw.rename(columns={
+                        4: '_time',    # Columna E
+                        5: '_value',   # Columna F
+                        8: 'nodo'      # Columna I
+                    })[['_time', '_value', 'nodo']]
+                
+                df = df.dropna(subset=['_time', '_value', 'nodo'], how='any')
 
+                # Conversión de tipos de datos
+                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
+                df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
+                df['nodo'] = df['nodo'].astype(str)
+        
+                df = df.dropna(subset=['_time', '_value'])
+                return df
+                
+            except Exception as e:
+                st.error(f"Error al cargar/procesar los datos: {e}")
+                return pd.DataFrame()
 
+        df = load_data(sheet_url)
+
+        if not df.empty:
+            tiempo_min = df['_time'].min()
+            tiempo_max = df['_time'].max()
+
+            fecha = st.date_input(
+                "Fecha",
+                value=tiempo_min.date(),
+                min_value=tiempo_min.date(),
+                max_value=tiempo_max.date()
+            )
+            hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+            hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+
+            nodos_disponibles = sorted(df["nodo"].unique())
+            nodos_seleccionados = st.multiselect(
+                "Selecciona los nodos:",
+                options=nodos_disponibles,
+                default=nodos_disponibles
+            )
+
+            # 🔹 Filtrado por fecha, hora y nodo
+            fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+            fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+            df_filtrado = df[
+                (df['_time'] >= fecha_inicio) &
+                (df['_time'] <= fecha_fin) &
+                (df['nodo'].isin(nodos_seleccionados))
+            ].copy() # Uso de .copy() para evitar SettingWithCopyWarning
+            
+            st.write(f"📈 **{len(df_filtrado)}** registros después del filtrado.")
+        else:
+             st.warning("⚠️ No se pudieron cargar los datos iniciales desde Google Sheets.")
 
 
     if not df_filtrado.empty:
-        df_filtrado = df_filtrado.copy()
-
         # Clasificar riesgo
         def clasificar_riesgo(db):
             if db < 85:
@@ -401,27 +428,42 @@ elif seccion_activa == "Resultados":
                     key="palette_selector"
                 )
             
-            # Procesamiento de datos (manteniendo tu estructura original)
+            # Procesamiento de datos para el mapa de calor
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
             Z = df_filtrado['_value'].astype(float).values
         
+            # Creación de la rejilla
             x_unique = np.unique(X)
-            y_unique = np.unique(tiempos_segundos)
+            y_unique = np.unique(tiempos_segundos) 
             X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-            Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+            
+            # Interpolación
+            if len(X) > 3: # griddata necesita al menos 3 puntos para interpolar
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+            else:
+                 # Si no hay suficientes puntos, usar una matriz de NaNs (o un valor constante)
+                Z_grid = np.full(X_grid.shape, np.nan) 
+            
+            # Rellenar NaNs con el valor mínimo para visualización
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.all(np.isnan(Z_grid)) else 0)
         
             # Configuración del gráfico
             fig, ax = plt.subplots(figsize=(10, 6))
-            yticks = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+            
+            # Generar etiquetas del eje Y (tiempo)
+            if len(y_unique) > 1:
+                yticks = np.linspace(0, len(y_unique) - 1, num=min(10, len(y_unique)), dtype=int)
+            else:
+                yticks = np.array([0]) if len(y_unique) > 0 else np.array([])
+                
             yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
         
             # Heatmap con paleta seleccionada
             sb.heatmap(
                 Z_grid, 
-                cmap=palette,  # Usando la paleta seleccionada
+                cmap=palette,
                 xticklabels=x_unique, 
                 yticklabels=False, 
                 ax=ax
@@ -442,22 +484,22 @@ elif seccion_activa == "Resultados":
                    
 
         with tab2:
+            st.markdown("#### Evolución temporal por nodo")
             st.markdown("""
             En esta sección se muestra la evolución del nivel de ruido a lo largo del tiempo para cada nodo seleccionado.
             Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
             """)
-            st.markdown("#### Evolución temporal por nodo")
             for nodo in sorted(df_filtrado["nodo"].unique()):
                 st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
         with tab3:
+            st.markdown("### Comparación general de nodos en un solo gráfico")
             st.markdown("""
             Aquí se visualizan todos los nodos juntos para comparar sus niveles de ruido en el tiempo.
             Esto facilita detectar diferencias o similitudes en el comportamiento acústico entre distintas áreas.
             """)
-            st.markdown("### Comparación general de nodos en un solo gráfico")
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
             st.line_chart(df_pivot, height=300, use_container_width=True)
 
@@ -473,16 +515,17 @@ elif seccion_activa == "Resultados":
             st.dataframe(resumen_estadistico, use_container_width=True)
             st.markdown("### Gráfico de valores máximos por nodo")
             st.bar_chart(resumen_estadistico["Maximo"])
+            
         with tab5:
             st.markdown("### **Efectos del ruido en la audición**")
             st.markdown("""
                 <div style='text-align: justify;'>
-                La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente.
-                Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
+                La sensibilidad al ruido varía de persona a persona. Cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición. Proteger tus oídos es clave para mantener una buena salud auditiva.
                 </div>
             """, unsafe_allow_html=True)
             
             st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
+            
 
             st.markdown("""
             | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
@@ -495,7 +538,7 @@ elif seccion_activa == "Resultados":
             """)
             st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
         
-            # Clasificación personalizada
+            # Clasificación personalizada para el gráfico de pastel
             def clasificar_rango(db):
                 if db < 30:
                     return "0–30 dB: Sin riesgo"
@@ -509,40 +552,41 @@ elif seccion_activa == "Resultados":
                     return "100–120+ dB: Peligroso"
         
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
-            df_filtrado["hora"] = df_filtrado["_time"].dt.hour
+            
             horas_disponibles = sorted(df_filtrado["hora"].unique())
             
-            # Selector de una sola hora (por ejemplo: 13, 14, 15...)
-            hora_seleccionada = st.selectbox(
-                "Selecciona la hora que deseas visualizar (formato 24h):",
-                options=horas_disponibles,  # debe ser una lista de enteros (0 a 23, por ejemplo)
-                index=0  # opcional, elige cuál aparece por defecto
-            )
-            
-            # Filtrar datos por la hora seleccionada
-            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
-            conteo = df_hora["rango"].value_counts().sort_index()
-            
-            # Colores personalizados por rango de riesgo
-            colores = {
-                "0–30 dB: Sin riesgo": "#b3d9ff",
-                "30–60 dB: Sin riesgo": "#80bfff",
-                "60–85 dB: Riesgo leve": "#ffcc80",
-                "85–100 dB: Riesgo moderado": "#ff9966",
-                "100–120+ dB: Peligroso": "#ff4d4d"
-            }
-            
-            # Crear gráfico de pastel
-            fig, ax = plt.subplots()
-            ax.pie(
-                conteo,
-                labels=conteo.index,
-                autopct="%1.1f%%",
-                startangle=90,
-                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
-            )
-            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-            st.pyplot(fig)     
-
+            if horas_disponibles:
+                hora_seleccionada = st.selectbox(
+                    "Selecciona la hora que deseas visualizar (formato 24h):",
+                    options=horas_disponibles, 
+                    index=0 
+                )
+                
+                # Filtrar datos por la hora seleccionada
+                df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+                conteo = df_hora["rango"].value_counts().sort_index()
+                
+                # Colores personalizados por rango de riesgo
+                colores = {
+                    "0–30 dB: Sin riesgo": "#b3d9ff",
+                    "30–60 dB: Sin riesgo": "#80bfff",
+                    "60–85 dB: Riesgo leve": "#ffcc80",
+                    "85–100 dB: Riesgo moderado": "#ff9966",
+                    "100–120+ dB: Peligroso": "#ff4d4d"
+                }
+                
+                # Crear gráfico de pastel
+                fig, ax = plt.subplots()
+                ax.pie(
+                    conteo,
+                    labels=conteo.index,
+                    autopct="%1.1f%%",
+                    startangle=90,
+                    colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+                )
+                ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
+                st.pyplot(fig)
+            else:
+                 st.warning("No hay datos en el rango de horas seleccionado para mostrar la distribución por riesgo.")
     else:
-        st.warning("No hay datos para los parámetros seleccionados.")
+        st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
