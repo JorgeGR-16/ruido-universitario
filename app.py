@@ -424,7 +424,26 @@ elif seccion_activa == "Resultados":
 
         with tab1:
             st.markdown("#### Distribución espacial de los niveles de sonido")
-            st.warning("⚠️ Aquí va el código de tu mapa de calor/sonido usando `df_filtrado`")
+            # Agrupamos los datos para obtener el promedio por nodo y usarlo en el mapa
+            df_mapa = df_filtrado.groupby(['nodo', 'Latitud', 'Longitud'])['_value'].mean().reset_index()
+            df_mapa.rename(columns={'_value': 'Nivel Promedio (dB)'}, inplace=True)
+
+            # Usamos Plotly Express para el mapa de densidad/calor
+            fig = px.density_mapbox(
+                df_mapa,
+                lat='Latitud',
+                lon='Longitud',
+                z='Nivel Promedio (dB)', # Valor que determina el calor
+                radius=15, # Radio de influencia de los puntos
+                center=dict(lat=19.503056, lon=-99.186944), # Centro UAM Azcapotzalco
+                zoom=14,
+                mapbox_style="open-street-map", # Estilo de mapa base sin token
+                color_continuous_scale=px.colors.sequential.Plasma, # Escala de color
+                hover_data={'nodo': True, 'Nivel Promedio (dB)': ':.1f'}
+            )
+            
+            fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+            st.plotly_chart(fig, use_container_width=True)
             
         with tab2:
             st.markdown("#### Evolución temporal del sonido por nodo")
@@ -459,3 +478,4 @@ elif seccion_activa == "Resultados":
     else:
         # Se muestra este error si el filtro de hora/fecha/nodo no encuentra datos
         st.error("No hay datos para los parámetros seleccionados. Por favor, ajusta la **Fecha** o el **rango de Horas** en la barra lateral izquierda.")
+
