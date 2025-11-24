@@ -1,4 +1,4 @@
-%%writefile app.py
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -540,3 +540,4 @@ elif seccion_activa == "Resultados":
             
     else:
         st.warning("No hay datos para los parámetros seleccionados o el archivo no ha sido cargado/procesado correctamente.")
+
