@@ -375,8 +375,12 @@ elif seccion_activa == "Resultados":
         ])
 
         # --- TAB 1: Mapa de sonido ---
+        # --- TAB 1: Mapa de sonido ---
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
+            st.markdown("""
+            Este mapa de calor ahora muestra los **Nodos en el eje X** y el **Tiempo (Minutos)** en el eje Y.
+            """)
         
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
@@ -384,38 +388,52 @@ elif seccion_activa == "Resultados":
                     "Seleccione la paleta de colores:",
                     options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
                     index=0,
-                    key="palette_selector"
+                    key="palette_selector_tab1_corrected"
                 )
         
-            # --- Estructurar datos ---
+            # --- Estructurar datos (Agregación por minuto) ---
             df_filtrado["_minuto"] = df_filtrado["_time"].dt.floor("min")
+            
+            # Pivotar: Índice = Tiempo (_minuto), Columnas = Nodos, Valores = Nivel de sonido
             pivot = df_filtrado.pivot_table(
                 index="_minuto", columns="nodo", values="_value", aggfunc="mean"
             ).sort_index()
         
-            # --- Asegurar que todos los nodos aparezcan ---
-            todos_nodos = sorted(df["nodo"].astype(int).unique())
+            # Rellenar con NaN si falta algún nodo para que la matriz sea consistente
+            todos_nodos = sorted(df["nodo"].astype(str).unique(), key=lambda x: int(x) if x.isdigit() else x)
             pivot = pivot.reindex(columns=todos_nodos)
         
             # --- Convertir a matriz ---
+            # El pivot ya tiene los Nodos en las COLUMNAS (Eje X del gráfico si no se transpone)
+            # y el Tiempo en el ÍNDICE (Eje Y del gráfico si no se transpone).
+            # ¡Necesitas transponer para que Nodos sean X y Tiempo sea Y!
+            # Para que NODOS (columnas) queden en el eje X y TIEMPO (índice) quede en el eje Y,
+            # DEBES USAR LA MATRIZ SIN TRANSPONER.
+            # *Nota*: En el código anterior usabas data_matrix.T, lo cual invertía los ejes.
             data_matrix = pivot.to_numpy()
         
             # --- Generar gráfico ---
             fig, ax = plt.subplots(figsize=(12, 6))
+
+            # Usamos la matriz sin transponer (data_matrix) para que el tiempo (índice)
+            # se mapee al eje Y y los nodos (columnas) al eje X.
             sb.heatmap(
-                data_matrix.T,
+                data_matrix,  # Usamos la matriz SIN transponer
                 cmap=palette,
-                cbar_kws={'label': 'Nivel de sonido (dB)'},
-                xticklabels=False,
-                yticklabels=todos_nodos,
+                cbar_kws={'label': 'Nivel de sonido promedio (dB)'},
+                
+                # Etiquetas del eje X (Nodos)
+                xticklabels=pivot.columns.tolist(),
+                # Etiquetas del eje Y (Tiempo). Solo etiquetamos cada 10 minutos para que sea legible.
+                yticklabels=[idx.strftime('%H:%M') if i % 10 == 0 else '' for i, idx in enumerate(pivot.index)],
+                
                 ax=ax
             )
         
-            ax.set_xlabel("Tiempo (minutos)")
-            ax.set_ylabel("Nodos")
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Tiempo (minutos de medición)")
             ax.set_title("Mapa de niveles de sonido (todos los nodos detectados)")
             st.pyplot(fig)
-
 
         # --- TAB 2: Evolución temporal por nodo ---
         with tab2:
@@ -477,3 +495,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
