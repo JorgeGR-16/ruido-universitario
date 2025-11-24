@@ -388,13 +388,13 @@ elif seccion_activa == "Desarrollo":
     """, unsafe_allow_html=True)
     
     
-
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
-    # df_filtrado ahora está disponible globalmente, incluso si está vacío.
-    
     if not df_filtrado.empty:
+        # ⚠️ PASO CRUCIAL: Agregar coordenadas reales para la visualización del mapa
+        df_filtrado = agregar_coordenadas(df_filtrado)
+        
         # --- 1. PREPARACIÓN DE DATOS ---
         
         # 1.1 Función de clasificación de riesgo
@@ -423,7 +423,8 @@ elif seccion_activa == "Resultados":
         # --- 3. CONTENIDO DE LAS PESTAÑAS ---
 
         with tab1:
-            st.markdown("#### Distribución espacial de los niveles de sonido")
+            st.markdown("#### Distribución espacial del nivel de sonido promedio")
+            
             # Agrupamos los datos para obtener el promedio por nodo y usarlo en el mapa
             df_mapa = df_filtrado.groupby(['nodo', 'Latitud', 'Longitud'])['_value'].mean().reset_index()
             df_mapa.rename(columns={'_value': 'Nivel Promedio (dB)'}, inplace=True)
@@ -444,7 +445,7 @@ elif seccion_activa == "Resultados":
             
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
             st.plotly_chart(fig, use_container_width=True)
-            
+
         with tab2:
             st.markdown("#### Evolución temporal del sonido por nodo")
             st.warning("⚠️ Aquí va tu código del gráfico de nodos vs tiempo usando `df_filtrado`")
@@ -452,11 +453,9 @@ elif seccion_activa == "Resultados":
         with tab3:
             st.markdown("#### Niveles de sonido promedio por hora del día")
             
-            # Código para el gráfico de análisis por hora (usando la nueva columna "hora")
             df_hora = df_filtrado.groupby("hora")["_value"].mean().reset_index()
             df_hora.columns = ["Hora del Día", "Nivel Promedio (dB)"]
             
-            # Creamos el gráfico Altair
             chart_hora = alt.Chart(df_hora).mark_line(point=True).encode(
                 x=alt.X("Hora del Día", bin=True, title="Hora del Día"),
                 y=alt.Y("Nivel Promedio (dB)", title="Nivel Promedio (dB)"),
@@ -476,6 +475,5 @@ elif seccion_activa == "Resultados":
             st.warning("⚠️ Puedes mejorar esta pestaña mostrando más detalles.")
             
     else:
-        # Se muestra este error si el filtro de hora/fecha/nodo no encuentra datos
         st.error("No hay datos para los parámetros seleccionados. Por favor, ajusta la **Fecha** o el **rango de Horas** en la barra lateral izquierda.")
 
