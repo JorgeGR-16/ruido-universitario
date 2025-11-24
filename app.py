@@ -291,67 +291,66 @@ elif seccion_activa == "Desarrollo":
     
     
 
-
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
     
     # Inicialización segura
     df_filtrado = pd.DataFrame()
-    
-    # URL del Google Sheet (Nueva URL tipo /pub?output=csv)
-    # ⚠️ ¡IMPORTANTE! VERIFICA QUE LAS COLUMNAS EN TU HOJA SE LLAMEN 
-    # EXACTAMENTE: 'T_stamp', 'value', 'node'
-    sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTQKOrkLvhvYM8wSl5TUCDSB-RioUR28159Cb0qqJzEoTOEJCoQC_xuy8-vdW_Yw/pub?output=csv"
-
     with st.sidebar:
         st.header("Parámetros de entrada")
-        
+    
+        # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
+        # Asegúrate de que esta URL sea pública y accesible como CSV
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
+    
         @st.cache_data(ttl=600) # Almacenar en caché por 10 minutos
         def load_data(url):
             try:
-                # 1. Leer el CSV asumiendo que la PRIMERA FILA CONTIENE ENCABEZADOS (header=0)
-                df_raw = pd.read_csv(url, header=0, on_bad_lines='skip', encoding='utf-8')
+                # Intento de leer con delimitador de coma y manejo de errores en formato
+                df_raw = pd.read_csv(url, header=None, on_bad_lines='skip')
                 
-                # 2. Renombrar las columnas. 
-                # Se asume T_stamp, value, y node son los encabezados.
-                df = df_raw.rename(columns={
-                    'T_stamp': '_time',  
-                    'value': '_value',   
-                    'node': 'nodo'       
-                }, errors='ignore').copy()
-
-                # 3. Seleccionar solo las columnas necesarias y verificar su existencia
-                columnas_requeridas = ['_time', '_value', 'nodo']
+                # Suponiendo que el encabezado está en las primeras filas, se procede a la limpieza
+                # La lógica de mapeo de columnas es: Columna E (4), F (5), I (8)
                 
-                # Si los nombres reales de las columnas no son 'T_stamp', 'value' y 'node'
-                # esta verificación ayudará a detectarlo.
-                if not all(col in df.columns for col in columnas_requeridas):
-                    st.sidebar.error("Error: No se encontraron todas las columnas requeridas (deben ser: _time, _value, nodo).")
-                    st.sidebar.caption(f"Columnas detectadas: {df.columns.tolist()}")
-                    return pd.DataFrame()
+                # Intentar limpiar y renombrar, asegurando que las columnas existen
+                required_cols = [4, 5, 8]
+                if not all(col in df_raw.columns for col in required_cols):
+                    # Si las columnas no son como se esperan, intentar forzar la limpieza si hay encabezados
+                    df_raw = pd.read_csv(url, header=None, on_bad_lines='skip', skiprows=6)
+                    if not all(col in df_raw.columns for col in [0, 1, 4]): # Ajuste de índice después de skiprows
+                         return pd.DataFrame() # Fallo si no se ajusta
+                         
+                    df = df_raw.rename(columns={
+                        0: '_time',   # Columna E original, ahora 0
+                        1: '_value',  # Columna F original, ahora 1
+                        4: 'nodo'     # Columna I original, ahora 4
+                    })[['_time', '_value', 'nodo']]
+                else:
+                    df = df_raw.rename(columns={
+                        4: '_time',    # Columna E
+                        5: '_value',   # Columna F
+                        8: 'nodo'      # Columna I
+                    })[['_time', '_value', 'nodo']]
+                
+                df = df.dropna(subset=['_time', '_value', 'nodo'], how='any')
 
-                df = df[columnas_requeridas]
-                df = df.dropna(subset=columnas_requeridas, how='any')
-
-                # 4. Conversión de tipos de datos (Pandas infiere el formato de tiempo automáticamente)
-                df['_time'] = pd.to_datetime(df['_time'], errors='coerce').dt.tz_localize('UTC', nonexistent='NaT', ambiguous='NaT')
+                # Conversión de tipos de datos
+                df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
                 df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
                 df['nodo'] = df['nodo'].astype(str)
-                
+        
                 df = df.dropna(subset=['_time', '_value'])
                 return df
                 
             except Exception as e:
-                st.error("Error al cargar o procesar los datos desde Google Sheets.")
-                st.code(traceback.format_exc())
+                st.error(f"Error al cargar/procesar los datos: {e}")
                 return pd.DataFrame()
 
         df = load_data(sheet_url)
 
         if not df.empty:
-            # Eliminar la información de zona horaria para los selectores de Streamlit
-            tiempo_min = df['_time'].min().tz_convert(None) 
-            tiempo_max = df['_time'].max().tz_convert(None)
+            tiempo_min = df['_time'].min()
+            tiempo_max = df['_time'].max()
 
             fecha = st.date_input(
                 "Fecha",
@@ -359,7 +358,6 @@ elif seccion_activa == "Resultados":
                 min_value=tiempo_min.date(),
                 max_value=tiempo_max.date()
             )
-            # Asegurar que las horas de inicio/fin estén en el mismo día
             hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
             hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
@@ -371,7 +369,6 @@ elif seccion_activa == "Resultados":
             )
 
             # 🔹 Filtrado por fecha, hora y nodo
-            # Re-localizar la zona horaria a UTC para la comparación
             fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
             fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
 
@@ -379,12 +376,11 @@ elif seccion_activa == "Resultados":
                 (df['_time'] >= fecha_inicio) &
                 (df['_time'] <= fecha_fin) &
                 (df['nodo'].isin(nodos_seleccionados))
-            ].copy()  
+            ].copy() # Uso de .copy() para evitar SettingWithCopyWarning
             
             st.write(f"📈 **{len(df_filtrado)}** registros después del filtrado.")
         else:
-            st.warning("⚠️ No se pudieron cargar los datos iniciales desde Google Sheets.")
-            # st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
+             st.warning("⚠️ No se pudieron cargar los datos iniciales desde Google Sheets.")
 
 
     if not df_filtrado.empty:
@@ -410,16 +406,16 @@ elif seccion_activa == "Resultados":
         ])
 
         with tab1:
-            st.markdown("### Mapa de niveles de sonido (Promedio por Hora)")
+            st.markdown("### Mapa de niveles de sonido")
             
             st.markdown("""
-            Este mapa de calor representa el **nivel de ruido promedio** registrado por cada nodo (sensor) agrupado por la hora del día.
+            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
             
-            - **Eje horizontal:** Nodos o sensores.
-            - **Eje vertical:** Hora del día (formato 24h).
-            - **Colores:** Indican el nivel de sonido promedio en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
+            - **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
+            - **Eje vertical:** representa la hora del día (formato HH:MM).
+            - **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
             
-            Permite identificar fácilmente las horas del día y los nodos donde el ruido es más intenso.
+            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
             """)
             
             # Selector de paleta de colores encima del mapa
@@ -432,41 +428,60 @@ elif seccion_activa == "Resultados":
                     key="palette_selector"
                 )
             
-            # --- CÓDIGO DE HEATMAP REVISADO (Usando agregación en lugar de interpolación) ---
+            # Procesamiento de datos para el mapa de calor
+            X = df_filtrado['nodo'].astype(int).values
+            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+            Z = df_filtrado['_value'].astype(float).values
+        
+            # Creación de la rejilla
+            x_unique = np.unique(X)
+            y_unique = np.unique(tiempos_segundos) 
+            X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
             
-            # Agrupar por hora (0-23) y nodo, calculando la media
-            # Convertir 'nodo' a numérico para asegurar el orden
-            df_heatmap = df_filtrado.copy()
-            df_heatmap['nodo'] = pd.to_numeric(df_heatmap['nodo'], errors='coerce')
-            df_heatmap.dropna(subset=['nodo'], inplace=True)
+            # Interpolación
+            if len(X) > 3: # griddata necesita al menos 3 puntos para interpolar
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+            else:
+                 # Si no hay suficientes puntos, usar una matriz de NaNs (o un valor constante)
+                Z_grid = np.full(X_grid.shape, np.nan) 
             
-            df_heatmap_pivot = df_heatmap.groupby([df_heatmap['_time'].dt.hour.rename('hora_del_dia'), 'nodo'])['_value'].mean().unstack()
-            
+            # Rellenar NaNs con el valor mínimo para visualización
+            Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.all(np.isnan(Z_grid)) else 0)
+        
             # Configuración del gráfico
             fig, ax = plt.subplots(figsize=(10, 6))
             
-            # Heatmap con datos agregados
-            if not df_heatmap_pivot.empty:
-                sb.heatmap(
-                    df_heatmap_pivot,
-                    cmap=palette,
-                    linewidths=0.5,
-                    linecolor='white',
-                    cbar_kws={'label': 'Nivel de sonido promedio (dB)'},
-                    ax=ax
-                )
-                
-                ax.set_xlabel("Nodos")
-                ax.set_ylabel("Hora del día (24h)")
-                ax.invert_yaxis() 
-
-                # Asegurar que las etiquetas X (nodos) sean correctas
-                ax.set_xticklabels(df_heatmap_pivot.columns.astype(int), rotation=0)
-
-                st.pyplot(fig)
+            # Generar etiquetas del eje Y (tiempo)
+            if len(y_unique) > 1:
+                yticks = np.linspace(0, len(y_unique) - 1, num=min(10, len(y_unique)), dtype=int)
             else:
-                st.warning("No hay suficientes datos para generar el Mapa de Calor con los filtros actuales.")
-            # --- FIN DEL CÓDIGO DE HEATMAP REVISADO ---
+                yticks = np.array([0]) if len(y_unique) > 0 else np.array([])
+                
+            yticklabels = [pd.to_datetime(y_unique[i], unit='s').strftime('%H:%M') for i in yticks]
+        
+            # Heatmap con paleta seleccionada
+            sb.heatmap(
+                Z_grid, 
+                cmap=palette,
+                xticklabels=x_unique, 
+                yticklabels=False, 
+                ax=ax
+            )
+            
+            ax.invert_yaxis()
+            ax.set_yticks(yticks)
+            ax.set_yticklabels(yticklabels, rotation=0)
+            ax.set_xlabel("Nodos")
+            ax.set_ylabel("Hora (HH:MM)")
+            
+            # Añadir barra de color con etiqueta
+            cbar = ax.collections[0].colorbar
+            cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+            
+            st.pyplot(fig)
+                            
+                   
 
         with tab2:
             st.markdown("#### Evolución temporal por nodo")
@@ -475,7 +490,7 @@ elif seccion_activa == "Resultados":
             Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
             """)
             for nodo in sorted(df_filtrado["nodo"].unique()):
-                st.markdown(f"**Nodo {nodo}**")
+                st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
                 st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
@@ -511,14 +526,15 @@ elif seccion_activa == "Resultados":
             
             st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
             
+
             st.markdown("""
-            | Nivel (dB)     | Ejemplo                               | Efecto sobre la salud                                  |
+            | Nivel (dB)     | Ejemplo                            | Efecto sobre la salud                                  |
             |----------------|-------------------------------------|--------------------------------------------------------|
             | 0–30 dB        | Biblioteca, susurros                | Sin riesgo                                             |
             | 30–60 dB       | Conversación normal                 | Sin riesgo                                             |
-            | 60–85 dB       | Tráfico denso, aspiradora           | Riesgo leve si exposición prolongada                   |
-            | 85–100 dB      | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h)    |
-            | 100–120 dB     | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                       |
+            | 60–85 dB       | Tráfico denso, aspiradora          | Riesgo leve si exposición prolongada                   |
+            | 85–100 dB  | Moto, concierto                     | Puede causar daño si hay exposición prolongada (>8h) |
+            | 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos                  |
             """)
             st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
         
@@ -534,7 +550,7 @@ elif seccion_activa == "Resultados":
                     return "85–100 dB: Riesgo moderado"
                 else:
                     return "100–120+ dB: Peligroso"
-            
+        
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
             
             horas_disponibles = sorted(df_filtrado["hora"].unique())
@@ -559,21 +575,18 @@ elif seccion_activa == "Resultados":
                     "100–120+ dB: Peligroso": "#ff4d4d"
                 }
                 
-                # Crear gráfico de pastel 
+                # Crear gráfico de pastel
                 fig, ax = plt.subplots()
-                # Filtrar colores para solo aquellos presentes en el conteo
-                pie_colors = [colores.get(cat, "#cccccc") for cat in conteo.index]
-
                 ax.pie(
                     conteo,
                     labels=conteo.index,
                     autopct="%1.1f%%",
                     startangle=90,
-                    colors=pie_colors
+                    colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
                 )
                 ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
                 st.pyplot(fig)
             else:
-                st.warning("No hay datos en el rango de horas seleccionado para mostrar la distribución por riesgo.")
+                 st.warning("No hay datos en el rango de horas seleccionado para mostrar la distribución por riesgo.")
     else:
         st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
