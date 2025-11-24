@@ -3,12 +3,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
-import altair as alt # Necesario para el gráfico de análisis por hora
-import plotly.express as px # Necesario para el gráfico de Distribución Lineal
 from scipy.interpolate import griddata
-import traceback
 
-# --- CONFIGURACIÓN DE PÁGINA ---
+
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
 # --- ESTILO PERSONALIZADO ---
@@ -64,6 +61,7 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
+    # Asegúrate de que tienes esta imagen en el mismo directorio de tu app o cámbiala por un placeholder
     st.image("UAMAZC.jpg", use_container_width=True)
 
 # --- MENÚ DE NAVEGACIÓN ---
@@ -87,132 +85,13 @@ with col4:
 seccion_activa = st.session_state.seccion
 st.markdown('<p class="subheader">Aplicación de análisis acústico para investigación técnica</p>', unsafe_allow_html=True)
 
-# ---------------------------------------------------------------------
-# BLOQUE GLOBAL: CARGA DE DATOS Y BARRA LATERAL 
-# ---------------------------------------------------------------------
-
-# 💡 INICIALIZACIÓN GLOBAL: df y df_filtrado siempre existen para evitar NameError
-df_filtrado = pd.DataFrame() 
-df = pd.DataFrame()
-sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTQKOrkLvhvYM8wSl5TUCDSB-RioUR28159Cb0qqJzEoTOEJCoQC_xuy8-vdW_Yw/pub?output=csv"
-
-# --- 1. FUNCIÓN DE CARGA DE DATOS ---
-@st.cache_data(ttl=600)
-def load_data(url):
-    try:
-        # Tu lógica para leer y limpiar el CSV
-        df_raw = pd.read_csv(url, header=None, on_bad_lines='skip')
-        required_cols = [4, 5, 8]
-        if not all(col in df_raw.columns for col in required_cols):
-            df_raw = pd.read_csv(url, header=None, on_bad_lines='skip', skiprows=6)
-            if not all(col in df_raw.columns for col in [0, 1, 4]):
-                return pd.DataFrame()
-            df = df_raw.rename(columns={
-                0: '_time', 1: '_value', 4: 'nodo'
-            })[['_time', '_value', 'nodo']]
-        else:
-            df = df_raw.rename(columns={
-                4: '_time', 5: '_value', 8: 'nodo'
-            })[['_time', '_value', 'nodo']]
-        
-        df = df.dropna(subset=['_time', '_value', 'nodo'], how='any')
-        df['_time'] = pd.to_datetime(df['_time'], utc=True, errors='coerce')
-        df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
-        df['nodo'] = df['nodo'].astype(str)
-        df = df.dropna(subset=['_time', '_value'])
-        return df
-    except Exception as e:
-        # st.error(f"Error en load_data: {e}") # Descomentar para depuración
-        return pd.DataFrame()
-
-df = load_data(sheet_url)
-
-# -------------------------------------------------------------
-# 🟢 DEFINICIÓN DE LA FUNCIÓN DE POSICIÓN LINEAL (SOLUCIÓN DEL ERROR)
-# -------------------------------------------------------------
-def asignar_posicion_lineal(df):
-    """
-    Asigna una posición numérica (Posicion_X) a cada nodo basada en su ID, 
-    asumiendo que están colocados linealmente del 1 al 39.
-    """
-    if df.empty:
-        return df
-        
-    try:
-        # Extraer solo dígitos del 'nodo' y convertir a entero (ej: 'nodo 1' -> 1)
-        df['Posicion_X'] = df['nodo'].astype(str).str.replace(r'[^\d]', '', regex=True).astype(int)
-    except Exception as e:
-        # Fallback si los IDs no son numéricos
-        st.error(f"Error al asignar Posicion_X. Asegúrate que los IDs de nodo sean números. Error: {e}")
-        df['Posicion_X'] = 0
-        
-    return df
-# -------------------------------------------------------------
-
-# --- 2. BARRA LATERAL CON FILTROS ---
-if not df.empty:
-    with st.sidebar:
-        st.header("Parámetros de entrada")
-        
-        # Manejo de fechas mínimas/máximas con seguridad
-        tiempo_min = df['_time'].min().normalize()
-        tiempo_max = df['_time'].max().normalize()
-        
-        if pd.isna(tiempo_min) or pd.isna(tiempo_max):
-             st.warning("No se pudieron determinar las fechas mínima y máxima de los datos.")
-             # Usar fecha actual como fallback si los datos están vacíos o corruptos
-             tiempo_min = pd.Timestamp.now().normalize()
-             tiempo_max = pd.Timestamp.now().normalize()
-        
-        fecha = st.date_input(
-            "Fecha",
-            value=tiempo_min.date(),
-            min_value=tiempo_min.date(),
-            max_value=tiempo_max.date()
-        )
-        # Filtros de HORA
-        hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-        hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
-
-        nodos_disponibles = sorted(df["nodo"].unique())
-        nodos_seleccionados = st.multiselect(
-            "Selecciona los nodos:",
-            options=nodos_disponibles,
-            default=nodos_disponibles
-        )
-
-        # 🔹 Filtrado por fecha, hora y nodo
-        fecha_inicio_ts = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
-        fecha_fin_ts = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
-
-        df_filtrado = df[
-            (df['_time'] >= fecha_inicio_ts) &
-            (df['_time'] <= fecha_fin_ts) &
-            (df['nodo'].isin(nodos_seleccionados))
-        ].copy() 
-        
-        # Verificación del filtro (Ayuda a diagnosticar el problema de los 20 nodos)
-        nodos_en_filtro = df_filtrado["nodo"].nunique()
-        st.write(f"📈 **{len(df_filtrado)}** registros después del filtrado.")
-        st.info(f"Nodos únicos en el filtro: **{nodos_en_filtro}**.")
-
-else:
-    # Si la carga inicial falla, la barra lateral se muestra con una advertencia
-    with st.sidebar:
-        st.error("⚠️ No se pudieron cargar los datos iniciales desde Google Sheets. Verifique el enlace.")
-        
-# ---------------------------------------------------------------------
-# FIN DEL BLOQUE GLOBAL
-# ---------------------------------------------------------------------
-
-
 # --- SECCIONES ---
 if seccion_activa == "Introducción":
     st.markdown("### Introducción")
     st.markdown("""
     <div style='text-align: justify;'>
-    El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
-    El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
+     El presente proyecto tiene como objetivo investigar cómo afecta el ruido ambiental en una zona específica de la universidad mediante la instalación y uso de sonómetros para medir los niveles sonoros.
+     El ruido es un factor ambiental que puede influir negativamente en la calidad de vida, el rendimiento académico y la salud de estudiantes y personal universitario...
     </div>
     """, unsafe_allow_html=True)
 
@@ -262,7 +141,7 @@ if seccion_activa == "Introducción":
     problemas circulatorios, presión arterial alta y alteraciones digestivas.
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("""
     <div style='text-align: justify;'><br>
     Las siguientes leyes se deben cumplir y seguir para los ciudadanos:
@@ -297,7 +176,7 @@ if seccion_activa == "Introducción":
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         st.image("Niveles_de_ruido.jpg", use_container_width=True)
-
+    
     st.markdown("### 1.1 Principio de funcionamiento")
     st.markdown("""
     <div style='text-align: justify;'>
@@ -346,7 +225,7 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     La construcción de un sonómetro es un proceso complejo que involucra varias partes, tanto electrónicas como mecánicas, que trabajan juntas para medir el sonido de manera precisa.
     A continuación, se explican en detalle los elementos que componen un sonómetro:
-    
+     
     - **Micrófono:** se encarga de captar las ondas sonoras del ambiente y convertirlas en una señal eléctrica.
     - **Amplificador:** La señal eléctrica generada por el micrófono es extremadamente débil, por lo que debe ser amplificada para que sea procesada correctamente. Este proceso lo lleva a cabo el pre-amplificador, que amplifica la señal de manera lineal sin distorsionarla.
     - **Filtros de frecuencia:** simula la percepción del oído humano o adaptarse a diferentes tipos de medición.
@@ -355,7 +234,7 @@ elif seccion_activa == "Desarrollo":
     - **Controladores y botones:** tiene una serie de botones o controles para que el usuario ajuste las opciones según sus necesidades.
     - **Fuente de alimentación:** funcionan con baterías recargables o pilas de 9V. Algunos modelos más grandes pueden tener una fuente de alimentación externa. La duración de la batería es crucial para la portabilidad del sonómetro, especialmente en mediciones de campo.
 
-    Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
+     Lo siguiente es mostrar un manual para construir un sonómetro y su diseño.
     </div>
     """, unsafe_allow_html=True)
     
@@ -368,12 +247,12 @@ elif seccion_activa == "Desarrollo":
     st.markdown("### 3.2 Construcción del sonómetro")
     st.markdown("### 3.2.1 Materiales necesarios")
     st.markdown("""
-            | Componente      | Descripción                                     |
+            | Componente     | Descripción                            
             |----------------|-------------------------------------|
-            | ESP32 T3 V1.6.1 | Microcontrolador                    | 
-            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica      | 
-            | Pantalla OLED  | Muestra el nivel de decibeles en tiempo real    | 
-            | Jumpers hembra-hembra/ macho-hembra | Para las conexiones entre módulos                       | 
+            | ESP32 T3 V1.6.1        | Microcontrolador                | 
+            | Sensor de sonido (micrófono)      | Detecta presión sonora para convertirla a señal analógica                 | 
+            | Pantalla OLED       | Muestra el nivel de decibeles en tiempo real          | 
+            | Jumpers hembra-hembra/ macho-hembra  | Para las conexiones entre módulos                     | 
             | Pulsador (botón de control) | Encendido, reinicio o cambio de modo |
             | Caja impresa en 3D | Para encapsular el dispositivo |
             | Fuente de alimentación (batería o alimentación USB) | Para darle energía al ESP32 | 
@@ -383,20 +262,20 @@ elif seccion_activa == "Desarrollo":
     <div style='text-align: justify;'>
     
     1. **Conexión del sensor de sonido**
-        | Sensor     | ESP32 T3 V1.6.1                                 |
+        | Sensor     | ESP32 T3 V1.6.1                            
         |----------------|-------------------------------------|
-        | VCC      | 3.3V                | 
+        | VCC        | 3.3V                | 
         | GND      | GND                 | 
-        | A0 (salida analógica)        | GPIO 34 (u otro pin analógico)      |
+        | A0 (salida analógica)       | GPIO 34 (u otro pin analógico)          |
         
     2. **Conexión de la pantalla OLED**
-        | OLED SSD1306     | ESP32 T3 V1.6.1                                 |
+        | OLED SSD1306     | ESP32 T3 V1.6.1                            
         |----------------|-------------------------------------|
-        | VCC      | 3.3V                | 
+        | VCC        | 3.3V                | 
         | GND      | GND                 | 
-        | SDA     | GPIO 21           |
-        | SCL     | GPIO 22           |
-        
+        | SDA       | GPIO 21          |
+        | SCL       | GPIO 22          |
+    
     3. **Botón de control**
     - Conectar un botón entre un pin digital y GND. Actúa como encendido o reinicio de mediciones
     
@@ -408,21 +287,74 @@ elif seccion_activa == "Desarrollo":
     - Dejar espacio para los conectores, pantalla visible y ventilación del micrófono
     - Cerrar el circuito y conectar la alimentación
     </div>
-    """, unsafe_allow_html=True)
+     """, unsafe_allow_html=True)
     
-    
-
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
-    
+
+    # --- Sidebar ---
+    with st.sidebar:
+        st.header("Parámetros de entrada")
+
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import seaborn as sb
+    from scipy.interpolate import griddata
+
+    @st.cache_data
+    def load_data():
+        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/edit?usp=sharing"
+        csv_url = sheet_url.replace("/edit?usp=sharing", "/export?format=csv")
+        df = pd.read_csv(csv_url)
+        return df
+
+    df = load_data()
+    st.success(f"✅ Datos cargados exitosamente. Se detectaron {df['nodo'].nunique()} nodos.")
+
+    # --- Limpieza de datos ---
+    df["_value"] = pd.to_numeric(df["_value"], errors="coerce")
+    df = df.dropna(subset=["_value"])
+    df["nodo"] = df["nodo"].astype(str).str.strip()
+    df["_time"] = pd.to_datetime(df["_time"], utc=True, errors='coerce')
+
+    if df["_time"].isna().all():
+        st.error("No se pudieron interpretar las fechas.")
+        df_filtrado = pd.DataFrame()
+    else:
+        tiempo_min = df['_time'].min()
+        tiempo_max = df['_time'].max()
+
+        # --- Parámetros de filtrado ---
+        fecha = st.date_input("Fecha", value=tiempo_min.date(), min_value=tiempo_min.date(), max_value=tiempo_max.date())
+        hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+        hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+
+        nodos_disponibles = sorted(df["nodo"].unique(), key=lambda x: int(x))
+        nodos_seleccionados = st.multiselect(
+            "Selecciona los nodos:",
+            options=nodos_disponibles,
+            default=nodos_disponibles
+        )
+
+        fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('UTC')
+        fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('UTC')
+
+        df_filtrado = df[
+            (df['_time'] >= fecha_inicio) &
+            (df['_time'] <= fecha_fin) &
+            (df['nodo'].isin(nodos_seleccionados))
+        ]
+
     if not df_filtrado.empty:
-        # ⚠️ PASO CRUCIAL: Asignar la posición lineal a cada nodo
-        df_filtrado = asignar_posicion_lineal(df_filtrado)
-        
-        # --- 1. PREPARACIÓN DE DATOS ---
-        
-        # 1.1 Función de clasificación de riesgo
+        df_filtrado = df_filtrado.copy()
+
+        # --- Clasificación de riesgo ---
         def clasificar_riesgo(db):
+            try:
+                db = float(db)
+            except:
+                return "Desconocido"
             if db < 85:
                 return "Seguro"
             elif db < 100:
@@ -431,77 +363,117 @@ elif seccion_activa == "Resultados":
                 return "Peligroso"
 
         df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
-        
-        # 1.2 Agregamos la columna 'hora' para análisis
-        df_filtrado["hora"] = df_filtrado["_time"].dt.hour 
+        df_filtrado["hora"] = df_filtrado["_time"].dt.hour
 
-        # --- 2. DEFINICIÓN DE PESTAÑAS (TABS) ---
+        # --- Pestañas de visualización ---
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "📊 Distribución Lineal",  # Nombre cambiado
-            "📈 Análisis Temporal (Nodos)", 
-            "📈 Análisis Temporal (Horas)",
-            "📊 Histograma de Amplitudes", 
-            "📋 Descripción de Datos"
+            "📊 Mapa de Sonido", 
+            "📈 Gráficos por nodo", 
+            "🧩 Comparación general", 
+            "📊 Análisis estadístico",
+            "🧨 Riesgo por hora"
         ])
 
-        # --- 3. CONTENIDO DE LAS PESTAÑAS ---
-
+        # --- TAB 1: Mapa de sonido ---
         with tab1:
-            st.markdown("#### Nivel de sonido promedio a lo largo de la pared")
-            
-            # Agrupamos los datos para obtener el promedio por posición
-            df_lineal = df_filtrado.groupby('Posicion_X')['_value'].mean().reset_index()
-            df_lineal.rename(columns={'_value': 'Nivel Promedio (dB)'}, inplace=True)
-            
-            # Creamos un gráfico de dispersión simple para la distribución lineal
-            # El color y tamaño varían según el nivel de ruido, mostrando el "calor" lineal.
-            fig = px.scatter(
-                df_lineal,
-                x='Posicion_X',
-                y='Nivel Promedio (dB)',
-                size='Nivel Promedio (dB)', 
-                color='Nivel Promedio (dB)', 
-                color_continuous_scale=px.colors.sequential.Inferno,
-                labels={
-                    "Posicion_X": "Posición del Sensor (1 = inicio, 39 = final)",
-                    "Nivel Promedio (dB)": "Nivel Promedio (dB)"
-                },
-                title="Distribución del Nivel de Sonido a lo Largo de la Pared"
+            st.markdown("### Mapa de niveles de sonido")
+        
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                palette = st.selectbox(
+                    "Seleccione la paleta de colores:",
+                    options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
+                    index=0,
+                    key="palette_selector"
+                )
+        
+            # --- Estructurar datos ---
+            df_filtrado["_minuto"] = df_filtrado["_time"].dt.floor("min")
+            pivot = df_filtrado.pivot_table(
+                index="_minuto", columns="nodo", values="_value", aggfunc="mean"
+            ).sort_index()
+        
+            # --- Asegurar que todos los nodos aparezcan ---
+            todos_nodos = sorted(df["nodo"].astype(int).unique())
+            pivot = pivot.reindex(columns=todos_nodos)
+        
+            # --- Convertir a matriz ---
+            data_matrix = pivot.to_numpy()
+        
+            # --- Generar gráfico ---
+            fig, ax = plt.subplots(figsize=(12, 6))
+            sb.heatmap(
+                data_matrix.T,
+                cmap=palette,
+                cbar_kws={'label': 'Nivel de sonido (dB)'},
+                xticklabels=False,
+                yticklabels=todos_nodos,
+                ax=ax
             )
-            
-            # Ajuste de ejes para claridad
-            fig.update_xaxes(tick0=1, dtick=1)
-            st.plotly_chart(fig, use_container_width=True)
+        
+            ax.set_xlabel("Tiempo (minutos)")
+            ax.set_ylabel("Nodos")
+            ax.set_title("Mapa de niveles de sonido (todos los nodos detectados)")
+            st.pyplot(fig)
 
 
+        # --- TAB 2: Evolución temporal por nodo ---
         with tab2:
-            st.markdown("#### Evolución temporal del sonido por nodo")
-            # 💡 Puedes agregar aquí un gráfico de línea (ej: Plotly o Altair) mostrando _value vs _time, coloreado por 'nodo'
-            st.warning("⚠️ Aquí va tu código del gráfico de nodos vs tiempo usando `df_filtrado`")
+            st.markdown("### Evolución temporal por nodo")
+            for nodo in sorted(df_filtrado["nodo"].unique(), key=lambda x: int(x)):
+                st.subheader(f"Nodo {nodo}")
+                datos_nodo = df_filtrado[df_filtrado["nodo"] == nodo]
+                st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
+        # --- TAB 3: Comparación general ---
         with tab3:
-            st.markdown("#### Niveles de sonido promedio por hora del día")
-            
-            df_hora = df_filtrado.groupby("hora")["_value"].mean().reset_index()
-            df_hora.columns = ["Hora del Día", "Nivel Promedio (dB)"]
-            
-            chart_hora = alt.Chart(df_hora).mark_line(point=True).encode(
-                x=alt.X("Hora del Día", bin=True, title="Hora del Día"),
-                y=alt.Y("Nivel Promedio (dB)", title="Nivel Promedio (dB)"),
-                tooltip=["Hora del Día", "Nivel Promedio (dB)"]
-            ).properties(
-                title="Nivel de Sonido Promedio por Hora"
-            )
-            st.altair_chart(chart_hora, use_container_width=True)
+            st.markdown("### Comparación general de nodos")
+            df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
+            st.line_chart(df_pivot, height=300, use_container_width=True)
 
+        # --- TAB 4: Análisis estadístico ---
         with tab4:
-            st.markdown("#### Distribución de Amplitudes")
-            # 💡 Puedes agregar aquí un histograma simple (ej: Plotly o Matplotlib) de la columna '_value'
-            st.warning("⚠️ Aquí va tu código del histograma usando `df_filtrado`")
+            st.markdown("### Análisis estadístico por nodo")
+            resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
+                Minimo="min",
+                Maximo="max",
+                Media="mean",
+                Mediana="median",
+                Conteo="count"
+            ).round(2)
+            st.dataframe(resumen_estadistico, use_container_width=True)
+            st.markdown("#### Gráfico de valores máximos por nodo")
+            st.bar_chart(resumen_estadistico["Maximo"])
 
+        # --- TAB 5: Riesgo por hora ---
         with tab5:
-            st.markdown("#### Resumen Estadístico de los Datos Filtrados")
-            st.dataframe(df_filtrado.describe())
-            
+            st.markdown("### Distribución de niveles de sonido por hora")
+            horas_disponibles = sorted(df_filtrado["hora"].unique())
+            hora_seleccionada = st.selectbox(
+                "Selecciona la hora a visualizar:",
+                options=horas_disponibles,
+                index=0
+            )
+            df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
+            conteo = df_hora["riesgo"].value_counts().sort_index()
+
+            colores = {
+                "Seguro": "#b3d9ff",
+                "Riesgo moderado": "#ff9966",
+                "Peligroso": "#ff4d4d",
+                "Desconocido": "#cccccc"
+            }
+
+            fig, ax = plt.subplots()
+            ax.pie(
+                conteo,
+                labels=conteo.index,
+                autopct="%1.1f%%",
+                startangle=90,
+                colors=[colores.get(cat, "#cccccc") for cat in conteo.index]
+            )
+            ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por riesgo")
+            st.pyplot(fig)
+
     else:
-        st.error("No hay datos para los parámetros seleccionados. Por favor, ajusta la **Fecha** o el **rango de Horas** en la barra lateral izquierda.")
+        st.warning("No hay datos para los parámetros seleccionados.")
