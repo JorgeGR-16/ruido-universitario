@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sb
 from scipy.interpolate import griddata
-import os # Importar os para manejo de rutas de archivos
+import os
 
 st.set_page_config(page_title="Visualización de Niveles de Sonido", layout="wide")
 
@@ -64,10 +64,11 @@ with col2:
 # --- IMAGEN PRINCIPAL ---
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
+    # Usar try-except para manejar archivos de imagen que podrían faltar
     try:
         st.image("UAMAZC.jpg", use_container_width=True)
     except FileNotFoundError:
-        st.warning("Archivo UAMAZC.jpg no encontrado. Asegúrate de que esté en el directorio correcto.")
+        st.warning("Archivo UAMAZC.jpg no encontrado.")
         
 # --- MENÚ DE NAVEGACIÓN ---
 if "seccion" not in st.session_state:
@@ -265,18 +266,30 @@ elif seccion_activa == "Desarrollo":
 elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
-    # Ruta fija al archivo CSV
-    uploaded_file = "40nodos.csv"
-
+    # --- INICIO MODIFICACIÓN PARA GOOGLE DRIVE/SHEETS ---
+    # ID del Google Sheet extraído del enlace: 
+    # https://docs.google.com/spreadsheets/d/1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha/edit
+    SHEET_ID = "1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha"
+    
+    # GID = 0 representa la primera hoja/pestaña del archivo. 
+    # Si la data está en otra pestaña, cambia este número.
+    GID = 0 
+    
+    # URL de exportación directa a CSV. Asegúrate de que el archivo esté compartido públicamente.
+    data_source = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv&gid={GID}"
+    # --- FIN MODIFICACIÓN PARA GOOGLE DRIVE/SHEETS ---
+    
     # Inicializar df_filtrado como DataFrame vacío para el scope general
     df_filtrado = pd.DataFrame()
 
-    try:
-        # Verificar si el archivo existe
-        if not os.path.exists(uploaded_file):
-            st.error(f"El archivo de datos '{uploaded_file}' no fue encontrado.")
-        else:
-            df = pd.read_csv(uploaded_file, skiprows=3)
+    with st.sidebar:
+        st.header("Parámetros de entrada")
+        
+        try:
+            # Leer directamente desde la URL de Google Sheets
+            # El parámetro skiprows=3 se mantiene para coincidir con la estructura de la data original
+            df = pd.read_csv(data_source, skiprows=3)
+            
             columnas_requeridas = ['_time', 'nodo', '_value']
             
             if not all(col in df.columns for col in columnas_requeridas):
@@ -288,48 +301,41 @@ elif seccion_activa == "Resultados":
                 if df['_time'].isna().all():
                     st.error("No se pudieron interpretar las fechas en la columna '_time'.")
                 else:
-                    # --- SIDEBAR DE FILTROS ---
-                    with st.sidebar:
-                        st.header("Parámetros de entrada")
-                        tiempo_min = df['_time'].min().tz_convert('America/Mexico_City') # Convertir a zona horaria local si es necesario para el UI
-                        tiempo_max = df['_time'].max().tz_convert('America/Mexico_City')
+                    tiempo_min = df['_time'].min().tz_convert('UTC') # Asegurar UTC para la lógica
+                    tiempo_max = df['_time'].max().tz_convert('UTC')
 
-                        # Manejo de la fecha
-                        fecha_default = tiempo_min.date()
-                        fecha = st.date_input("Fecha", value=fecha_default, min_value=tiempo_min.date(), max_value=tiempo_max.date())
+                    # Manejo de la fecha
+                    fecha_default = tiempo_min.date()
+                    fecha = st.date_input("Fecha", value=fecha_default, min_value=tiempo_min.date(), max_value=tiempo_max.date())
 
-                        # Manejo de horas
-                        hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
-                        hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
+                    # Manejo de horas
+                    hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
+                    hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
-                        # Manejo de nodos
-                        nodos_disponibles = sorted(df["nodo"].astype(str).unique())
-                        nodos_seleccionados = st.multiselect(
-                            "Selecciona los nodos:",
-                            options=nodos_disponibles,
-                            default=nodos_disponibles
-                        )
+                    # Manejo de nodos
+                    nodos_disponibles = sorted(df["nodo"].astype(str).unique())
+                    nodos_seleccionados = st.multiselect(
+                        "Selecciona los nodos:",
+                        options=nodos_disponibles,
+                        default=nodos_disponibles
+                    )
+                    
+                    # Filtrado final
+                    fecha_inicio_str = f"{fecha} {hora_inicio}"
+                    fecha_fin_str = f"{fecha} {hora_fin}"
+                    
+                    fecha_inicio = pd.to_datetime(fecha_inicio_str).tz_localize('UTC')
+                    fecha_fin = pd.to_datetime(fecha_fin_str).tz_localize('UTC')
+                    
+                    df_filtrado = df[
+                        (df['_time'] >= fecha_inicio) & 
+                        (df['_time'] <= fecha_fin) & 
+                        (df['nodo'].astype(str).isin(nodos_seleccionados))
+                    ].copy() # Usar .copy() para evitar SettingWithCopyWarning
                         
-                        # Reconstruir las fechas con la zona horaria UTC (como está el DF)
-                        fecha_inicio_str = f"{fecha} {hora_inicio}"
-                        fecha_fin_str = f"{fecha} {hora_fin}"
-                        
-                        # Usamos .tz_localize(None) para manejar el caso de que la columna _time no tenga tz (aunque arriba usamos utc=True)
-                        # Pero el código original usaba .tz_localize('UTC')
-                        fecha_inicio = pd.to_datetime(fecha_inicio_str).tz_localize('UTC')
-                        fecha_fin = pd.to_datetime(fecha_fin_str).tz_localize('UTC')
-                        
-                        # Filtrado final
-                        df_filtrado = df[
-                            (df['_time'] >= fecha_inicio) & 
-                            (df['_time'] <= fecha_fin) & 
-                            (df['nodo'].astype(str).isin(nodos_seleccionados))
-                        ].copy() # Usar .copy() para evitar SettingWithCopyWarning
-                        
-                    # --- FIN SIDEBAR ---
-
-    except Exception as e:
-        st.error(f"Error al cargar o procesar el archivo: {e}")
+        except Exception as e:
+            st.error(f"Error al cargar o procesar el archivo: {e}")
+            st.info(f"Asegúrate de que la hoja de Google esté compartida públicamente y que la estructura de columnas sea correcta (Error detallado: {e}).")
 
     
     if not df_filtrado.empty:
@@ -375,7 +381,6 @@ elif seccion_activa == "Resultados":
                 )
 
             # --- Procesamiento de datos para el Mapa de Calor ---
-            # Asegurar que 'nodo' es numérico para el eje X
             try:
                 X = df_filtrado['nodo'].astype(float).values 
             except ValueError:
@@ -393,17 +398,16 @@ elif seccion_activa == "Resultados":
             if len(x_unique) > 1 and len(y_unique) > 1:
                 X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                 
-                # Interpolación con griddata (puede ser lento con muchos puntos)
+                # Interpolación
                 Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
                 
-                # Rellenar NaNs con el valor mínimo para visualización (o promedio, o 0, depende de la interpretación)
+                # Rellenar NaNs con el valor mínimo
                 Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(np.nanmin(Z_grid)) else 0)
 
                 # Configuración del gráfico
                 fig, ax = plt.subplots(figsize=(10, 6))
                 
                 # Calcular yticks para mostrar las horas
-                # Selecciona 10 puntos espaciados uniformemente
                 yticks_indices = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
                 yticks_values = y_unique[yticks_indices]
                 yticklabels = [pd.to_datetime(t, unit='s').strftime('%H:%M') for t in yticks_values]
@@ -411,15 +415,14 @@ elif seccion_activa == "Resultados":
                 # Heatmap con paleta seleccionada
                 sb.heatmap(
                     Z_grid,
-                    cmap=palette, # Usando la paleta seleccionada
+                    cmap=palette, 
                     xticklabels=x_unique,
-                    yticklabels=False, # Ocultar etiquetas por defecto y poner las calculadas
+                    yticklabels=False,
                     ax=ax
                 )
                 
                 ax.invert_yaxis()
-                # Establecer las etiquetas y ticks de hora basados en la posición en la matriz Z_grid
-                ax.set_yticks(yticks_indices + 0.5) # +0.5 para centrar entre los bordes
+                ax.set_yticks(yticks_indices + 0.5) 
                 ax.set_yticklabels(yticklabels, rotation=0)
                 
                 ax.set_xlabel("Nodos")
@@ -445,7 +448,6 @@ elif seccion_activa == "Resultados":
                 datos_nodo = df_filtrado[df_filtrado["nodo"].astype(str) == nodo]
                 
                 if not datos_nodo.empty:
-                    # Se usa .set_index("_time") para que Streamlit use el tiempo como eje X
                     st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
                 else:
                     st.info(f"No hay datos para el Nodo {nodo} en el rango de tiempo seleccionado.")
@@ -456,10 +458,7 @@ elif seccion_activa == "Resultados":
             """)
             st.markdown("### Comparación general de nodos en un solo gráfico")
             
-            # Pivotear la tabla: índice = _time, columnas = nodo, valores = _value
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
-            
-            # Asegurarse de que las columnas (nodos) tengan un nombre de columna para el gráfico
             df_pivot.columns = df_pivot.columns.astype(str) 
             
             st.line_chart(df_pivot, height=300, use_container_width=True)
@@ -479,7 +478,6 @@ elif seccion_activa == "Resultados":
 
             st.markdown("### Gráfico de valores máximos por nodo")
             
-            # Asegurar que el índice (nodo) es adecuado para el gráfico
             resumen_estadistico.index = resumen_estadistico.index.astype(str)
             
             st.bar_chart(resumen_estadistico["Maximo"])
@@ -569,4 +567,4 @@ elif seccion_activa == "Resultados":
             
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados o el archivo no se cargó correctamente.")
+        st.warning("No hay datos para los parámetros seleccionados o la base de datos de Google Sheets no se cargó correctamente.")
