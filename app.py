@@ -379,62 +379,84 @@ elif seccion_activa == "Resultados":
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
             st.markdown("""
-            Este mapa de calor ahora muestra los **Nodos en el eje X** y el **Tiempo (Minutos)** en el eje Y.
+            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
+            * **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
+            * **Eje vertical:** representa la hora del día (formato HH:MM).
+            * **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
+            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
             """)
-        
+            
+            # Selector de paleta de colores encima del mapa
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
                     "Seleccione la paleta de colores:",
                     options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
                     index=0,
-                    key="palette_selector_tab1_corrected"
+                    key="palette_selector"
                 )
-        
-            # --- Estructurar datos (Agregación por minuto) ---
-            df_filtrado["_minuto"] = df_filtrado["_time"].dt.floor("min")
+
+            # --- Procesamiento de datos para el Mapa de Calor ---
+            # Asegurar que 'nodo' es numérico para el eje X
+            try:
+                X = df_filtrado['nodo'].astype(float).values 
+            except ValueError:
+                st.warning("La columna 'nodo' no se pudo convertir a valores numéricos. Usando índices en su lugar.")
+                X = df_filtrado['nodo'].astype('category').cat.codes.values + 1
             
-            # Pivotar: Índice = Tiempo (_minuto), Columnas = Nodos, Valores = Nivel de sonido
-            pivot = df_filtrado.pivot_table(
-                index="_minuto", columns="nodo", values="_value", aggfunc="mean"
-            ).sort_index()
-        
-            # Rellenar con NaN si falta algún nodo para que la matriz sea consistente
-            todos_nodos = sorted(df["nodo"].astype(str).unique(), key=lambda x: int(x) if x.isdigit() else x)
-            pivot = pivot.reindex(columns=todos_nodos)
-        
-            # --- Convertir a matriz ---
-            # El pivot ya tiene los Nodos en las COLUMNAS (Eje X del gráfico si no se transpone)
-            # y el Tiempo en el ÍNDICE (Eje Y del gráfico si no se transpone).
-            # ¡Necesitas transponer para que Nodos sean X y Tiempo sea Y!
-            # Para que NODOS (columnas) queden en el eje X y TIEMPO (índice) quede en el eje Y,
-            # DEBES USAR LA MATRIZ SIN TRANSPONER.
-            # *Nota*: En el código anterior usabas data_matrix.T, lo cual invertía los ejes.
-            data_matrix = pivot.to_numpy()
-        
-            # --- Generar gráfico ---
-            fig, ax = plt.subplots(figsize=(12, 6))
+            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+            Z = df_filtrado['_value'].astype(float).values
 
-            # Usamos la matriz sin transponer (data_matrix) para que el tiempo (índice)
-            # se mapee al eje Y y los nodos (columnas) al eje X.
-            sb.heatmap(
-                data_matrix,  # Usamos la matriz SIN transponer
-                cmap=palette,
-                cbar_kws={'label': 'Nivel de sonido promedio (dB)'},
+            # Preparar la rejilla de interpolación
+            x_unique = np.unique(X)
+            y_unique = np.unique(tiempos_segundos)
+            
+            if len(x_unique) > 1 and len(y_unique) > 1:
+                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
                 
-                # Etiquetas del eje X (Nodos)
-                xticklabels=pivot.columns.tolist(),
-                # Etiquetas del eje Y (Tiempo). Solo etiquetamos cada 10 minutos para que sea legible.
-                yticklabels=[idx.strftime('%H:%M') if i % 10 == 0 else '' for i, idx in enumerate(pivot.index)],
+                # Interpolación con griddata (puede ser lento con muchos puntos)
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
                 
-                ax=ax
-            )
-        
-            ax.set_xlabel("Nodos")
-            ax.set_ylabel("Tiempo (minutos de medición)")
-            ax.set_title("Mapa de niveles de sonido (todos los nodos detectados)")
-            st.pyplot(fig)
+                # Rellenar NaNs con el valor mínimo para visualización (o promedio, o 0, depende de la interpretación)
+                Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(np.nanmin(Z_grid)) else 0)
 
+                # Configuración del gráfico
+                fig, ax = plt.subplots(figsize=(10, 6))
+                
+                # Calcular yticks para mostrar las horas
+                # Selecciona 10 puntos espaciados uniformemente
+                yticks_indices = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+                yticks_values = y_unique[yticks_indices]
+                yticklabels = [pd.to_datetime(t, unit='s').strftime('%H:%M') for t in yticks_values]
+
+                # Heatmap con paleta seleccionada
+                sb.heatmap(
+                    Z_grid,
+                    cmap=palette, # Usando la paleta seleccionada
+                    xticklabels=x_unique,
+                    yticklabels=False, # Ocultar etiquetas por defecto y poner las calculadas
+                    ax=ax
+                )
+                
+                ax.invert_yaxis()
+                # Establecer las etiquetas y ticks de hora basados en la posición en la matriz Z_grid
+                ax.set_yticks(yticks_indices + 0.5) # +0.5 para centrar entre los bordes
+                ax.set_yticklabels(yticklabels, rotation=0)
+                
+                ax.set_xlabel("Nodos")
+                ax.set_ylabel("Hora (HH:MM)")
+
+                # Añadir barra de color con etiqueta
+                cbar = ax.collections[0].colorbar
+                cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
+                
+                st.pyplot(fig)
+            else:
+                 st.warning("Datos insuficientes para generar el mapa de calor. Asegúrate de tener mediciones de al menos dos nodos y dos tiempos distintos.")
+
+
+        
         # --- TAB 2: Evolución temporal por nodo ---
         with tab2:
             st.markdown("### Evolución temporal por nodo")
@@ -495,4 +517,5 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
