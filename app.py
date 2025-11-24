@@ -395,7 +395,23 @@ elif seccion_activa == "Resultados":
                     index=0,
                     key="palette_selector"
                 )
+                
+            # --- Normalizar nodos problematicos ---
+            df_filtrado["nodo"] = (
+                df_filtrado["nodo"]
+                .astype(str)
+                .str.replace("Nodo", "", regex=False)
+                .str.replace("nodo", "", regex=False)
+                .str.strip()
+            )
             
+            # Mantener solo nodos que SÍ son numéricos
+            df_filtrado = df_filtrado[df_filtrado["nodo"].str.isnumeric()]
+            
+            # Convertir definitivamente a número entero
+            df_filtrado["nodo"] = df_filtrado["nodo"].astype(int)
+
+
             X = df_filtrado['nodo'].astype(int).values
             fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
             tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
@@ -487,6 +503,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
 
 
 
