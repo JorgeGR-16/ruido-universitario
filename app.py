@@ -292,8 +292,7 @@ elif seccion_activa == "Resultados":
                 df_try = pd.read_csv(uploaded_file, skiprows=3)
                 df_try.columns = clean_cols(df_try.columns)
             
-            # Mostrar columnas detectadas (útil para depuración en la UI)
-            st.write("Columnas detectadas en el CSV:", list(df_try.columns))
+            
 
             # Normalizar nombres: mapear posibles variantes a los nombres que usa la app
             cols_lower = {c.lower().strip().replace('\ufeff',''): c for c in df_try.columns}
@@ -622,5 +621,6 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados o el archivo no se cargó correctamente.")
+
 
 
