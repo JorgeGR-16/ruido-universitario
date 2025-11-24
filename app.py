@@ -301,7 +301,7 @@ elif seccion_activa == "Resultados":
     
         # --- CARGA AUTOMÁTICA DESDE GOOGLE SHEETS ---
         # Asegúrate de que esta URL sea pública y accesible como CSV
-        sheet_url = "https://docs.google.com/spreadsheets/d/1-9FdzIdIz-F7UYuK8DFdBjzPwS9-J3FLV05S_yTaOGE/gviz/tq?tqx=out:csv&sheet=consulta29-30"
+        sheet_url = "https://docs.google.com/spreadsheets/d/1fH5RGHo3_1u8F_SHJTVWP6TDmX8xtsha/edit?usp=sharing&ouid=110966602645817106416&rtpof=true&sd=true"
     
         @st.cache_data(ttl=600) # Almacenar en caché por 10 minutos
         def load_data(url):
@@ -590,3 +590,4 @@ elif seccion_activa == "Resultados":
                  st.warning("No hay datos en el rango de horas seleccionado para mostrar la distribución por riesgo.")
     else:
         st.error("No hay datos para los parámetros seleccionados o la carga inicial falló. Por favor, revisa la conexión y la estructura del Google Sheet.")
+
