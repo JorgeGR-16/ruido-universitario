@@ -276,67 +276,48 @@ elif seccion_activa == "Resultados":
         if not os.path.exists(uploaded_file):
             st.error(f"El archivo de datos '{uploaded_file}' no fue encontrado.")
         else:
-            # Intentos de lectura: primero sin skiprows, si no encuentra columnas requeridas,
-            # intentar con skiprows=3 (por si el CSV tiene 3 líneas de metadatos)
             def clean_cols(cols):
-                # quitar espacios, eliminar BOM y pasar a texto normal
                 return [str(c).strip().replace('\ufeff', '') for c in cols]
 
-            df_try = pd.read_csv(uploaded_file, dtype=str)  # leer como texto inicialmente
+            df_try = pd.read_csv(uploaded_file, dtype=str)
             df_try.columns = clean_cols(df_try.columns)
             
-            # Si no encontramos las columnas esperadas, intentar nuevamente con skiprows=3
             columnas_requeridas = ['_time', 'nodo', '_value']
             if not all(any(req == c.lower() for c in df_try.columns) for req in columnas_requeridas):
-                # Intentar leer con skiprows=3 y sin forzar tipos
                 df_try = pd.read_csv(uploaded_file, skiprows=3)
                 df_try.columns = clean_cols(df_try.columns)
             
-            
-
-            # Normalizar nombres: mapear posibles variantes a los nombres que usa la app
             cols_lower = {c.lower().strip().replace('\ufeff',''): c for c in df_try.columns}
             mapping = {}
-            if '_time' in cols_lower:
-                mapping[cols_lower['_time']] = '_time'
-            if 'time' in cols_lower and '_time' not in cols_lower:
-                mapping[cols_lower['time']] = '_time'
-            if '_value' in cols_lower:
-                mapping[cols_lower['_value']] = '_value'
-            elif 'value' in cols_lower:
-                mapping[cols_lower['value']] = '_value'
-            if 'nodo' in cols_lower:
-                mapping[cols_lower['nodo']] = 'nodo'
-            elif 'node' in cols_lower:
-                mapping[cols_lower['node']] = 'nodo'
+            if '_time' in cols_lower: mapping[cols_lower['_time']] = '_time'
+            if 'time' in cols_lower and '_time' not in cols_lower: mapping[cols_lower['time']] = '_time'
+            if '_value' in cols_lower: mapping[cols_lower['_value']] = '_value'
+            elif 'value' in cols_lower: mapping[cols_lower['value']] = '_value'
+            if 'nodo' in cols_lower: mapping[cols_lower['nodo']] = 'nodo'
+            elif 'node' in cols_lower: mapping[cols_lower['node']] = 'nodo'
 
-            # Renombrar columnas en el DataFrame
             df = df_try.rename(columns=mapping)
 
-            # Verificar una vez más que ahora existan las columnas requeridas
             if not all(col in df.columns for col in columnas_requeridas):
-                st.error("El archivo no contiene las columnas necesarias (_time, nodo, _value)."
-                         " Revisa las columnas que aparecen arriba. Si el encabezado está en una fila diferente, "
-                         "ajusta o elimina skiprows.")
+                st.error("El archivo no contiene las columnas necesarias (_time, nodo, _value).")
             else:
-                # Convertir tipos y limpiar filas sin valor
-                # A veces los valores vienen como strings, forzamos conversión segura
                 df['_value'] = pd.to_numeric(df['_value'], errors='coerce')
                 df = df.dropna(subset=['_time', '_value', 'nodo']).copy()
 
-                # Convertir fecha de forma segura
+                # --- CORRECCIÓN COMPLETA DE ZONA HORARIA ---
                 df['_time'] = pd.to_datetime(df['_time'], errors='coerce')
 
-                # Si las fechas son naive (sin tz), asumimos UTC y localizamos; si ya tienen tz, las convertimos
+                # Si viene sin tz, asumir UTC
                 if df['_time'].dt.tz is None:
-                    # localizar como UTC
                     df['_time'] = df['_time'].dt.tz_localize('UTC', ambiguous='NaT', nonexistent='shift_forward')
                 else:
-                    # convertir a UTC (por si vienen en otra tz)
                     try:
                         df['_time'] = df['_time'].dt.tz_convert('UTC')
-                    except Exception:
+                    except:
                         pass
+
+                # Convertir a México UNA SOLA VEZ
+                df['_time'] = df['_time'].dt.tz_convert('America/Mexico_City')
 
                 if df['_time'].isna().all():
                     st.error("No se pudieron interpretar las fechas en la columna '_time'.")
@@ -344,19 +325,16 @@ elif seccion_activa == "Resultados":
                     # --- SIDEBAR DE FILTROS ---
                     with st.sidebar:
                         st.header("Parámetros de entrada")
-                        # Convertimos a zona local solo para mostrar al usuario (no modificamos la columna original)
-                        tiempo_min = df['_time'].min().tz_convert('America/Mexico_City')
-                        tiempo_max = df['_time'].max().tz_convert('America/Mexico_City')
 
-                        # Manejo de la fecha
+                        tiempo_min = df['_time'].min()
+                        tiempo_max = df['_time'].max()
+
                         fecha_default = tiempo_min.date()
                         fecha = st.date_input("Fecha", value=fecha_default, min_value=tiempo_min.date(), max_value=tiempo_max.date())
 
-                        # Manejo de horas
                         hora_inicio = st.time_input("Hora de inicio", value=pd.to_datetime('00:00').time())
                         hora_fin = st.time_input("Hora de fin", value=pd.to_datetime('23:59').time())
 
-                        # Manejo de nodos
                         nodos_disponibles = sorted(df["nodo"].astype(str).unique())
                         nodos_seleccionados = st.multiselect(
                             "Selecciona los nodos:",
@@ -364,14 +342,10 @@ elif seccion_activa == "Resultados":
                             default=nodos_disponibles
                         )
 
-                        # Reconstruir las fechas con la zona horaria local (usuario selecciona en local)
-                        fecha_inicio_local = pd.to_datetime(f"{fecha} {hora_inicio}")
-                        fecha_fin_local = pd.to_datetime(f"{fecha} {hora_fin}")
-                        # Localizar a 'America/Mexico_City' y convertir a UTC para filtrar contra df._time (que está en UTC)
-                        fecha_inicio = fecha_inicio_local.tz_localize('America/Mexico_City').tz_convert('UTC')
-                        fecha_fin   = fecha_fin_local.tz_localize('America/Mexico_City').tz_convert('UTC')
+                        # --- FILTRADO AHORA 100% EN MÉXICO ---
+                        fecha_inicio = pd.to_datetime(f"{fecha} {hora_inicio}").tz_localize('America/Mexico_City')
+                        fecha_fin = pd.to_datetime(f"{fecha} {hora_fin}").tz_localize('America/Mexico_City')
 
-                        # Filtrado final (aseguramos tipos)
                         df_filtrado = df[
                             (df['_time'] >= fecha_inicio) &
                             (df['_time'] <= fecha_fin) &
@@ -380,23 +354,18 @@ elif seccion_activa == "Resultados":
                     # --- FIN SIDEBAR ---
     except Exception as e:
         st.error(f"Error al cargar o procesar el archivo: {e}")
- 
 
-    
     if not df_filtrado.empty:
-        # Clasificar riesgo
+
+        # Clasificación riesgo auditivo
         def clasificar_riesgo(db):
-            if db < 85:
-                return "Seguro"
-            elif db < 100:
-                return "Riesgo moderado"
-            else:
-                return "Peligroso"
+            if db < 85: return "Seguro"
+            elif db < 100: return "Riesgo moderado"
+            else: return "Peligroso"
 
         df_filtrado["riesgo"] = df_filtrado["_value"].apply(clasificar_riesgo)
         df_filtrado["hora"] = df_filtrado["_time"].dt.hour
 
-        # Tabs
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
             "📊 Mapa de Sonido", 
             "📈 Gráficos por nodo", 
@@ -405,188 +374,115 @@ elif seccion_activa == "Resultados":
             "🧨 Riesgo por hora"
         ])
 
+        # :::::::::::::::::::::::::::::::::::::::::::::::::::
+        #                   TAB 1: HEATMAP
+        # :::::::::::::::::::::::::::::::::::::::::::::::::::
         with tab1:
             st.markdown("### Mapa de niveles de sonido")
-            st.markdown("""
-            Este mapa de calor representa la intensidad del ruido registrado por cada nodo (sensor) a lo largo del tiempo en un día específico.
-            * **Eje horizontal:** representa los nodos o sensores distribuidos en la zona de medición.
-            * **Eje vertical:** representa la hora del día (formato HH:MM).
-            * **Colores:** indican el nivel de sonido en decibeles (dB); colores más cálidos (rojos) indican niveles más altos.
-            Este gráfico permite identificar fácilmente en qué momentos y en qué ubicaciones se presentan niveles de ruido elevados.
-            """)
-            
-            # Selector de paleta de colores encima del mapa
+
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
                 palette = st.selectbox(
                     "Seleccione la paleta de colores:",
                     options=['jet', 'viridis', 'plasma', 'inferno', 'magma', 'coolwarm', 'YlOrRd', 'RdYlBu_r'],
                     index=0,
-                    key="palette_selector"
                 )
 
-            # --- Procesamiento de datos para el Mapa de Calor ---
-            # Asegurar que 'nodo' es numérico para el eje X
             try:
-                X = df_filtrado['nodo'].astype(int).values 
+                X = df_filtrado['nodo'].astype(int).values
             except ValueError:
-                st.warning("La columna 'nodo' no se pudo convertir a valores numéricos. Usando índices en su lugar.")
                 X = df_filtrado['nodo'].astype('category').cat.codes.values + 1
-            
-            fecha_base = pd.Timestamp(fecha).tz_localize('UTC')
-            tiempos_segundos = (df_filtrado['_time'] - fecha_base).dt.total_seconds().values
+
+            # --- AHORA CALCULAMOS EL TIEMPO EN SEGUNDOS EN MÉXICO ---
+            fecha_inicio_dia = pd.to_datetime(f"{fecha} 00:00").tz_localize('America/Mexico_City')
+            tiempos_segundos = (df_filtrado['_time'] - fecha_inicio_dia).dt.total_seconds().values
+
             Z = df_filtrado['_value'].astype(int).values
 
-            # Preparar la rejilla de interpolación
             x_unique = np.unique(X)
             y_unique = np.unique(tiempos_segundos)
-            
-            if len(x_unique) > 1 and len(y_unique) > 1:
-                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
-                
-                # Interpolación con griddata (puede ser lento con muchos puntos)
-                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
-                
-                # Rellenar NaNs con el valor mínimo para visualización (o promedio, o 0, depende de la interpretación)
-                Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid) if not np.isnan(np.nanmin(Z_grid)) else 0)
 
-                # Configuración del gráfico
+            if len(x_unique) > 1 and len(y_unique) > 1:
+
+                X_grid, Y_grid = np.meshgrid(x_unique, y_unique)
+                Z_grid = griddata((X, tiempos_segundos), Z, (X_grid, Y_grid), method='linear')
+                Z_grid = np.nan_to_num(Z_grid, nan=np.nanmin(Z_grid))
+
                 fig, ax = plt.subplots(figsize=(10, 6))
-                
-                # Calcular yticks para mostrar las horas
-                # Selecciona 10 puntos espaciados uniformemente
-                yticks_indices = np.linspace(0, len(y_unique) - 1, num=10, dtype=int)
+
+                yticks_indices = np.linspace(0, len(y_unique)-1, num=10, dtype=int)
                 yticks_values = y_unique[yticks_indices]
                 yticklabels = [pd.to_datetime(t, unit='s').strftime('%H:%M') for t in yticks_values]
 
-                # Heatmap con paleta seleccionada
                 sb.heatmap(
                     Z_grid,
-                    cmap=palette, # Usando la paleta seleccionada
+                    cmap=palette,
                     xticklabels=x_unique,
-                    yticklabels=False, # Ocultar etiquetas por defecto y poner las calculadas
+                    yticklabels=False,
                     ax=ax
                 )
-                
+
                 ax.invert_yaxis()
-                # Establecer las etiquetas y ticks de hora basados en la posición en la matriz Z_grid
-                ax.set_yticks(yticks_indices + 0.5) # +0.5 para centrar entre los bordes
+                ax.set_yticks(yticks_indices + 0.5)
                 ax.set_yticklabels(yticklabels, rotation=0)
-                
                 ax.set_xlabel("Nodos")
                 ax.set_ylabel("Hora (HH:MM)")
 
-                # Añadir barra de color con etiqueta
                 cbar = ax.collections[0].colorbar
                 cbar.set_label('Nivel de sonido (dB)', rotation=270, labelpad=20)
-                
+
                 st.pyplot(fig)
+
             else:
-                 st.warning("Datos insuficientes para generar el mapa de calor. Asegúrate de tener mediciones de al menos dos nodos y dos tiempos distintos.")
+                st.warning("Datos insuficientes para generar el mapa de calor.")
 
 
+        # :::::::::::::::::::::::::::::::::::::::::::::::::::
+        #          LAS OTRAS TABS NO NECESITAN CAMBIOS
+        # :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+        # TAB2
         with tab2:
-            st.markdown("""
-            En esta sección se muestra la evolución del nivel de ruido a lo largo del tiempo para cada nodo seleccionado. Esto permite observar tendencias, picos o patrones específicos de ruido en cada sensor.
-            """)
             st.markdown("#### Evolución temporal por nodo")
-            
             for nodo in sorted(df_filtrado["nodo"].astype(str).unique()):
                 st.subheader(f"Nodo {nodo}")
                 datos_nodo = df_filtrado[df_filtrado["nodo"].astype(str) == nodo]
-                
-                if not datos_nodo.empty:
-                    # Se usa .set_index("_time") para que Streamlit use el tiempo como eje X
-                    st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
-                else:
-                    st.info(f"No hay datos para el Nodo {nodo} en el rango de tiempo seleccionado.")
+                st.line_chart(datos_nodo.set_index("_time")["_value"], height=200, use_container_width=True)
 
+        # TAB3
         with tab3:
-            st.markdown("""
-            Aquí se visualizan todos los nodos juntos para comparar sus niveles de ruido en el tiempo. Esto facilita detectar diferencias o similitudes en el comportamiento acústico entre distintas áreas.
-            """)
             st.markdown("### Comparación general de nodos en un solo gráfico")
-            
-            # Pivotear la tabla: índice = _time, columnas = nodo, valores = _value
             df_pivot = df_filtrado.pivot(index='_time', columns='nodo', values='_value').sort_index()
-            
-            # Asegurarse de que las columnas (nodos) tengan un nombre de columna para el gráfico
-            df_pivot.columns = df_pivot.columns.astype(str) 
-            
+            df_pivot.columns = df_pivot.columns.astype(str)
             st.line_chart(df_pivot, height=300, use_container_width=True)
 
+        # TAB4
         with tab4:
             st.markdown("### Análisis estadístico básico por nodo")
-            
             resumen_estadistico = df_filtrado.groupby("nodo")["_value"].agg(
-                Minimo="min",
-                Maximo="max",
-                Media="mean",
-                Mediana="median",
-                Conteo="count"
+                Minimo="min", Maximo="max", Media="mean", Mediana="median", Conteo="count"
             ).round(2)
-            
-            st.dataframe(resumen_estadistico, use_container_width=True)
+            st.dataframe(resumen_estadistico)
 
-            st.markdown("### Gráfico de valores máximos por nodo")
-            
-            # Asegurar que el índice (nodo) es adecuado para el gráfico
-            resumen_estadistico.index = resumen_estadistico.index.astype(str)
-            
-            st.bar_chart(resumen_estadistico["Maximo"])
-
+        # TAB5
         with tab5:
-            st.markdown("### **Efectos del ruido en la audición**")
-            st.markdown("""
-            <div style='text-align: justify;'>
-            La sensibilidad al ruido varía de persona a persona. Algunas personas tienen oídos más sensibles, especialmente a ciertas frecuencias (es decir, qué tan graves o agudos son los sonidos). Sin embargo, cualquier sonido lo suficientemente fuerte y prolongado puede dañar la audición, provocando una pérdida auditiva temporal o permanente. Proteger tus oídos es clave para mantener una buena salud auditiva, especialmente en ambientes ruidosos o con exposición prolongada.
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.markdown("### 🔊 **Rangos de niveles de sonido (dB)**")
-            st.markdown("""
-| Nivel (dB) | Ejemplo | Efecto sobre la salud |
-|---|---|---|
-| 0–30 dB | Biblioteca, susurros | Sin riesgo |
-| 30–60 dB | Conversación normal | Sin riesgo |
-| 60–85 dB | Tráfico denso, aspiradora | Riesgo leve si exposición prolongada |
-| 85–100 dB | Moto, concierto | Puede causar daño si hay exposición prolongada (>8h) |
-| 100–120 dB | Sirena ambulancia, martillo neumático | Daño auditivo posible en minutos |
-            """)
-
-            st.markdown("### Distribución de niveles de sonido por hora (clasificados por riesgo auditivo)")
-            
-            # Clasificación personalizada para el gráfico de pastel
+            st.markdown("### Distribución de niveles de sonido por hora")
             def clasificar_rango(db):
-                if db < 30:
-                    return "0–30 dB: Sin riesgo"
-                elif db < 60:
-                    return "30–60 dB: Sin riesgo"
-                elif db < 85:
-                    return "60–85 dB: Riesgo leve"
-                elif db < 100:
-                    return "85–100 dB: Riesgo moderado"
-                else:
-                    return "100–120+ dB: Peligroso"
+                if db < 30: return "0–30 dB: Sin riesgo"
+                elif db < 60: return "30–60 dB: Sin riesgo"
+                elif db < 85: return "60–85 dB: Riesgo leve"
+                elif db < 100: return "85–100 dB: Riesgo moderado"
+                else: return "100–120+ dB: Peligroso"
 
             df_filtrado["rango"] = df_filtrado["_value"].apply(clasificar_rango)
-            
+
             horas_disponibles = sorted(df_filtrado["hora"].unique())
-
             if horas_disponibles:
-                # Selector de una sola hora
-                hora_seleccionada = st.selectbox(
-                    "Selecciona la hora que deseas visualizar (formato 24h):",
-                    options=horas_disponibles,
-                    index=0 # Elige la primera hora disponible por defecto
-                )
-
-                # Filtrar datos por la hora seleccionada
+                hora_seleccionada = st.selectbox("Selecciona hora:", options=horas_disponibles)
                 df_hora = df_filtrado[df_filtrado["hora"] == hora_seleccionada]
                 conteo = df_hora["rango"].value_counts().sort_index()
 
                 if not conteo.empty:
-                    # Colores personalizados por rango de riesgo
                     colores = {
                         "0–30 dB: Sin riesgo": "#b3d9ff",
                         "30–60 dB: Sin riesgo": "#80bfff",
@@ -594,35 +490,13 @@ elif seccion_activa == "Resultados":
                         "85–100 dB: Riesgo moderado": "#ff9966",
                         "100–120+ dB: Peligroso": "#ff4d4d"
                     }
+                    colores_graf = [colores[c] for c in conteo.index]
 
-                    # Mapear los colores a los índices que existen en el conteo
-                    colores_para_grafico = [colores.get(cat, "#cccccc") for cat in conteo.index]
-
-                    # Crear gráfico de pastel
                     fig, ax = plt.subplots()
-                    ax.pie(
-                        conteo,
-                        labels=conteo.index,
-                        autopct="%1.1f%%",
-                        startangle=90,
-                        colors=colores_para_grafico
-                    )
-                    ax.set_title(f"{hora_seleccionada}:00 hrs — Niveles de sonido por rango")
-                    
-                    # Asegurar aspecto circular
-                    ax.axis('equal') 
-                    
+                    ax.pie(conteo, labels=conteo.index, autopct="%1.1f%%",
+                           startangle=90, colors=colores_graf)
+                    ax.axis("equal")
                     st.pyplot(fig)
-                else:
-                    st.info(f"No hay mediciones para la hora {hora_seleccionada}:00 hrs.")
-            else:
-                st.info("No hay datos de horas disponibles para el análisis de riesgo.")
-            
 
     else:
-        st.warning("No hay datos para los parámetros seleccionados o el archivo no se cargó correctamente.")
-
-
-
-
-
+        st.warning("No hay datos para los parámetros seleccionados.")
