@@ -428,7 +428,7 @@ elif seccion_activa == "Resultados":
             # --- Procesamiento de datos para el Mapa de Calor ---
             # Asegurar que 'nodo' es numérico para el eje X
             try:
-                X = df_filtrado['nodo'].astype(float).values 
+                X = df_filtrado['nodo'].astype(int).values 
             except ValueError:
                 st.warning("La columna 'nodo' no se pudo convertir a valores numéricos. Usando índices en su lugar.")
                 X = df_filtrado['nodo'].astype('category').cat.codes.values + 1
@@ -621,6 +621,7 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados o el archivo no se cargó correctamente.")
+
 
 
 
