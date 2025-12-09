@@ -266,7 +266,7 @@ elif seccion_activa == "Resultados":
     st.markdown("### Resultados")
 
     # Ruta fija al archivo CSV
-    uploaded_file = "consultapruebacadi.csv"
+    uploaded_file = "consultaprueba2.csv"
 
     # Inicializar df_filtrado como DataFrame vacío para el scope general
     df_filtrado = pd.DataFrame()
@@ -500,3 +500,4 @@ elif seccion_activa == "Resultados":
 
     else:
         st.warning("No hay datos para los parámetros seleccionados.")
+
